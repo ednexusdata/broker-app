@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-EdNexusData.Broker.Worker-c3c9ffe3-a17f-4bec-9db5-68194b6133af</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.*" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
+    <PackageReference Include="System.Runtime.Caching" Version="8.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\broker-core\src\EdNexusData.Broker.Domain\EdNexusData.Broker.Domain.csproj" />
+    <ProjectReference Include="..\..\broker-data\src\EdNexusData.Broker.Data.csproj" />
+    <ProjectReference Include="..\..\broker-core\src\EdNexusData.Broker.Connector\EdNexusData.Broker.Connector.csproj" />
+    <ProjectReference Include="..\..\broker-core\src\EdNexusData.Broker.SharedKernel\EdNexusData.Broker.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\broker-service\src\EdNexusData.Broker.Service.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Edupoint_Files Include="..\..\broker-connector-edupointsynergy\src\bin\**\*.dll" />
+    <EdFi_Files Include="..\..\broker-connector-edfi\src\EdNexusData.Broker.Connector.EdFiAlliance.EdFi\bin\**\*.dll" />
+    <Fixture_Files Include="..\..\broker-connector-fixture\src\bin\**\*.dll" />
+  </ItemGroup>
+
+  <Target Name="BuildCopyConnectorsSynergy" BeforeTargets="Build">
+    <MSBuild Projects="..\..\broker-connector-edupointsynergy\src\EdNexusData.Broker.Connector.Edupoint.Synergy.csproj" Properties="Configuration=$(Configuration)">
+    </MSBuild>
+    <Message Text="Executing BuildCopyConnectors Synergy task" Importance="High" />
+
+    <Copy SourceFiles="@(Edupoint_Files)" DestinationFolder="$(TargetDir)\connectors\EdNexusData.Broker.Connector.Edupoint.Synergy" />
+
+    <Message Text="Copied Synergy build files" Importance="High" />
+  </Target>
+
+  <Target Name="BuildCopyConnectorsEdFi" BeforeTargets="Build">
+    <MSBuild Projects="..\..\broker-connector-edfi\src\EdNexusData.Broker.Connector.EdFiAlliance.EdFi\EdNexusData.Broker.Connector.EdFiAlliance.EdFi.csproj" Properties="Configuration=$(Configuration)">
+    </MSBuild>
+    <Message Text="Executing BuildCopyConnectors EdFi task" Importance="High" />
+
+    <Copy SourceFiles="@(EdFi_Files)" DestinationFolder="$(TargetDir)\connectors\EdNexusData.Broker.Connector.EdFiAlliance.EdFi" />
+
+    <Message Text="Copied EdFi build files" Importance="High" />
+  </Target>
+
+  <Target Name="BuildCopyConnectorsFixture" BeforeTargets="Build">
+    <MSBuild Projects="..\..\broker-connector-fixture\src\EdNexusData.Broker.Connector.Fixture.csproj" Properties="Configuration=$(Configuration)">
+    </MSBuild>
+    <Message Text="Executing BuildCopyConnectors Fixture task" Importance="High" />
+
+    <Copy SourceFiles="@(Fixture_Files)" DestinationFolder="$(TargetDir)\connectors\EdNexusData.Broker.Connector.Fixture" />
+
+    <Message Text="Copied Fixture build files" Importance="High" />
+  </Target>
+</Project>

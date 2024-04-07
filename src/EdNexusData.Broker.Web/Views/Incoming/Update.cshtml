@@ -1,0 +1,33 @@
+@model EdNexusData.Broker.Web.ViewModels.IncomingRequests.CreateIncomingRequestViewModel
+@using EdNexusData.Broker.Domain.Extensions
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    ViewData["Title"] = "Incoming Record Request Details";
+    Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = true;
+    ViewData["FocusBarReadOnly"] = true;
+}
+
+<form method="post" asp-action="Update" autocomplete="off">
+  <input type="hidden" name="_METHOD" value="PUT" />
+  <partial name="_form" for="@Model" />
+</form>
+
+<partial name="_file" for="@Model" />
+
+@section HeaderAction
+{
+  @if (Model.RequestStatus == EdNexusData.Broker.Domain.RequestStatus.Draft)
+  {
+    <form method="post" asp-action="Send" asp-route-id="@Model.RequestId" autocomplete="off">
+      <input type="hidden" name="_METHOD" value="PUT" />
+      <button
+        type="submit"
+        class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10"
+      >Send Request</button>
+    </form>
+  } else {
+    @Model.RequestStatus.GetDescription()
+  }
+}

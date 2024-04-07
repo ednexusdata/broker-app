@@ -1,0 +1,182 @@
+@model EdNexusData.Broker.Web.ViewModels.OutgoingRequests.CreateOutgoingRequestViewModel
+@using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+@using System.Text.Json;
+
+<div class="space-y-10 divide-y divide-gray-900/10">
+  <div class="px-4 sm:px-0">
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+      <div class="grid md:grid-cols-8 divide-x divide-gray-900/10">
+        <div class="md:col-span-6 px-4 py-6 sm:p-8 grid gap-8">
+          <div class="grid gap-6 border-b border-gray-900/10 pb-8">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Student Lookup</h2>
+              <p class="mt-1 text-sm leading-6 text-gray-600">Find the student in your SIS. This is the student record for which the records will be exported.</p>
+            </div>
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-6">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium leading-6 text-gray-900">Student</label>
+                <div class="mt-2">
+                  <Search-Select asp-for="StudentUniqueId" placeholder="@Model.FirstName @Model.LastSurname" template="student">
+                </div>
+              </div>
+              <div class="sm:col-span-2">
+                @Html.LabelFor(it => it.StudentUniqueId, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
+                <div class="mt-2">
+                  <input asp-for="StudentUniqueId" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                  <input asp-for="Additional" type="hidden">
+                </div>
+                <p class="mt-2 text-sm text-red-600" asp-validation-for="StudentUniqueId">@Html.ValidationMessageFor(m => m.StudentUniqueId)</p>
+              </div>
+            </div>
+          </div>
+          <div class="grid gap-6 border-b border-gray-900/10 pb-8">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Student information</h2>
+              <p class="mt-1 text-sm leading-6 text-gray-600">Basic information about the student being enrolled.</p>
+            </div>  
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-6">
+              <div class="sm:col-span-2">
+                @Html.LabelFor(it => it.FirstName, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
+                <div class="mt-2">
+                  <input asp-for="FirstName" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                  
+                </div>
+                <p class="mt-2 text-sm text-red-600" asp-validation-for="FirstName">@Html.ValidationMessageFor(m => m.FirstName)</p>
+              </div>
+              <div class="sm:col-span-2">
+                @Html.LabelFor(it => it.MiddleName, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
+                <div class="mt-2">
+                  <input asp-for="MiddleName" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                </div>
+                <p class="mt-2 text-sm text-red-600" asp-validation-for="MiddleName">@Html.ValidationMessageFor(m => m.MiddleName)</p>
+              </div>
+              <div class="sm:col-span-2">
+                @Html.LabelFor(it => it.LastSurname, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
+                <div class="mt-2">
+                  <input asp-for="LastSurname" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                </div>
+                <p class="mt-2 text-sm text-red-600" asp-validation-for="LastSurname">@Html.ValidationMessageFor(m => m.LastSurname)</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-6">
+              <div class="sm:col-span-2">
+                @Html.LabelFor(it => it.BirthDate, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
+                <div class="mt-2">
+                  <input asp-for="BirthDate" type="date" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                </div>
+                <p class="mt-2 text-sm text-red-600" asp-validation-for="BirthDate">@Html.ValidationMessageFor(m => m.BirthDate)</p>
+              </div>
+              <div class="sm:col-span-2">
+                @Html.LabelFor(it => it.Gender, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
+                <div class="mt-2">
+                    <select 
+                      asp-for="Gender"
+                      asp-items="@Model.Genders"
+                      class="block w-full rounded-md border-0 py-1.5 px-2.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      <option value="">Select a Gender</option>
+                    </select>
+                </div>
+                <p class="mt-2 text-sm text-red-600" asp-validation-for="Gender">@Html.ValidationMessageFor(m => m.Gender)</p>
+              </div>
+              <div class="sm:col-span-2">
+                @Html.LabelFor(it => it.Grade, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
+                <div class="mt-2">
+                  <input asp-for="Grade" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                </div>
+                <p class="mt-2 text-sm text-red-600" asp-validation-for="Grade">@Html.ValidationMessageFor(m => m.Grade)</p>
+              </div>
+            </div>
+          </div>
+          <div class="grid gap-6 pb-8">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Additional information</h2>
+              <p class="mt-1 text-sm leading-6 text-gray-600">Additional information about the student's request.</p>
+            </div>
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-6">
+              <div class="sm:col-span-6">
+                @Html.LabelFor(it => it.ReleasingNotes, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
+                <div class="mt-2">
+                  <textarea asp-for="ReleasingNotes"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6"></textarea>
+                </div>
+                <p class="mt-2 text-sm text-red-600" asp-validation-for="Note">@Html.ValidationMessageFor(m => m.ReleasingNotes)
+                </p>
+              </div>
+
+            </div>
+          </div>  
+        </div>
+        <div class="md:col-span-2 sm:p-8 grid gap-8">
+          <div class="grid gap-6 border-b border-gray-900/10 pb-8">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Requested Student</h2>
+              <p class="mt-1">@Model.ReceivingStudent?.FirstName @Model.ReceivingStudent?.MiddleName @Model.ReceivingStudent?.LastName</p>
+              <p class="mt-1">@Model.ReceivingStudent?.Birthdate</p>
+              <p class="mt-1">Grade @Model.ReceivingStudent?.Grade</p>
+              <p class="mt-1">@Model.ReceivingStudent?.Gender</p>
+              <p class="mt-1">@Model.ReceivingStudent?.StudentNumber</p>
+            </div>
+          </div>
+          <div class="grid gap-6 border-b border-gray-900/10 pb-8">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Receiving District</h2>
+              <p class="mt-1">@Model.ReceivingDistrict?.Name @Model.ReceivingDistrict?.Number</p>
+              <p class="mt-1">@Model.ReceivingDistrict?.Domain</p>
+              <p class="mt-1">@Model.ReceivingDistrict?.Address?.StreetNumberName</p>
+              <p class="mt-1">@Model.ReceivingDistrict?.Address?.City, @Model.ReceivingDistrict?.Address?.StateAbbreviation @Model.ReceivingDistrict?.Address?.PostalCode</p>
+            </div>
+          </div>
+          <div class="grid gap-6 border-b border-gray-900/10 pb-8">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Receiving School</h2>
+              <p class="mt-1">@Model.ReceivingSchool?.Name @Model.ReceivingSchool?.Number</p>
+              <p class="mt-1">@Model.ReceivingSchool?.Address?.StreetNumberName</p>
+              <p class="mt-1">@Model.ReceivingSchool?.Address?.City, @Model.ReceivingSchool?.Address?.StateAbbreviation @Model.ReceivingSchool?.Address?.PostalCode</p>
+            </div>
+          </div>
+          <div class="grid gap-6 border-b border-gray-900/10 pb-8">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">School Records Contact</h2>
+              <p class="mt-1">@Model.ReceivingSchoolContact?.Name</p>
+              <p class="mt-1">@Model.ReceivingSchoolContact?.JobTitle</p>
+              <p class="mt-1">@Model.ReceivingSchoolContact?.Phone</p>
+              <p class="mt-1">@Model.ReceivingSchoolContact?.Email</p>
+            </div>
+          </div>
+          <div class="grid gap-6 border-b border-gray-900/10 pb-8">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Notes</h2>
+              <p class="mt-1">@Model.ReceivingNotes</p>
+            </div>
+          </div>
+          <div class="grid gap-6 pb-8">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Attachments</h2>
+              <p>
+                  @if(Model.ReceivingAttachments is not null)
+                  @foreach(var payloadContent in Model.ReceivingAttachments)
+                  {
+                    <div class="flex items-center">
+                      <svg class="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+<path fill-rule="evenodd" d="M15.621 4.379a3 3 0 00-4.242 0l-7 7a3 3 0 004.241 4.243h.001l.497-.5a.75.75 0 011.064 1.057l-.498.501-.002.002a4.5 4.5 0 01-6.364-6.364l7-7a4.5 4.5 0 016.368 6.36l-3.455 3.553A2.625 2.625 0 119.52 9.52l3.45-3.451a.75.75 0 111.061 1.06l-3.45 3.451a1.125 1.125 0 001.587 1.595l3.454-3.553a3 3 0 000-4.242z" clip-rule="evenodd"></path>
+</svg>
+                      <div class="p-1"><a target="_blank" asp-action="ViewAttachment" asp-route-id="@payloadContent.Id">@payloadContent.FileName</a></div>
+                    </div>
+                  }
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
+            <a asp-controller="Incoming" asp-action="Index" asp-authorize asp-policy="@TransferIncomingRecords"
+              class="text-sm font-semibold leading-6 text-gray-900">
+              Cancel
+            </a>
+            <input asp-for="RequestId" type="hidden" />
+            <button type="submit"
+              class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10">Save</button>
+      </div>
+    </div>
+  </div>
+</div>

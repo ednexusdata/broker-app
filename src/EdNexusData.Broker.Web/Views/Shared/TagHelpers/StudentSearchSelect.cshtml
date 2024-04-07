@@ -1,0 +1,144 @@
+<div class="flex flex-col items-center">
+    <div class="w-full">
+        <div x-data="{
+        filter: '',
+        show: false,
+        selected: null,
+        focusedOptionIndex: null,
+        options: null,
+        close() { 
+            this.show = false;
+            this.filter = this.selectedName();
+            this.focusedOptionIndex = this.selected ? this.focusedOptionIndex : null;
+        },
+        open() { 
+            this.show = true; 
+            this.filter = '';
+        },
+        toggle() { 
+            if (this.show) {
+                this.close();
+            }
+            else {
+                this.open()
+            }
+        },
+        isOpen() { return this.show === true },
+        selectedName() { return this.selected ? this.selected.firstName + ' ' + this.selected.lastName : this.filter; },
+        classOption(id, index) {
+            const isSelected = this.selected ? (id == this.selected.studentId) : false;
+            const isFocused = (index == this.focusedOptionIndex);
+            return {
+                'cursor-pointer w-full border-gray-100 border-b hover:bg-blue-50': true,
+                'bg-blue-100': isSelected,
+                'bg-blue-50': isFocused
+            };
+        },
+        fetchSearch() {
+            if (this.filter != null && this.filter != undefined && this.filter != '') {
+                fetch(`/api/v1/students/search?search=${encodeURIComponent(this.filter)}`)
+                    .then(response => response.json())
+                    .then(data => this.options = data);
+            }
+        },
+        filteredOptions() {
+            return this.options ?? {}
+        },
+        onOptionClick(index) {
+            this.focusedOptionIndex = index;
+            this.selectOption();
+        },
+        selectOption() {
+            if (!this.isOpen()) {
+                return;
+            }
+            this.focusedOptionIndex = this.focusedOptionIndex ?? 0;
+            const selected = this.filteredOptions()[this.focusedOptionIndex]
+            if (this.selected && this.selected.studentId == selected.studentId) {
+                this.filter = '';
+                this.selected = null;
+            }
+            else {
+                this.selected = selected;
+                this.filter = this.selectedName();
+                this.updateFormFields();
+            }
+            this.close();
+        },
+        updateFormFields() {
+            document.getElementById('StudentUniqueId').value = this.selected.studentId;
+            document.getElementById('FirstName').value = this.selected.firstName;
+            document.getElementById('MiddleName').value = this.selected.middleName;
+            document.getElementById('LastSurname').value = this.selected.lastName;
+            document.getElementById('BirthDate').value = this.selected.birthDate;
+            document.getElementById('Gender').value = this.selected.gender;
+            document.getElementById('Grade').value = this.selected.grade;
+            document.getElementById('Additional').value = JSON.stringify(this.selected.additional);
+        },
+        focusPrevOption() {
+        if (!this.isOpen()) {
+            return;
+        }
+        const optionsNum = Object.keys(this.filteredOptions()).length - 1;
+        if (this.focusedOptionIndex > 0 && this.focusedOptionIndex <= optionsNum) {
+            this.focusedOptionIndex--;
+        }
+        else if (this.focusedOptionIndex == 0) {
+            this.focusedOptionIndex = optionsNum;
+        }
+        },
+        focusNextOption() {
+        const optionsNum = Object.keys(this.filteredOptions()).length - 1;
+        if (!this.isOpen()) {
+            this.open();
+        }
+        if (this.focusedOptionIndex == null || this.focusedOptionIndex == optionsNum) {
+            this.focusedOptionIndex = 0;
+        }
+        else if (this.focusedOptionIndex >= 0 && this.focusedOptionIndex < optionsNum) {
+            this.focusedOptionIndex++;
+        }
+        }
+    }" class="flex flex-col items-center relative">
+            <div class="w-full">
+                <div @@click.away="close()" class="p-1 flex rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                    <input 
+                            x-model="filter"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100"
+                            x-transition:leave-end="opacity-0"
+                            @@mousedown="open()"
+                            @@keyup.debounce="fetchSearch()"
+                            @@keydown.enter.stop.prevent="selectOption()"
+                            @@keydown.arrow-up.prevent="focusPrevOption()"
+                            @@keydown.arrow-down.prevent="focusNextOption()"
+                            placeholder="@Model.Placeholder"
+                            class="p-1 px-2 rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 w-full sm:text-sm sm:leading-6">
+                    <div class="text-gray-300 w-8 py-1 pl-2 pr-1 border-l flex items-center">
+                        <div @@click="toggle()" class="cursor-pointer w-6 h-6 text-gray-600 outline-none focus:outline-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline x-show="!isOpen()" points="18 15 12 20 6 15"></polyline>
+                                <polyline x-show="isOpen()" points="18 15 12 9 6 15"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div x-show="isOpen()" class="absolute shadow bg-white top-100 z-40 w-full lef-0 rounded max-h-select overflow-y-auto svelte-5uyqqj">
+                <div class="flex flex-col w-full">
+                    <template x-for="(option, index) in filteredOptions()" :key="index">
+                    <div @@click="onOptionClick(index)" :class="classOption(option.studentId, index)" :aria-selected="focusedOptionIndex === index">
+                        <div class="flex w-full items-center p-2 pl-2 border-transparent border-l-2 relative hover:border-teal-100">
+                            <div class="w-full items-center flex">
+                                <div class="mx-2 -mt-1"><span x-text="option.firstName + ' ' + option.lastName"></span>
+                                    <div class="text-xs truncate w-full normal-case font-normal -mt-1 text-gray-500" x-text="option.studentId + ' ' + option.birthDate"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

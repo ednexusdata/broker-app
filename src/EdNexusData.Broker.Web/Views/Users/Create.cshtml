@@ -1,0 +1,10 @@
+@model EdNexusData.Broker.Web.ViewModels.Users.CreateUserRequestViewModel
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    ViewData["Title"] = "Add User";
+    Layout = "_AuthenticatedLayout";
+}
+<form id="user-form" method="post" asp-action="Create">
+    <partial name="_form" for="@Model" />
+</form>

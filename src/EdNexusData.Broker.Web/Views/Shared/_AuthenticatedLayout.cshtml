@@ -1,0 +1,57 @@
+@using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+
+@{
+    Layout = "_Layout";
+}
+<div class="min-h-full">
+  <nav class="border-b border-gray-200 bg-white">
+    <div class="px-8">
+      <div class="flex h-16 items-center justify-between">
+        <div class="flex">
+          <div class="flex flex-shrink-0 items-center">
+            <img class="h-10 w-auto block" src="~/images/Final-Education-Nexus-ICON-png.png" alt="Education Nexus Oregon">
+          </div>
+            <div class="h-16 -my-px ml-6 flex space-x-8">
+              <a asp-controller="Home" asp-action="Index" class="@Html.ActiveClass("Home", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")" aria-current="page">Dashboard</a>
+
+              <a asp-controller="Incoming" asp-action="Index" asp-authorize asp-policy="@TransferIncomingRecords" class="@Html.ActiveClass("Incoming", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Incoming</a>
+              
+              <a asp-controller="Outgoing" asp-action="Index" asp-authorize asp-policy="@TransferOutgoingRecords" class="@Html.ActiveClass("Outgoing", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Outgoing</a>
+
+              <a asp-controller="EducationOrganizations" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="@Html.ActiveClass("EducationOrganizations", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Organizations</a>
+              
+              <a asp-controller="Users" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="@Html.ActiveClass("Users", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Users</a>
+              
+              <a asp-controller="Settings" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="@Html.ActiveClass("Settings", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Settings</a>
+            </div>
+        </div>
+        <div class="block">
+          <div class="flex items-center ml-6">
+            <partial name="_LoginPartial" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+  @if (ViewData["FocusBar"] is not null && bool.Parse(ViewData["FocusBar"].ToString()) == true)
+  {
+    var focusVM = new FocusViewModel();
+    <partial name="_FocusPartial" model="focusVM"></partial>
+  }
+  <div class="py-6">
+    <header class="px-4 sm:px-6 lg:px-8 flex justify-between">
+        <h1 class="font-title text-3xl text-gray-900">@ViewData["Title"]</h1>
+      <div>
+        @await RenderSectionAsync("HeaderAction", required: false)
+      </div>
+    </header>
+    <main>
+      <div class="py-6 sm:px-6 lg:px-8">
+        <partial name="_Alert"></partial>
+        @RenderBody()
+      </div>
+    </main>
+  </div>
+</div>
+
+@await RenderSectionAsync("Scripts", required: false)

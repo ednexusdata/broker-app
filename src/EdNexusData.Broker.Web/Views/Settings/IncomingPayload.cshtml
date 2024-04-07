@@ -1,0 +1,34 @@
+﻿@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    Layout = "_SettingsLayout";
+}
+<div class="grid gap-2">
+  <div class="border-b border-gray-200 pb-3 grid gap-1">
+      <div class="flex items-center space-x-2">
+          <h2 class="font-semibold leading-6 text-gray-900">
+              @Model.Payload.DisplayName
+          </h2>
+          <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset text-info-700 bg-info-50 ring-info-600/20">
+              Incoming Payload
+          </span>
+      </div>
+  </div>
+  <form method="post" action="@Url.Action("IncomingPayload", "Settings", new { payload = Model.Payload.FullName })">
+    <input type="hidden" name="PayloadType" value="@Model.Payload.FullName">
+    <div class="sm:col-span-4 my-4">
+    <label for="StudentInformationSystem" class="block text-sm font-medium leading-6 text-gray-900">Student Information System</label>
+    <div class="mt-2">
+      <div class="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-tertiary-700 sm:max-w-md">
+        <select name="StudentInformationSystem" class="block w-full rounded-md border-0 py-1.5 px-2.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6" asp-items="@Model.ConnectorListItems">
+        </select>
+      </div>
+      <div class="block text-sm font-medium leading-6 text-gray-900">Connector to facilitate raw data transfer to SIS.</div>
+    </div>
+    </div>
+    <div class="mt-6 flex items-center justify-end gap-x-6">
+      <a asp-controller="Settings" asp-action="Index" class="text-sm font-semibold leading-6 text-gray-900">Cancel</a>
+      <button type="submit" class="rounded-md bg-tertiary-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700">Save</button>
+    </div>
+  </form>
+</div>

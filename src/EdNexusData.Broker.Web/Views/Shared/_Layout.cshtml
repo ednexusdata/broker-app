@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="bg-gray-100">
+  <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Nexus - @ViewData["Title"]</title>
+      <link rel="stylesheet" href="~/css/output.css" asp-append-version="true" />
+      <link href="https://fonts.googleapis.com/css?family=Oswald%3A300%2C400%2C600%2C700%7CDroid%20Sans%3A400%2C700&amp;display=swap" rel="stylesheet" nonce="">
+      <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+      <script defer src="~/lib/jquery/dist/jquery.js"></script>
+      <partial name="_ValidationScriptsPartial"></partial>
+  </head>
+  <body class="font-normal font-copy text-gray-900 flex flex-col min-h-screen">
+    <main class="flex-1">
+      @RenderBody()
+    </main>
+    <footer>
+      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+        <div class="border-t border-gray-200 py-3 text-center text-sm text-gray-600 sm:text-left"><span class="block sm:inline">&copy; @DateTime.Now.Year <a href="http://oregonnexus.org" target="_blank">Education Nexus Oregon</a>.</span> <span class="block sm:inline">All rights reserved.</span></div>
+      </div>
+    </footer>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+  </body>
+</html>

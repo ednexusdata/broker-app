@@ -1,0 +1,15 @@
+﻿@model EdNexusData.Broker.Web.ViewModels.IncomingRequests.CreateIncomingRequestViewModel
+@{
+    ViewData["Title"] = "Create Incoming Record Request";
+    Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = true;
+    ViewData["FocusBarReadOnly"] = true;
+}
+
+<form
+  method="post"
+  asp-action="Create"
+  autocomplete="off"
+>
+  <partial name="_form" for="@Model" />
+</form>

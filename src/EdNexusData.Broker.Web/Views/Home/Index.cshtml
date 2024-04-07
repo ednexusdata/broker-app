@@ -1,0 +1,277 @@
+﻿@model EdNexusData.Broker.Web.Models.DashboardViewModel
+@using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    ViewData["Title"] = "Dashboard";
+    Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = true;
+}
+
+<div x-data="dashboard" class="mx-auto max-w-7xl">
+    <div class="relative isolate overflow-hidden">
+        <header class="pb-4 pt-6 sm:pb-6">
+            <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-6 sm:flex-nowrap">
+                <h1 class="font-title text-base font-semibold leading-7 text-gray-900">Overview</h1>
+                <div class="order-last flex w-full gap-x-8 text-sm font-semibold leading-6 sm:order-none sm:w-auto sm:border-l sm:border-gray-200 sm:pl-6 sm:leading-7">
+                    @{
+                        DateTime today = DateTime.Today;
+                        DateTime startDateMinus7Days = today.AddDays(-7).Date; // Start of the day
+                        DateTime startDateMinus30Days = today.AddDays(-30).Date; // Start of the day
+                    }
+
+                    <a asp-controller="Home" asp-action="Index" asp-route-startDate="@startDateMinus7Days"
+                       class="@(Model.StartDate == startDateMinus7Days ? "text-tertiary-700" : "text-gray-700")">Last 7 days</a>
+
+                    <a asp-controller="Home" asp-action="Index" asp-route-startDate="@startDateMinus30Days"
+                       class="@(Model.StartDate == startDateMinus30Days ? "text-tertiary-700" : "text-gray-700")">Last 30 days</a>
+
+                    <a asp-controller="Home" asp-action="Index" asp-route-startDate=""
+                       class="@(Model.StartDate == null ? "text-tertiary-700" : "text-gray-700")">All-time</a>
+                </div>
+
+
+                <a asp-controller="Incoming"
+                   asp-action="Create"
+                   asp-authorize
+                   asp-policy="@TransferIncomingRecords"
+                   class="ml-auto flex items-center gap-x-1 rounded-md bg-tertiary-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700">
+                    Start Incoming Request
+                </a>
+            </div>
+        </header>
+
+        <div class="border-b border-b-gray-900/10 lg:border-t lg:border-t-gray-900/5">
+            <dl class="mx-auto grid max-w-7xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:px-2 xl:px-0">
+                <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-10 sm:px-6 lg:border-t-0 xl:px-8">
+                    <dt class="text-sm font-medium leading-6 text-gray-600">Incoming Record Requests</dt>
+                    <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900" x-text="formattedInitialRequestsCount">0</dd>
+                </div>
+                <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-10 sm:px-6 lg:border-t-0 xl:px-8 sm:border-l">
+                    <dt class="text-sm font-medium leading-6 text-gray-600">Outgoing Record Requests</dt>
+                    <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900" x-text="formattedOutgoingRequestsCount">0</dd>
+                </div>
+                <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-10 sm:px-6 lg:border-t-0 xl:px-8 lg:border-l">
+                    <dt class="text-sm font-medium leading-6 text-gray-600">Organizations</dt>
+                    <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900" x-text="formattedEducationOrganizationsCount">0</dd>
+                </div>
+                <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-10 sm:px-6 lg:border-t-0 xl:px-8 sm:border-l">
+                    <dt class="text-sm font-medium leading-6 text-gray-600">Users</dt>
+                    <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900" x-text="formattedUsersCount">0</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="border-b border-b-gray-900/10 lg:border-t lg:border-t-gray-900/5">
+            <dl class="mx-auto grid max-w-7xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 lg:px-2 xl:px-0">
+                <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-10 sm:px-6 lg:border-t-0 xl:px-8">
+                    <dt class="text-sm font-medium leading-6 text-gray-600">Draft Requests</dt>
+                    <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900" x-text="formattedDraftCount">0</dd>
+                </div>
+                <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-10 sm:px-6 lg:border-t-0 xl:px-8 sm:border-l">
+                    <dt class="text-sm font-medium leading-6 text-gray-600">Waiting Approval Requests</dt>
+                    <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900" x-text="formattedWaitingApprovalCount">0</dd>
+                </div>
+                <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-10 sm:px-6 lg:border-t-0 xl:px-8 lg:border-l">
+                    <dt class="text-sm font-medium leading-6 text-gray-600">Approved Requests</dt>
+                    <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900" x-text="formattedApprovedCount">0</dd>
+                </div>
+                <div class="flex items-baseline flex-wrap justify-between gap-y-2 gap-x-4 border-t border-gray-900/5 px-4 py-10 sm:px-6 lg:border-t-0 xl:px-8 sm:border-l">
+                    <dt class="text-sm font-medium leading-6 text-gray-600">Declined Requests</dt>
+                    <dd class="w-full flex-none text-3xl font-medium leading-10 tracking-tight text-gray-900" x-text="formattedDeclinedCount">0</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="absolute left-0 top-full -z-10 mt-96 origin-top-left translate-y-40 -rotate-90 transform-gpu opacity-20 blur-3xl sm:left-1/2 sm:-ml-96 sm:-mt-10 sm:translate-y-0 sm:rotate-0 sm:transform-gpu sm:opacity-50" aria-hidden="true">
+            <div class="aspect-[1154/678] w-[72.125rem] bg-gradient-to-br from-secondary-500 to-secondary-100" style="clip-path: polygon(100% 38.5%, 82.6% 100%, 60.2% 37.7%, 52.4% 32.1%, 47.5% 41.8%, 45.2% 65.6%, 27.5% 23.4%, 0.1% 35.3%, 17.9% 0%, 27.7% 23.4%, 76.2% 2.5%, 74.2% 56%, 100% 38.5%)"></div>
+        </div>
+    </div>
+
+    <div class="space-y-16 py-16 xl:space-y-20">
+        <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl py-6 sm:py-8">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <h2 class="mx-auto max-w-2xl text-base font-semibold leading-6 text-gray-900 lg:mx-0 lg:max-w-none">Recent activity</h2>
+            </div>
+            <div class="mt-6 overflow-hidden border-t border-gray-100">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div class="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
+                        <table class="w-full text-left">
+                            <thead class="sr-only">
+                                <tr>
+                                    <th>Student</th>
+                                    <th class="hidden sm:table-cell">Date</th>
+                                    <th>More details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="text-sm leading-6 text-gray-900">
+                                    <th scope="colgroup" colspan="3" class="relative isolate py-2 font-semibold">
+                                        <div class="flex justify-between">
+                                            Incoming
+                                            <a asp-controller="Incoming"
+                                               asp-action="Index"
+                                               asp-authorize
+                                               asp-policy="@TransferIncomingRecords"
+                                               class="ml-auto text-sm font-semibold leading-6 text-tertiary-700 hover:text-tertiary-500">
+                                                View all<span class="sr-only">, incoming record requests</span>
+                                            </a>
+                                        </div>
+                                        <div class="absolute inset-y-0 right-full -z-10 w-screen border-b border-gray-200 bg-gray-50"></div>
+                                        <div class="absolute inset-y-0 left-0 -z-10 w-screen border-b border-gray-200 bg-gray-50"></div>
+                                    </th>
+                                </tr>
+                                @foreach (var incomingRequest in Model.LatestIncomingRequests)
+                                {
+                                    <tr>
+                                        <td class="relative py-5 pr-6">
+                                            <div class="flex-auto">
+                                                <div class="flex items-start gap-x-3">
+                                                    <div class="text-sm font-medium leading-6 text-gray-900">@incomingRequest.Student</div>
+                                                        <div
+                                                            :class="{
+                                                                'text-neutral-700 bg-neutral-50 ring-neutral-600/20': @Html.Raw(Json.Serialize(@incomingRequest.Status.ToString() == "Draft")),
+                                                                'text-caution-700 bg-caution-50 ring-caution-600/20': @Html.Raw(Json.Serialize(@incomingRequest.Status.ToString() == "Sent")),
+                                                                'text-promote-700 bg-promote-50 ring-promote-600/20': @Html.Raw(Json.Serialize(@incomingRequest.Status.ToString() == "Imported")),
+                                                                'text-positive-700 bg-positive-50 ring-positive-600/20': @Html.Raw(Json.Serialize(@incomingRequest.Status.ToString() == "Received")),
+                                                                'text-critical-700 bg-critical-50 ring-critical-600/20': @Html.Raw(Json.Serialize(@incomingRequest.Status.ToString() == "Declined")),
+                                                            }"
+                                                            class="rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset"
+                                                        >
+                                                          @incomingRequest.Status
+                                                      </div>
+                                                  </div>
+                                                  <div class="mt-1 text-xs leading-5 text-gray-600">@incomingRequest.Date</div>
+                                            </div>
+                                            <div class="absolute bottom-0 right-full h-px w-screen bg-gray-100"></div>
+                                            <div class="absolute bottom-0 left-0 h-px w-screen bg-gray-100"></div>
+                                        </td>
+                                        <td class="hidden py-5 pr-6 sm:table-cell">
+                                            <div class="text-sm leading-6 text-gray-900">@incomingRequest.ReleasingSchool</div>
+                                            <div class="mt-1 text-xs leading-5 text-gray-600">@incomingRequest.ReleasingDistrict</div>
+                                        </td>
+                                        <td class="py-5 text-right">
+                                            <div class="flex justify-end">
+                                                <a asp-controller="Requests"
+                                                   asp-action="View"
+                                                   asp-route-Id="@incomingRequest.Id"
+                                                   asp-authorize
+                                                   asp-policy="@TransferIncomingRecords"
+                                                   class="text-sm font-medium leading-6 text-tertiary-700 hover:text-tertiary-500">
+                                                    View<span class="hidden sm:inline"> request</span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+
+                                <tr class="text-sm leading-6 text-gray-900">
+                                    <th scope="colgroup" colspan="3" class="relative isolate py-2 font-semibold">
+                                        <div class="flex justify-between">
+                                            Outgoing
+                                            <a asp-controller="Outgoing"
+                                               asp-action="Index"
+                                               asp-authorize
+                                               asp-policy="@TransferOutgoingRecords"
+                                               class="ml-auto text-sm font-semibold leading-6 text-tertiary-700 hover:text-tertiary-500">
+                                                View all<span class="sr-only">, outgoing record requests</span>
+                                            </a>
+                                        </div>
+                                        <div class="absolute inset-y-0 right-full -z-10 w-screen border-b border-gray-200 bg-gray-50"></div>
+                                        <div class="absolute inset-y-0 left-0 -z-10 w-screen border-b border-gray-200 bg-gray-50"></div>
+                                    </th>
+                                </tr>
+                                @foreach (var outgoingRequest in Model.LatestOutgoingRequests)
+                                {
+                                    <tr>
+                                        <td class="relative py-5 pr-6">
+                                            <div class="flex-auto">
+                                                <div class="flex items-start gap-x-3">
+                                                    <div class="text-sm font-medium leading-6 text-gray-900">@outgoingRequest.Student</div>
+                                                    <div
+                                                        :class="{
+                                                            'text-caution-700 bg-caution-50 ring-caution-600/20': @Html.Raw(Json.Serialize(@outgoingRequest.Status.ToString() == "Waiting Approval")),
+                                                            'text-positive-700 bg-positive-50 ring-positive-600/20': @Html.Raw(Json.Serialize(@outgoingRequest.Status.ToString() == "Approved")),
+                                                            'text-critical-700 bg-critical-50 ring-critical-600/20': @Html.Raw(Json.Serialize(@outgoingRequest.Status.ToString() == "Denied")),
+                                                        }"
+                                                          class="rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset"
+                                                      >
+                                                        @outgoingRequest.Status
+                                                    </div>
+                                                </div>
+                                                <div class="mt-1 text-xs leading-5 text-gray-600">@outgoingRequest.Date</div>
+                                            </div>
+                                            <div class="absolute bottom-0 right-full h-px w-screen bg-gray-100"></div>
+                                            <div class="absolute bottom-0 left-0 h-px w-screen bg-gray-100"></div>
+                                        </td>
+                                        <td class="hidden py-5 pr-6 sm:table-cell">
+                                            <div class="text-sm leading-6 text-gray-900">@outgoingRequest.ReceivingDistrict</div>
+                                            <div class="mt-1 text-xs leading-5 text-gray-600">@outgoingRequest.ReceivingSchool</div>
+                                        </td>
+                                        <td class="py-5 text-right">
+                                            <div class="flex justify-end">
+                                                <a asp-controller="Requests"
+                                                   asp-action="View"
+                                                   asp-route-Id="@outgoingRequest.Id"
+                                                   asp-authorize
+                                                   asp-policy="@TransferOutgoingRecords"
+                                                   class="text-sm font-medium leading-6 text-tertiary-700 hover:text-tertiary-500">
+                                                    View<span class="hidden sm:inline"> request</span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+  </div>
+</div>
+
+@section scripts
+{
+    <script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('dashboard', () => ({
+        initialRequestsCount: @Model.InitialRequestsCount,
+        outgoingRequestsCount: @Model.OutgoingRequestsCount,
+        draftCount: @Model.DraftCount,
+        waitingApprovalCount: @Model.WaitingApprovalCount,
+        approvedCount: @Model.ApprovedCount,
+        declinedCount: @Model.DeclinedCount,
+
+        get formattedInitialRequestsCount() {
+          return this.formatCounter(this.initialRequestsCount)
+        },
+        get formattedOutgoingRequestsCount() {
+          return this.formatCounter(this.outgoingRequestsCount)
+        },
+        get formattedEducationOrganizationsCount() {
+          return this.formatCounter(this.educationOrganizationsCount)
+        },
+        get formattedUsersCount() {
+          return this.formatCounter(this.usersCount)
+        },
+        get formattedDraftCount() {
+            return this.formatCounter(this.draftCount);
+        },
+        get formattedWaitingApprovalCount() {
+            return this.formatCounter(this.waitingApprovalCount);
+        },
+        get formattedApprovedCount() {
+            return this.formatCounter(this.approvedCount);
+        },
+        get formattedDeclinedCount() {
+            return this.formatCounter(this.declinedCount);
+        },
+
+        formatCounter(value) {
+          return value.toLocaleString('en-US', { notation: 'compact' })
+        },
+    }))
+  })
+    </script>
+}

@@ -1,0 +1,166 @@
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    Layout = "_SettingsLayout";
+}
+
+<div class="grid gap-4">
+    <div class="border-b border-gray-200 pb-3 grid gap-1">
+        <div class="flex items-center space-x-2">
+            <h2 class="font-semibold leading-6 text-gray-900">
+                Mapping
+            </h2>
+        </div>
+    </div>
+    <div x-data="mappingSettings">
+        <div class="space-y-6">
+            <div class="border-b border-gray-900/10 pb-6">
+                <form x-on:submit.prevent="submitMapping(originalValue, mappedValue)" autocomplete="off">
+                    <div class="flex space-x-2 items-end">
+                        <div class="flex-1">
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label for="original-value"
+                                        class="block text-sm font-medium leading-6 text-gray-900">
+                                        Original value:
+                                    </label>
+                                    <input id="original-value"
+                                        x-model="originalValue"
+                                        type="text"
+                                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6"
+                                    >
+                                </div>
+                                <div>
+                                    <label for="selected-mapping-source"
+                                        class="block text-sm font-medium leading-6 text-gray-900">
+                                        Mapped value source:
+                                    </label>
+                                    <select id="selected-mapping-source"
+                                            x-model="selectedMappingSource"
+                                            class="block w-full rounded-md border-0 py-1.5 px-2.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6"
+                                            @@change="mappedValue = ''">
+                                        <option value="">Select a value source</option>
+                                        <template x-for="mappingSource in mappingSources" :key="mappingSource.fullName">
+                                            <option :value="mappingSource.fullName" x-text="mappingSource.displayName"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="mapped-value"
+                                        class="block text-sm font-medium leading-6 text-gray-900">
+                                        Mapped value:
+                                    </label>
+                                    <select id="mapped-value"
+                                            x-model="mappedValue"
+                                            class="block w-full rounded-md border-0 py-1.5 px-2.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                                        <option value="">Select a value</option>
+                                        <template x-for="mappingSourceValue in selectedMappingSourceValues" :key="mappingSourceValue">
+                                            <option :value="mappingSourceValue" x-text="mappingSourceValue"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit"
+                                class="rounded-md bg-tertiary-50 px-3 py-2 text-sm font-semibold text-tertiary-600 shadow-sm hover:bg-tertiary-100">
+                            Add
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <table class="min-w-full divide-y divide-gray-300 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                <thead class="bg-white">
+                    <tr>
+                        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                            Original value
+                        </th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            Mapped value
+                        </th>
+                        <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
+                            <span class="sr-only">Actions</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    <template x-for="mapping in mappings">
+                        <tr :key="mapping.originalValue" class="even:bg-gray-50">
+                            <td
+                              x-text="mapping.originalValue"
+                              class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
+                            </td>
+                            <td
+                              x-text="mapping.mappedValue"
+                              class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
+                            </td>
+                            <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
+                                <form x-on:submit.prevent="removeMapping(mapping.originalValue)">
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-x-1.5 text-sm font-semibold leading-6 text-gray-900">
+                                        Remove <span x-text="mapping.originalValue" class="sr-only"></span>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('mappingSettings', () => {
+                return {
+                    mappingSources: [
+                        {
+                            fullName: 'Some.CourseCodes',
+                            displayName: 'Course Codes',
+                            values: [
+                                'ENG-A',
+                                'ENG-B',
+                                'ENG-C',
+                                'ENG-D',
+                            ],
+                        },
+                    ],
+                    originalValue: '',
+                    mappedValue: '',
+                    mappings: [],
+                    selectedMappingSource: null,
+
+                    get selectedMappingSourceValues() {
+                        if (!this.selectedMappingSource) return []
+                        return this.mappingSources.find((mappingSource) => mappingSource.fullName === this.selectedMappingSource)?.values ?? []
+                    },
+
+                    submitMapping(originalValue, mappedValue) {
+                        if (!originalValue || !mappedValue) return
+
+                        const existingMappingIndex = this.mappings.findIndex((mapping) => originalValue === mapping.originalValue)
+
+                        if (existingMappingIndex !== -1) {
+                            this.mappings.splice(existingMappingIndex, 1)
+                        }
+
+                        this.mappings.unshift({
+                            originalValue,
+                            mappedValue,
+                        })
+
+                        this.originalValue = ''
+                    },
+
+                    removeMapping(originalValue) {
+                        const existingMappingIndex = this.mappings.findIndex((mapping) => originalValue === mapping.originalValue)
+                        if (existingMappingIndex === -1) return
+                        this.mappings.splice(existingMappingIndex, 1)
+                    },
+                }
+            })
+        })
+    </script>
+}

@@ -1,0 +1,82 @@
+@model SettingsSidebarViewModel;
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+}
+<aside class="flex overflow-x-auto border-b border-gray-900/5 py-4 lg:block lg:w-64 lg:flex-none lg:border-0">
+    <nav class="flex-none px-4 sm:px-6 lg:px-0">
+      <ul role="list" class="flex gap-x-3 gap-y-1 whitespace-nowrap lg:flex-col">
+        <li>
+          <div class="text-tertiary-300 group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold">
+            Configuration
+          </div>
+        </li>
+        @foreach(var config in Model.Connectors)
+        {
+        <li>
+          @if(config.Selected)
+          {
+            <a asp-controller="Settings" asp-action="Configuration" asp-route-assembly="@config.ConnectorTypeName" class="bg-gray-50 text-tertiary-700 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold">
+            @config.DisplayName
+            </a>
+          }
+          else
+          {
+            <a asp-controller="Settings" asp-action="Configuration" asp-route-assembly="@config.ConnectorTypeName" class="text-tertiary-700 hover:text-tertiary-700 hover:bg-gray-50 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold">
+            @config.DisplayName
+            </a>
+          }
+        </li>
+        }
+        <li>
+          <div class="text-tertiary-300 group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold">
+            Incoming Payloads
+          </div>
+        </li>
+        @foreach(var payload in Model.Payloads)
+        {
+        <li>
+          @if(payload.Selected)
+          {
+            <a asp-controller="Settings" asp-action="IncomingPayload" asp-route-payload="@payload.PayloadTypeName" class="@Html.ActiveClassForAction("Settings", "IncomingPayload", "bg-gray-50 text-tertiary-700 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold", "text-tertiary-700 hover:text-tertiary-700 hover:bg-gray-50 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold")">
+              @payload.DisplayName
+            </a>
+          }
+          else
+          {
+            <a asp-controller="Settings" asp-action="IncomingPayload" asp-route-payload="@payload.PayloadTypeName" class="@Html.ActiveClassForAction("Settings", "IncomingPayload", "bg-gray-50 text-tertiary-700 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold", "text-tertiary-700 hover:text-tertiary-700 hover:bg-gray-50 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold")">
+              @payload.DisplayName
+            </a>
+          }
+        </li>
+        }
+        <li>
+          <div class="text-tertiary-300 group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm leading-6 font-semibold">
+            Outgoing Payloads
+          </div>
+        </li>
+        @foreach(var payload in Model.Payloads)
+        {
+        <li>
+          @if(payload.Selected)
+          {
+            <a asp-controller="Settings" asp-action="OutgoingPayload" asp-route-payload="@payload.PayloadTypeName" class="@Html.ActiveClassForAction("Settings", "OutgoingPayload", "bg-gray-50 text-tertiary-700 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold", "text-tertiary-700 hover:text-tertiary-700 hover:bg-gray-50 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold")">
+              @payload.DisplayName
+            </a>
+          }
+          else
+          {
+            <a asp-controller="Settings" asp-action="OutgoingPayload" asp-route-payload="@payload.PayloadTypeName" class="@Html.ActiveClassForAction("Settings", "OutgoingPayload", "bg-gray-50 text-tertiary-700 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold", "text-tertiary-700 hover:text-tertiary-700 hover:bg-gray-50 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold")">
+              @payload.DisplayName
+            </a>
+          }
+        </li>
+        }
+        <li>
+            <a asp-controller="Settings" asp-action="Mapping" class="@Html.ActiveClassForAction("Settings", "Mapping", "bg-gray-50 text-tertiary-300 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold", "text-tertiary-300 hover:text-tertiary-300 hover:bg-gray-50 group flex gap-x-3 py-2 pl-2 pr-3 text-sm leading-6 font-semibold")">
+              Mapping
+            </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>

@@ -1,0 +1,51 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Http
+@using EdNexusData.Broker.Domain
+@inject SignInManager<IdentityUser<Guid>> SignInManager
+@inject UserManager<IdentityUser<Guid>> UserManager
+@inject IHttpContextAccessor httpContextAccessor 
+
+@{
+    var _session = httpContextAccessor?.HttpContext?.Session;
+    var _currentUser = _session?.GetObjectFromJson<User>("User.Current");
+}
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <!-- Profile dropdown -->
+    <div class="relative ml-3" x-data="{ open: false }" x-on:keydown.escape.prevent.stop="open = !open">
+        <button type="button" class="flex max-w-xs items-start bg-white text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" id="user-menu-button" aria-expanded="false" aria-haspopup="true" x-on:click="open = ! open">
+            <span class="sr-only">Open user menu</span>
+            <div>
+                <div class="text-right text-base font-medium text-gray-900">@_currentUser?.FirstName @_currentUser?.LastName</div>
+                <div class="text-right text-sm font-medium text-gray-400">@User.Identity?.Name</div>
+            </div>
+        </button>
+
+        <!--
+        Dropdown menu, show/hide based on menu state.
+
+        Entering: "transition ease-out duration-100"
+            From: "transform opacity-0 scale-95"
+            To: "transform opacity-100 scale-100"
+        Leaving: "transition ease-in duration-75"
+            From: "transform opacity-100 scale-100"
+            To: "transform opacity-0 scale-95"
+        -->
+        <div class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1" x-show="open" style="display:none;" x-on:click.outside="open = ! open">
+        <!-- Active: "bg-gray-100", Not Active: "" -->
+        <a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-0">Your Profile</a>
+        <a asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-1">Settings</a>
+
+        <form class="form-inline" asp-controller="Login" asp-action="Logout">
+            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-2">Logout</button>
+        </form>
+        </div>
+    </div>
+}
+else
+{
+    <div>
+        <a class="text-right text-base font-medium text-white" asp-controller="Login" asp-action="Index">Login</a>
+    </div>
+}

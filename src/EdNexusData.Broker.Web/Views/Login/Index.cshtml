@@ -1,0 +1,33 @@
+@using Microsoft.AspNetCore.Authentication
+@model IEnumerable<AuthenticationScheme>
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    Layout = "_Layout";
+    ViewData["Title"] = "Login";
+}
+
+<div class="flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-[80vh] sm:mx-auto sm:w-full sm:max-w-md flex flex-col justify-center">
+    <div class="grid gap-8 shadow rounded-xl bg-white border border-gray-200 p-4 sm:px-6">
+      <div>
+        <img class="mx-auto h-48 w-auto" src="~/images/Final-Education-Nexus-ICON-png.png" alt="Education Nexus Oregon">
+        <h2 class="font-title mt-2 text-center text-4xl">NEXUS</h2>
+        <h4 class="font-title text-center text-xl text-gray-600">Student Records Transfer</h4>
+      </div>
+      <div>
+        <div class="border border-gray-200 px-4 py-8 sm:rounded-lg sm:px-10">
+            <form id="external-account" asp-action="ExternalLogin" method="post">
+              @foreach (var provider in Model)
+              {
+                <button type="submit" class="my-3 w-full justify-center rounded-md bg-white px-4 py-2 text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                  Sign in with @provider.DisplayName
+                </button>
+              }
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

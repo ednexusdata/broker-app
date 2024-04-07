@@ -1,0 +1,127 @@
+@model EdNexusData.Broker.Web.ViewModels.IncomingRequests.CreateIncomingRequestViewModel
+      @if (@Model.RequestStatus == @EdNexusData.Broker.Domain.RequestStatus.Approved)
+      {
+        <div class="grid gap-6 px-4 py-6 sm:p-8">
+          <div>
+            <h2 class="text-base font-semibold leading-7 text-gray-900">Releasing School Student Data</h2>
+              <p class="mt-1 text-sm leading-6 text-gray-600">The student data provided by the releasing school.</p>
+          </div>
+          <div class="grid gap-6 rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 lg:col-span-4">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Course Transcript</h2>
+            </div>
+            <div class="grid gap-6 rounded-lg shadow-sm ring-1 ring-gray-900/5">
+              <table class="min-w-full divide-y divide-gray-300">
+                <thead>
+                  <tr>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                      School Year
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      School Code
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      School Name
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Course Code
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Course Title
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Att Cr
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Ern Cr
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Letter Grade
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="(courseTranscript, index) in mappedCourseTranscripts">
+                    <tr class="even:bg-gray-50">
+                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-3">
+                        <input x-model="courseTranscript.studentAcademicRecordReference.schoolYear" :placeholder="courseTranscripts[index].studentAcademicRecordReference.schoolYear" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm">
+                        <input x-model="courseTranscript.assigningOrganizationIdentificationCode" :placeholder="courseTranscripts[index].assigningOrganizationIdentificationCode" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm w-64">
+                        <input asp-for="@Model.ToSchool" placeholder="@Model.ToSchool" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm w-32">
+                        <select x-model="courseTranscript.courseReference.courseCode" :placeholder="courseTranscripts[index].courseReference.courseCode"
+                                class="block w-full rounded-md border-0 py-1.5 px-2.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            <option :value="courseTranscripts[index].courseReference.courseCode" x-text="courseTranscripts[index].courseReference.courseCode"></option>
+                            <template x-for="courseCode in courseCodes" :key="courseCode">
+                                <option :value="courseCode" x-text="courseCode"></option>
+                            </template>
+                        </select>
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm w-64">
+                        <input x-model="courseTranscript.academicSubjects[0].subject" :placeholder="courseTranscripts[index].academicSubjects[0].subject" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm">
+                        <input x-model="courseTranscript.attemptedCredits" :placeholder="courseTranscripts[index].attemptedCredits" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm">
+                        <input x-model="courseTranscript.earnedCredits" :placeholder="courseTranscripts[index].earnedCredits" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm">
+                        <input x-model="courseTranscript.finalLetterGradeEarned" :placeholder="courseTranscripts[index].finalLetterGradeEarned" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="grid gap-6 rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 lg:col-span-4">
+            <div>
+              <h2 class="text-base font-semibold leading-7 text-gray-900">Program Associations</h2>
+            </div>
+            <div class="grid gap-6 rounded-lg shadow-sm ring-1 ring-gray-900/5">
+              <table class="min-w-full divide-y divide-gray-300">
+                <thead>
+                  <tr>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                      Program Type
+                    </th>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                      Program Name
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Begin Date
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      End Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="(programAssociation, index) in mappedProgramAssociations">
+                    <tr class="even:bg-gray-50">
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                        <input x-model="programAssociation.programReference.programName" :placeholder="programAssociations[index].programReference.programName" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                        <input x-model="programAssociation.programReference.programType" :placeholder="programAssociations[index].programReference.programType" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                        <input x-model="programAssociation.beginDate" :placeholder="programAssociations[index].beginDate" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                        <input x-model="programAssociation.endDate" :placeholder="programAssociations[index].endDate" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }

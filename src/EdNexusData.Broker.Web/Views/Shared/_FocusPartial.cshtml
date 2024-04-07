@@ -1,0 +1,38 @@
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor httpContextAccessor
+@inject EdNexusData.Broker.Web.Helpers.FocusHelper focusHelper
+@model EdNexusData.Broker.Web.Models.FocusViewModel;
+
+@{
+    var returnUrl = httpContextAccessor?.HttpContext?.Request.Path.ToString();
+
+    var focusableEducationOrganizations = await focusHelper.GetFocusableEducationOrganizationsSelectList();
+}
+<div class="bg-white">
+  <div class="flex items-center gap-x-6 px-8 py-2.5">
+      @if (ViewData["FocusBarReadOnly"] is not null && bool.Parse(ViewData["FocusBarReadOnly"]!.ToString()!) == true)
+      {
+        <form action="" method="post">
+        <label asp-for="FocusEducationOrganizationId" class="text-sm font-medium leading-6 text-gray-900 mr-3">Focus</label>
+        <select asp-for="FocusEducationOrganizationId"
+              asp-items="focusableEducationOrganizations"
+              disabled="disabled"
+              class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 text-sm ring-inset ring-gray-300 focus:ring-2 focus:ring-tertiary-700">
+        </select>
+        </form>
+      } 
+      else
+      {
+      <form asp-action="SetFocus" asp-controller="Focus" x-data="">
+      <label asp-for="FocusEducationOrganizationId" class="text-sm font-medium leading-6 text-gray-900 mr-3">Focus</label>
+      <select asp-for="FocusEducationOrganizationId"
+              asp-items="focusableEducationOrganizations"
+              class="rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 text-sm ring-inset ring-gray-300 focus:ring-2 focus:ring-tertiary-700"
+              x-on:change="$el.form.submit();">
+      </select>
+      <input type="hidden" name="ReturnUrl" value="@returnUrl" />
+      </form>
+      }
+  </div>
+</div>
+

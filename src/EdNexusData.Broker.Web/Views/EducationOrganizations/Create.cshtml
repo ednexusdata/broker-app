@@ -1,0 +1,10 @@
+@model EdNexusData.Broker.Web.ViewModels.EducationOrganizations.CreateEducationOrganizationRequestViewModel
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    ViewData["Title"] = "Add Organization";
+    Layout = "_AuthenticatedLayout";
+}
+<form id="organization-form" method="post" asp-action="Create" autocomplete="off">
+    <partial name="_form" for="@Model" />
+</form>

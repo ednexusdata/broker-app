@@ -1,0 +1,30 @@
+@model EdNexusData.Broker.Web.ViewModels.EducationOrganizations.CreateEducationOrganizationRequestViewModel
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    ViewData["Title"] = "Edit Organization";
+    Layout = "_AuthenticatedLayout";
+}
+
+<div class="grid gap-6">
+    <form id="user-form" method="post" asp-action="Update" autocomplete="off">
+        <input type="hidden" name="_METHOD" value="PATCH" />
+        <partial name="_form" for="@Model" />
+    </form>
+    <form method="post" asp-action="Delete" asp-route-id="@Model.EducationOrganizationId">
+        <div class="px-4 sm:px-0">
+            <div class="bg-white shadow sm:rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-base font-semibold leading-6 text-gray-900">Organization Removal</h3>
+                    <div class="mt-2 max-w-xl text-sm text-gray-600">
+                        <p>Permanently remove this organization from the system. This action cannot be undone.</p>
+                    </div>
+                    <div class="mt-5">
+                        <input type="hidden" name="_METHOD" value="DELETE" />
+                        <button type="submit" class="inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold bg-white text-critical-500 hover:text-critical-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700">Delete Organization</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

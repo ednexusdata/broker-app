@@ -1,0 +1,807 @@
+@model EdNexusData.Broker.Web.ViewModels.IncomingRequests.CreateIncomingRequestViewModel
+@using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    ViewData["Title"] = "Incoming Record Request Mapping";
+    Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = true;
+    ViewData["FocusBarReadOnly"] = true;
+}
+
+<form
+  x-data="incomingMapping"
+  method="post"
+  asp-action="Mapping"
+  autocomplete="off"
+>
+  <input type="hidden" name="_METHOD" value="PUT" />
+  <div class="space-y-10 divide-y divide-gray-900/10">
+    <div class="px-4 sm:px-0">
+      <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+        <div class="grid gap-6 px-4 py-6 sm:p-8">
+          <div>
+            <h2 class="text-base font-semibold leading-7 text-gray-900">Releasing School Student Data</h2>
+              <p class="mt-1 text-sm leading-6 text-gray-600">The student data provided by the releasing school.</p>
+          </div>
+          <div class="grid gap-6">
+            <div>
+              <div class="sm:hidden">
+                <label for="tabs" class="sr-only">Select a tab</label>
+                <select x-model="currentTab"
+                        id="tabs"
+                        class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-tertiary-500 focus:outline-none focus:ring-tertiary-500 sm:text-sm">
+                  <option value="courseTranscripts">Course Transcripts</option>
+                  <option value="programAssociations">Program Associations</option>
+                </select>
+              </div>
+              <div class="hidden sm:block">
+                <div class="border-b border-gray-200">
+                  <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button
+                      type="button"
+                      :class="currentTab === 'courseTranscripts' ? 'border-tertiary-500 text-tertiary-600' : 'border-transparent'"
+                      class="text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+                      @@click="currentTab = 'courseTranscripts'">
+                      Course Transcripts
+                    </button>
+                    <button
+                      type="button"
+                      :class="currentTab === 'programAssociations' ? 'border-tertiary-500 text-tertiary-600' : 'border-transparent'"
+                      class="text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+                      @@click="currentTab = 'programAssociations'">
+                      Program Associations
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+            <div class="grid gap-6 rounded-lg shadow-sm ring-1 ring-gray-900/5">
+                <template x-if="currentTab === 'courseTranscripts'">
+                    <table class="min-w-full divide-y divide-gray-300">
+                      <thead>
+                        <tr>
+                          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                            School Year
+                          </th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            School Code
+                          </th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            School Name
+                          </th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            Course Code
+                          </th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            Course Title
+                          </th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            Att Cr
+                          </th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            Ern Cr
+                          </th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            Letter Grade
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template x-for="(courseTranscript, index) in mappedCourseTranscripts">
+                          <tr class="even:bg-gray-50">
+                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-3">
+                              <input x-model="courseTranscript.studentAcademicRecordReference.schoolYear" :placeholder="courseTranscripts[index].studentAcademicRecordReference.schoolYear" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm">
+                              <input x-model="courseTranscript.assigningOrganizationIdentificationCode" :placeholder="courseTranscripts[index].assigningOrganizationIdentificationCode" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm w-64">
+                              <input asp-for="@Model.ToSchool" placeholder="@Model.ToSchool" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm w-48">
+                              <div class="flex flex-col gap-2">
+                                <div>
+                                  Original value:<br>
+                                  <span x-text="courseTranscripts[index].courseReference.courseCode"></span>
+                                </div>
+                                <div>
+                                    <label :for="`course-code-${index}`"
+                                      class="block text-sm font-medium leading-6 text-gray-900">
+                                        Mapped value:
+                                    </label>
+                                  <select :id="`course-code-${index}`"
+                                          x-model="courseTranscript.courseReference.courseCode" :placeholder="courseTranscripts[index].courseReference.courseCode"
+                                          class="block w-full rounded-md border-0 py-1.5 px-2.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                                      <option value="">Select an option</option>
+                                      <template x-for="courseCode in courseCodes" :key="courseCode">
+                                          <option :value="courseCode" x-text="courseCode"></option>
+                                      </template>
+                                  </select>
+                                </div>
+                              </div>
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm w-64">
+                              <input x-model="courseTranscript.academicSubjects[0].subject" :placeholder="courseTranscripts[index].academicSubjects[0].subject" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm">
+                              <input x-model="courseTranscript.attemptedCredits" :placeholder="courseTranscripts[index].attemptedCredits" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm">
+                              <input x-model="courseTranscript.earnedCredits" :placeholder="courseTranscripts[index].earnedCredits" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm">
+                              <input x-model="courseTranscript.finalLetterGradeEarned" :placeholder="courseTranscripts[index].finalLetterGradeEarned" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                </template>
+                <template x-if="currentTab === 'programAssociations'">
+                    <table class="min-w-full divide-y divide-gray-300">
+                      <thead>
+                        <tr>
+                          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                            Program Type
+                          </th>
+                          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                            Program Name
+                          </th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            Begin Date
+                          </th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                            End Date
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template x-for="(programAssociation, index) in mappedProgramAssociations">
+                          <tr class="even:bg-gray-50">
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                              <input x-model="programAssociation.programReference.programName" :placeholder="programAssociations[index].programReference.programName" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                              <input x-model="programAssociation.programReference.programType" :placeholder="programAssociations[index].programReference.programType" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                              <input x-model="programAssociation.beginDate" :placeholder="programAssociations[index].beginDate" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                              <input x-model="programAssociation.endDate" :placeholder="programAssociations[index].endDate" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                            </td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                </template>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
+          <a
+            asp-controller="Incoming"
+            asp-action="Index"
+            asp-authorize
+            asp-policy="@TransferIncomingRecords"
+            class="text-sm font-semibold leading-6 text-gray-900"
+          >
+            Cancel
+          </a>
+          <input asp-for="RequestId" type="hidden" />
+          <input asp-for="EducationOrganizationId" type="hidden" />
+          <button type="submit"
+                  class="rounded-md bg-tertiary-50 px-3 py-2 text-sm font-semibold text-tertiary-600 shadow-sm hover:bg-tertiary-100">
+              Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+@section scripts
+{
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('incomingMapping', () => {
+        return {
+            currentTab: 'courseTranscripts',
+
+            programAssociations: '', 
+            mappedProgramAssociations: '',
+
+            courseTranscripts: mockCourseTranscript(), 
+            mappedCourseTranscripts: mockCourseTranscript(),
+
+            courseCodes: [
+              'ENG-A',
+              'ENG-B',
+              'ENG-C',
+              'ENG-D',
+            ],
+        }
+    })
+  })
+
+  function mockCourseTranscript() {
+    return [
+        {
+          "id": "595e0303b9b54e9a8c01deb87c3f4ae0",
+          "courseReference": {
+            "courseCode": "HLTH-07",
+            "educationOrganizationId": 255901044,
+            "link": {
+              "rel": "Course",
+              "href": "/ed-fi/courses/75ecc0d43b344ccab315fec374037752"
+            }
+          },
+          "studentAcademicRecordReference": {
+            "educationOrganizationId": 255901044,
+            "schoolYear": 2022,
+            "studentUniqueId": "604824",
+            "termDescriptor": "uri://ed-fi.org/TermDescriptor#Spring Semester",
+            "link": {
+              "rel": "StudentAcademicRecord",
+              "href": "/ed-fi/studentAcademicRecords/0fac3f5bb2304f25805fd5310fce35a2"
+            }
+          },
+          "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Fail",
+          "assigningOrganizationIdentificationCode": "255901",
+          "attemptedCredits": 1,
+          "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+          "earnedCredits": 0.5,
+          "finalLetterGradeEarned": "F",
+          "finalNumericGradeEarned": 33,
+          "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+          "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+          "academicSubjects": [
+            {
+              "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Physical, Health, and Safety Education"
+            }
+          ],
+          "alternativeCourseIdentificationCodes": [],
+          "creditCategories": [],
+          "earnedAdditionalCredits": [],
+          "partialCourseTranscriptAwards": [],
+          "_etag": "5249655900228088034",
+          "_lastModifiedDate": "2022-08-25T01:36:20.070013Z"
+        },
+        {
+          "id": "2226219c7ef24d3faf2f925b2cf8b162",
+          "courseReference": {
+            "courseCode": "PE-07",
+            "educationOrganizationId": 255901044,
+            "link": {
+              "rel": "Course",
+              "href": "/ed-fi/courses/8c348e2fd761495aacb5f2666e3bdd8d"
+            }
+          },
+          "studentAcademicRecordReference": {
+            "educationOrganizationId": 255901044,
+            "schoolYear": 2022,
+            "studentUniqueId": "604824",
+            "termDescriptor": "uri://ed-fi.org/TermDescriptor#Spring Semester",
+            "link": {
+              "rel": "StudentAcademicRecord",
+              "href": "/ed-fi/studentAcademicRecords/0fac3f5bb2304f25805fd5310fce35a2"
+            }
+          },
+          "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Fail",
+          "assigningOrganizationIdentificationCode": "255901",
+          "attemptedCredits": 1,
+          "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+          "earnedCredits": 0.5,
+          "finalLetterGradeEarned": "F",
+          "finalNumericGradeEarned": 38,
+          "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+          "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+          "academicSubjects": [
+            {
+              "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Physical, Health, and Safety Education"
+            }
+          ],
+          "alternativeCourseIdentificationCodes": [],
+          "creditCategories": [],
+          "earnedAdditionalCredits": [],
+          "partialCourseTranscriptAwards": [],
+          "_etag": "5249655900506117224",
+          "_lastModifiedDate": "2022-08-25T01:36:47.872932Z"
+        },
+        {
+          "id": "f0446056b433441bbb6688f8e4041f9e",
+          "courseReference": {
+            "courseCode": "BAND-07",
+            "educationOrganizationId": 255901044,
+            "link": {
+              "rel": "Course",
+              "href": "/ed-fi/courses/c6f5ea69d3c2450e9b7febee002bb958"
+            }
+          },
+          "studentAcademicRecordReference": {
+            "educationOrganizationId": 255901044,
+            "schoolYear": 2022,
+            "studentUniqueId": "604824",
+            "termDescriptor": "uri://ed-fi.org/TermDescriptor#Fall Semester",
+            "link": {
+              "rel": "StudentAcademicRecord",
+              "href": "/ed-fi/studentAcademicRecords/9ba043d3f0024df390ff926695c6744e"
+            }
+          },
+          "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+          "assigningOrganizationIdentificationCode": "255901",
+          "attemptedCredits": 1,
+          "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+          "earnedCredits": 1,
+          "finalLetterGradeEarned": "A",
+          "finalNumericGradeEarned": 93,
+          "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+          "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+          "academicSubjects": [
+            {
+              "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Fine and Performing Arts"
+            }
+          ],
+          "alternativeCourseIdentificationCodes": [],
+          "creditCategories": [],
+          "earnedAdditionalCredits": [],
+          "partialCourseTranscriptAwards": [],
+          "_etag": "5249655899979165824",
+          "_lastModifiedDate": "2022-08-25T01:35:55.177792Z"
+        },
+        {
+          "id": "b31e73e77aa541119fdb51b5f6fb072b",
+          "courseReference": {
+            "courseCode": "BAND-07",
+            "educationOrganizationId": 255901044,
+            "link": {
+              "rel": "Course",
+              "href": "/ed-fi/courses/c6f5ea69d3c2450e9b7febee002bb958"
+            }
+          },
+          "studentAcademicRecordReference": {
+            "educationOrganizationId": 255901044,
+            "schoolYear": 2022,
+            "studentUniqueId": "604824",
+            "termDescriptor": "uri://ed-fi.org/TermDescriptor#Spring Semester",
+            "link": {
+              "rel": "StudentAcademicRecord",
+              "href": "/ed-fi/studentAcademicRecords/0fac3f5bb2304f25805fd5310fce35a2"
+            }
+          },
+          "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+          "assigningOrganizationIdentificationCode": "255901",
+          "attemptedCredits": 1,
+          "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+          "earnedCredits": 1,
+          "finalLetterGradeEarned": "B",
+          "finalNumericGradeEarned": 85,
+          "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+          "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+          "academicSubjects": [
+            {
+              "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Fine and Performing Arts"
+            }
+          ],
+          "alternativeCourseIdentificationCodes": [],
+          "creditCategories": [],
+          "earnedAdditionalCredits": [],
+          "partialCourseTranscriptAwards": [],
+          "_etag": "5249655899979133894",
+          "_lastModifiedDate": "2022-08-25T01:35:55.174599Z"
+        },
+        {
+          "id": "fea0acb801c44b5ab2409bc5837ccddc",
+          "courseReference": {
+            "courseCode": "ELA-07",
+            "educationOrganizationId": 255901044,
+            "link": {
+              "rel": "Course",
+              "href": "/ed-fi/courses/f54eb188eda4405a93e611de6dd6e61c"
+            }
+          },
+          "studentAcademicRecordReference": {
+            "educationOrganizationId": 255901044,
+            "schoolYear": 2022,
+            "studentUniqueId": "604824",
+            "termDescriptor": "uri://ed-fi.org/TermDescriptor#Fall Semester",
+            "link": {
+              "rel": "StudentAcademicRecord",
+              "href": "/ed-fi/studentAcademicRecords/9ba043d3f0024df390ff926695c6744e"
+            }
+          },
+        "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+        "assigningOrganizationIdentificationCode": "255901",
+        "attemptedCredits": 1,
+        "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+        "earnedCredits": 1,
+        "finalLetterGradeEarned": "B",
+        "finalNumericGradeEarned": 86,
+        "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+        "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+        "academicSubjects": [
+          {
+            "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#English Language Arts"
+          }
+        ],
+        "alternativeCourseIdentificationCodes": [],
+        "creditCategories": [],
+        "earnedAdditionalCredits": [],
+        "partialCourseTranscriptAwards": [],
+        "_etag": "5249655900132755174",
+        "_lastModifiedDate": "2022-08-25T01:36:10.536727Z"
+      },
+      {
+        "id": "06d5ff00163f4463bec2914ff29b3a40",
+        "courseReference": {
+          "courseCode": "ELA-07",
+          "educationOrganizationId": 255901044,
+          "link": {
+            "rel": "Course",
+            "href": "/ed-fi/courses/f54eb188eda4405a93e611de6dd6e61c"
+          }
+        },
+        "studentAcademicRecordReference": {
+          "educationOrganizationId": 255901044,
+          "schoolYear": 2022,
+          "studentUniqueId": "604824",
+          "termDescriptor": "uri://ed-fi.org/TermDescriptor#Spring Semester",
+          "link": {
+            "rel": "StudentAcademicRecord",
+            "href": "/ed-fi/studentAcademicRecords/0fac3f5bb2304f25805fd5310fce35a2"
+          }
+        },
+        "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+        "assigningOrganizationIdentificationCode": "255901",
+        "attemptedCredits": 1,
+        "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+        "earnedCredits": 1,
+        "finalLetterGradeEarned": "C",
+        "finalNumericGradeEarned": 73,
+        "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+        "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+        "academicSubjects": [
+          {
+            "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#English Language Arts"
+          }
+        ],
+        "alternativeCourseIdentificationCodes": [],
+        "creditCategories": [],
+        "earnedAdditionalCredits": [],
+        "partialCourseTranscriptAwards": [],
+        "_etag": "5249655900132816604",
+        "_lastModifiedDate": "2022-08-25T01:36:10.54287Z"
+      },
+      {
+        "id": "e1fea5fffbe144bc99f46b568a5857eb",
+        "courseReference": {
+          "courseCode": "HLTH-07",
+          "educationOrganizationId": 255901044,
+          "link": {
+            "rel": "Course",
+            "href": "/ed-fi/courses/75ecc0d43b344ccab315fec374037752"
+          }
+        },
+        "studentAcademicRecordReference": {
+          "educationOrganizationId": 255901044,
+          "schoolYear": 2022,
+          "studentUniqueId": "604824",
+          "termDescriptor": "uri://ed-fi.org/TermDescriptor#Fall Semester",
+          "link": {
+            "rel": "StudentAcademicRecord",
+            "href": "/ed-fi/studentAcademicRecords/9ba043d3f0024df390ff926695c6744e"
+          }
+        },
+        "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+        "assigningOrganizationIdentificationCode": "255901",
+        "attemptedCredits": 1,
+        "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+        "earnedCredits": 1,
+        "finalLetterGradeEarned": "A",
+        "finalNumericGradeEarned": 99,
+        "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+        "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+        "academicSubjects": [
+          {
+            "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Physical, Health, and Safety Education"
+          }
+        ],
+        "alternativeCourseIdentificationCodes": [],
+        "creditCategories": [],
+        "earnedAdditionalCredits": [],
+        "partialCourseTranscriptAwards": [],
+        "_etag": "5249655900224267734",
+        "_lastModifiedDate": "2022-08-25T01:36:19.687983Z"
+      },
+      {
+        "id": "d2b3a24f05a4425091fec3daee0445c4",
+        "courseReference": {
+          "courseCode": "MATH-07",
+          "educationOrganizationId": 255901044,
+          "link": {
+            "rel": "Course",
+            "href": "/ed-fi/courses/a56d96e58da4414ebab69839744229b8"
+          }
+        },
+        "studentAcademicRecordReference": {
+          "educationOrganizationId": 255901044,
+          "schoolYear": 2022,
+          "studentUniqueId": "604824",
+          "termDescriptor": "uri://ed-fi.org/TermDescriptor#Fall Semester",
+          "link": {
+            "rel": "StudentAcademicRecord",
+            "href": "/ed-fi/studentAcademicRecords/9ba043d3f0024df390ff926695c6744e"
+          }
+        },
+        "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+        "assigningOrganizationIdentificationCode": "255901",
+        "attemptedCredits": 1,
+        "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+        "earnedCredits": 1,
+        "finalLetterGradeEarned": "B",
+        "finalNumericGradeEarned": 82,
+        "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+        "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+        "academicSubjects": [
+          {
+            "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Mathematics"
+          }
+        ],
+        "alternativeCourseIdentificationCodes": [],
+        "creditCategories": [],
+        "earnedAdditionalCredits": [],
+        "partialCourseTranscriptAwards": [],
+        "_etag": "5249655900345257024",
+        "_lastModifiedDate": "2022-08-25T01:36:31.786912Z"
+      },
+      {
+        "id": "29c84893517d454590f1ecc5dab22a08",
+        "courseReference": {
+          "courseCode": "MATH-07",
+          "educationOrganizationId": 255901044,
+          "link": {
+            "rel": "Course",
+            "href": "/ed-fi/courses/a56d96e58da4414ebab69839744229b8"
+          }
+        },
+        "studentAcademicRecordReference": {
+          "educationOrganizationId": 255901044,
+          "schoolYear": 2022,
+          "studentUniqueId": "604824",
+          "termDescriptor": "uri://ed-fi.org/TermDescriptor#Spring Semester",
+          "link": {
+            "rel": "StudentAcademicRecord",
+            "href": "/ed-fi/studentAcademicRecords/0fac3f5bb2304f25805fd5310fce35a2"
+          }
+        },
+        "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+        "assigningOrganizationIdentificationCode": "255901",
+        "attemptedCredits": 1,
+        "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+        "earnedCredits": 1,
+        "finalLetterGradeEarned": "B",
+        "finalNumericGradeEarned": 85,
+        "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+        "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+        "academicSubjects": [
+          {
+            "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Mathematics"
+          }
+        ],
+        "alternativeCourseIdentificationCodes": [],
+        "creditCategories": [],
+        "earnedAdditionalCredits": [],
+        "partialCourseTranscriptAwards": [],
+        "_etag": "5249655900345280404",
+        "_lastModifiedDate": "2022-08-25T01:36:31.78925Z"
+      },
+      {
+        "id": "9202daa6bc6a42aabed970946bb9b5e7",
+        "courseReference": {
+          "courseCode": "PE-07",
+          "educationOrganizationId": 255901044,
+          "link": {
+            "rel": "Course",
+            "href": "/ed-fi/courses/8c348e2fd761495aacb5f2666e3bdd8d"
+          }
+        },
+        "studentAcademicRecordReference": {
+          "educationOrganizationId": 255901044,
+          "schoolYear": 2022,
+          "studentUniqueId": "604824",
+          "termDescriptor": "uri://ed-fi.org/TermDescriptor#Fall Semester",
+          "link": {
+            "rel": "StudentAcademicRecord",
+            "href": "/ed-fi/studentAcademicRecords/9ba043d3f0024df390ff926695c6744e"
+          }
+        },
+        "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+        "assigningOrganizationIdentificationCode": "255901",
+        "attemptedCredits": 1,
+        "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+        "earnedCredits": 1,
+        "finalLetterGradeEarned": "A",
+        "finalNumericGradeEarned": 92,
+        "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+        "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+        "academicSubjects": [
+          {
+            "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Physical, Health, and Safety Education"
+          }
+        ],
+        "alternativeCourseIdentificationCodes": [],
+        "creditCategories": [],
+        "earnedAdditionalCredits": [],
+        "partialCourseTranscriptAwards": [],
+        "_etag": "5249655900501827434",
+        "_lastModifiedDate": "2022-08-25T01:36:47.443953Z"
+      },
+      {
+        "id": "40e366c061a14179a9d2a456abf27031",
+        "courseReference": {
+          "courseCode": "SCI-07",
+          "educationOrganizationId": 255901044,
+          "link": {
+            "rel": "Course",
+            "href": "/ed-fi/courses/6d212dc184d44337983caaccb9f49cfc"
+          }
+        },
+        "studentAcademicRecordReference": {
+          "educationOrganizationId": 255901044,
+          "schoolYear": 2022,
+          "studentUniqueId": "604824",
+          "termDescriptor": "uri://ed-fi.org/TermDescriptor#Fall Semester",
+          "link": {
+            "rel": "StudentAcademicRecord",
+            "href": "/ed-fi/studentAcademicRecords/9ba043d3f0024df390ff926695c6744e"
+          }
+        },
+        "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+        "assigningOrganizationIdentificationCode": "255901",
+        "attemptedCredits": 1,
+        "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+        "earnedCredits": 1,
+        "finalLetterGradeEarned": "C",
+        "finalNumericGradeEarned": 78,
+        "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+        "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+        "academicSubjects": [
+          {
+            "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Science"
+          }
+        ],
+        "alternativeCourseIdentificationCodes": [],
+        "creditCategories": [],
+        "earnedAdditionalCredits": [],
+        "partialCourseTranscriptAwards": [],
+        "_etag": "5249655900658252414",
+        "_lastModifiedDate": "2022-08-25T01:37:03.086451Z"
+      },
+      {
+        "id": "3998b7106b6445fab69badaae0c18806",
+        "courseReference": {
+          "courseCode": "SCI-07",
+          "educationOrganizationId": 255901044,
+          "link": {
+            "rel": "Course",
+            "href": "/ed-fi/courses/6d212dc184d44337983caaccb9f49cfc"
+          }
+        },
+        "studentAcademicRecordReference": {
+          "educationOrganizationId": 255901044,
+          "schoolYear": 2022,
+          "studentUniqueId": "604824",
+          "termDescriptor": "uri://ed-fi.org/TermDescriptor#Spring Semester",
+          "link": {
+            "rel": "StudentAcademicRecord",
+            "href": "/ed-fi/studentAcademicRecords/0fac3f5bb2304f25805fd5310fce35a2"
+          }
+        },
+        "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+        "assigningOrganizationIdentificationCode": "255901",
+        "attemptedCredits": 1,
+        "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+        "earnedCredits": 1,
+        "finalLetterGradeEarned": "C",
+        "finalNumericGradeEarned": 78,
+        "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+        "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+        "academicSubjects": [
+          {
+            "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Science"
+          }
+        ],
+        "alternativeCourseIdentificationCodes": [],
+        "creditCategories": [],
+        "earnedAdditionalCredits": [],
+        "partialCourseTranscriptAwards": [],
+        "_etag": "5249655900658257134",
+        "_lastModifiedDate": "2022-08-25T01:37:03.086923Z"
+      },
+      {
+        "id": "08f465b8df21416da026729063d2aeca",
+        "courseReference": {
+          "courseCode": "SS-07",
+          "educationOrganizationId": 255901044,
+          "link": {
+            "rel": "Course",
+            "href": "/ed-fi/courses/13947f29b61d49baa680aafeaea75dcc"
+          }
+        },
+        "studentAcademicRecordReference": {
+          "educationOrganizationId": 255901044,
+          "schoolYear": 2022,
+          "studentUniqueId": "604824",
+          "termDescriptor": "uri://ed-fi.org/TermDescriptor#Fall Semester",
+          "link": {
+            "rel": "StudentAcademicRecord",
+            "href": "/ed-fi/studentAcademicRecords/9ba043d3f0024df390ff926695c6744e"
+          }
+        },
+        "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+        "assigningOrganizationIdentificationCode": "255901",
+        "attemptedCredits": 1,
+        "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+        "earnedCredits": 1,
+        "finalLetterGradeEarned": "A",
+        "finalNumericGradeEarned": 99,
+        "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+        "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+        "academicSubjects": [
+          {
+            "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Social Studies"
+          }
+        ],
+        "alternativeCourseIdentificationCodes": [],
+        "creditCategories": [],
+        "earnedAdditionalCredits": [],
+        "partialCourseTranscriptAwards": [],
+        "_etag": "5249655900769864804",
+        "_lastModifiedDate": "2022-08-25T01:37:14.24769Z"
+      },
+      {
+        "id": "b22c7ee819f14550a12f8209c125e593",
+        "courseReference": {
+          "courseCode": "SS-07",
+          "educationOrganizationId": 255901044,
+          "link": {
+            "rel": "Course",
+            "href": "/ed-fi/courses/13947f29b61d49baa680aafeaea75dcc"
+          }
+        },
+        "studentAcademicRecordReference": {
+          "educationOrganizationId": 255901044,
+          "schoolYear": 2022,
+          "studentUniqueId": "604824",
+          "termDescriptor": "uri://ed-fi.org/TermDescriptor#Spring Semester",
+          "link": {
+            "rel": "StudentAcademicRecord",
+            "href": "/ed-fi/studentAcademicRecords/0fac3f5bb2304f25805fd5310fce35a2"
+          }
+        },
+        "courseAttemptResultDescriptor": "uri://ed-fi.org/CourseAttemptResultDescriptor#Pass",
+        "assigningOrganizationIdentificationCode": "255901",
+        "attemptedCredits": 1,
+        "courseCatalogURL": "http://www.GBISD.edu/coursecatalog",
+        "earnedCredits": 1,
+        "finalLetterGradeEarned": "A",
+        "finalNumericGradeEarned": 97,
+        "methodCreditEarnedDescriptor": "uri://ed-fi.org/MethodCreditEarnedDescriptor#Classroom credit",
+        "whenTakenGradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Seventh grade",
+        "academicSubjects": [
+          {
+            "academicSubjectDescriptor": "uri://ed-fi.org/AcademicSubjectDescriptor#Social Studies"
+          }
+        ],
+        "alternativeCourseIdentificationCodes": [],
+        "creditCategories": [],
+        "earnedAdditionalCredits": [],
+        "partialCourseTranscriptAwards": [],
+        "_etag": "5249655900769895364",
+        "_lastModifiedDate": "2022-08-25T01:37:14.250746Z"
+      }
+    ]
+  }
+</script>
+}

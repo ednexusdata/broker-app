@@ -1,0 +1,27 @@
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    ViewData["Title"] = "Settings";
+    Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = true;
+    var selectedView = Context.Request.RouteValues.Where(x => x.Key == "assembly" || x.Key == "payload").FirstOrDefault().Value;
+}
+<div class="mx-auto max-w-7xl lg:flex lg:gap-x-16 lg:px-8 bg-white">
+  @if (Model is not null)
+  {
+  <vc:settings-sidebar selected-view="@selectedView"></vc:settings-sidebar>
+
+  <main class="px-4 py-4 sm:px-6 lg:flex-auto lg:px-0 lg:py-4">
+    <div class="mx-auto max-w-2xl space-y-16 sm:space-y-20 lg:mx-0 lg:max-w-none">
+      @RenderBody()
+    </div>
+  </main>
+  }
+  else
+  {
+    @RenderBody()
+  }  
+</div>
+
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)

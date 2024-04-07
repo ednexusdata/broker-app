@@ -1,0 +1,75 @@
+@model EdNexusData.Broker.Web.Models.UserRolesViewModel
+@using EdNexusData.Broker.Domain
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    ViewData["Title"] = "User Roles";
+    Layout = "_AuthenticatedLayout";
+}
+
+<div class="grid gap-4">
+  <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+          <h1 class="font-title text-base font-semibold leading-6 text-gray-900">Roles for @Model.User?.Name</h1>
+          <p class="mt-2 text-sm text-gray-700">List of roles for organizations that have been assigned to this user.</p>
+      </div>
+  </div>
+    @if (Model.EducationOrganizations?.Count() > 0)
+    {
+      <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl p-4">
+        <form asp-action="Create" asp-route-UserId="@Model.UserId" class="grid gap-4 grid-cols-3 items-end">
+          <div class="grid gap-2 text-sm font-medium">
+            <label asp-for="EducationOrganizationId" class="leading-6">Organization</label>
+            <select asp-for="EducationOrganizationId" asp-items="Model.EducationOrganizations" class="block w-full rounded-md border-0 py-1.5 px-2.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6"></select>
+          </div>
+          <div class="grid gap-2 text-sm font-medium">
+            <label asp-for="Role" class="leading-6">Role</label>
+            <select asp-for="Role" asp-items="Html.GetEnumSelectList<Role>()" class="block w-full rounded-md border-0 px-2.5 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6"></select>
+          </div>
+          <div class="relative whitespace-nowrap text-right text-sm font-medium">
+            <button type="submit" class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Add role</button>
+          </div>
+        </form>
+      </div>
+    }
+  <div class="grid gap-4">
+    <div class="flow-root overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+      <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-white">
+              <tr>
+                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                    Organization
+                  </th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    Role
+                  </th>
+                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">
+                    <span class="sr-only">Action</span>
+                  </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white">
+              @{ var even = true; }
+              @foreach(var userRole in Model.UserRoles!)
+              {
+                <tr class="@(even ? "bg-gray-50": "")">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">@userRole.DisplayText</td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@(((System.ComponentModel.DataAnnotations.DisplayAttribute)typeof(Role).GetMember(userRole?.UserRole.Role.ToString()).First().GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).First()).Name)</td>
+                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
+                    <form method="post" asp-action="Delete" asp-route-id="@userRole.UserRole?.Id">
+                      <input type="hidden" name="_METHOD" value="DELETE" />
+                      <button type="submit" class="inline-flex justify-center rounded-md bg-critical-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-critical-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700">Delete role</button>
+                    </form>
+                  </td>
+                </tr>
+                even = !even;
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

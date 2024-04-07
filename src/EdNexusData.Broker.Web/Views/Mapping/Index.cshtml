@@ -1,0 +1,23 @@
+@model EdNexusData.Broker.Domain.Request;
+@{
+    ViewData["Title"] = "Prepare Mapping";
+    Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = true;
+    ViewData["FocusBarReadOnly"] = true;
+}
+
+@if(Model.RequestStatus != EdNexusData.Broker.Domain.RequestStatus.WaitingToPrepare
+    && Model.RequestStatus != EdNexusData.Broker.Domain.RequestStatus.Preparing)
+{
+<form
+  method="post"
+  asp-action="Prepare"
+  autocomplete="off"
+>
+    <input asp-for="Id" type="hidden" />
+    <button
+            type="submit"
+            class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10"
+    >Start</button>
+</form>
+}

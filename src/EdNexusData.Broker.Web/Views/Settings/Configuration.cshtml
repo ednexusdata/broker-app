@@ -1,0 +1,20 @@
+﻿@model List<dynamic>;
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    Layout = "_SettingsLayout";
+}
+<div>
+  @foreach(var config in Model)
+  {
+      @if(config.displayName is not null)
+      {
+        <h2 class="text-base font-semibold leading-7 text-gray-900">@config.displayName</h2>
+      }
+      else
+      {
+        <h2 class="text-base font-semibold leading-7 text-gray-900">Configuration</h2>
+      }
+      @Html.Raw(config.html)
+  }
+</div>

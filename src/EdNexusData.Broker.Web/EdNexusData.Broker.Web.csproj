@@ -1,0 +1,102 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>a41a6d6b-c504-4749-96e2-d8b4a84529c4</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
+  <ItemGroup>
+    <PackageReference Include="INERTIAJS.ASPNETCORE.ADAPTER" Version="0.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.*" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.*" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
+    <PackageReference Include="MediatR" Version="11.1.0" />
+	  <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="Autofac" Version="6.5.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\broker-core\src\EdNexusData.Broker.Domain\EdNexusData.Broker.Domain.csproj" />
+    <ProjectReference Include="..\EdNexusData.Broker.Data\EdNexusData.Broker.Data.csproj" />
+    <ProjectReference Include="..\..\..\broker-core\src\EdNexusData.Broker.Connector\EdNexusData.Broker.Connector.csproj" />
+    <ProjectReference Include="..\..\..\broker-core\src\EdNexusData.Broker.SharedKernel\EdNexusData.Broker.SharedKernel.csproj" />
+    <ProjectReference Include="..\EdNexusData.Broker.Service\EdNexusData.Broker.Service.csproj" />
+  </ItemGroup>
+
+  <Target Name="Tailwind" BeforeTargets="Build">
+    <Exec Command="npm run css:build" />
+  </Target>
+
+  <ItemGroup>
+    <None Remove="Extensions\Routes\" />
+    <None Remove="Models\JsonDocuments\" />
+    <None Remove="Specifications\" />
+    <None Remove="MapperExtensions\" />
+    <None Remove="MapperExtensions\JsonDocuments\" />
+    <None Remove="Services\PayloadContents\" />
+    <None Remove="Models\Results\" />
+    <None Remove="Constants\Sessions\" />
+    <None Remove="Constants\Claims\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\Routes\" />
+    <Folder Include="Models\JsonDocuments\" />
+    <Folder Include="Specifications\" />
+    <Folder Include="MapperExtensions\" />
+    <Folder Include="MapperExtensions\JsonDocuments\" />
+    <Folder Include="Services\PayloadContents\" />
+    <Folder Include="Models\Results\" />
+    <Folder Include="Constants\Sessions\" />
+    <Folder Include="Constants\Claims\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Edupoint_Files Include="..\..\..\broker-connector-edupointsynergy\src\bin\**\*.dll" />
+    <EdFi_Files Include="..\..\..\broker-connector-edfi\src\EdNexusData.Broker.Connector.EdFiAlliance.EdFi\bin\**\*.dll" />
+    <Fixture_Files Include="..\..\..\broker-connector-fixture\src\bin\**\*.dll" />
+  </ItemGroup>
+
+  <Target Name="BuildCopyConnectorsSynergy" BeforeTargets="Build">
+    <MSBuild Projects="..\..\..\broker-connector-edupointsynergy\src\EdNexusData.Broker.Connector.Edupoint.Synergy.csproj" Properties="Configuration=$(Configuration)">
+    </MSBuild>
+    <Message Text="Executing BuildCopyConnectors Synergy task" Importance="High" />
+
+    <Copy SourceFiles="@(Edupoint_Files)" DestinationFolder="$(TargetDir)\connectors\EdNexusData.Broker.Connector.Edupoint.Synergy" />
+
+    <Message Text="Copied Synergy build files" Importance="High" />
+  </Target>
+
+  <Target Name="BuildCopyConnectorsEdFi" BeforeTargets="Build">
+    <MSBuild Projects="..\..\..\broker-connector-edfi\src\EdNexusData.Broker.Connector.EdFiAlliance.EdFi\EdNexusData.Broker.Connector.EdFiAlliance.EdFi.csproj" Properties="Configuration=$(Configuration)">
+    </MSBuild>
+    <Message Text="Executing BuildCopyConnectors EdFi task" Importance="High" />
+
+    <Copy SourceFiles="@(EdFi_Files)" DestinationFolder="$(TargetDir)\connectors\EdNexusData.Broker.Connector.EdFiAlliance.EdFi" />
+
+    <Message Text="Copied EdFi build files" Importance="High" />
+  </Target>
+
+  <Target Name="BuildCopyConnectorsFixture" BeforeTargets="Build">
+    <MSBuild Projects="..\..\..\broker-connector-fixture\src\EdNexusData.Broker.Connector.Fixture.csproj" Properties="Configuration=$(Configuration)">
+    </MSBuild>
+    <Message Text="Executing BuildCopyConnectors Fixture task" Importance="High" />
+
+    <Copy SourceFiles="@(Fixture_Files)" DestinationFolder="$(TargetDir)\connectors\EdNexusData.Broker.Connector.Fixture" />
+
+    <Message Text="Copied Fixture build files" Importance="High" />
+  </Target>
+
+</Project>

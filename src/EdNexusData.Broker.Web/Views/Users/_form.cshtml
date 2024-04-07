@@ -1,0 +1,80 @@
+@using EdNexusData.Broker.Domain;
+@model EdNexusData.Broker.Web.ViewModels.Users.CreateUserRequestViewModel
+
+<div class="space-y-10 divide-y divide-gray-900/10">
+  <div class="px-4 sm:px-0">
+    <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+      <div class="px-4 py-6 sm:p-8 grid gap-8">
+        <div class="grid gap-6 border-b border-gray-900/10 pb-8">
+          <div>
+            <h2 class="text-base font-semibold leading-7 text-gray-900">Basic information</h2>
+            <p class="mt-1 text-sm leading-6 text-gray-600">Basic information about the user.</p>
+          </div>
+          <div class="grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-6">
+            <div class="sm:col-span-3">
+              <label asp-for="FirstName" class="block text-sm font-medium leading-6 text-gray-900">First Name</label>
+              <div class="mt-2">
+                <input asp-for="FirstName" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+              </div>
+              <p class="mt-2 text-sm text-red-600" asp-validation-for="FirstName">@Html.ValidationMessageFor(m => m.FirstName)</p>
+            </div>
+            <div class="sm:col-span-3">
+              <label asp-for="LastName" class="block text-sm font-medium leading-6 text-gray-900">Last Name</label>
+              <div class="mt-2">
+                <input asp-for="LastName" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+              </div>
+              <p class="mt-2 text-sm text-red-600" asp-validation-for="FirstName">@Html.ValidationMessageFor(m => m.LastName)</p>
+            </div>
+            <div class="sm:col-span-3">
+              <label asp-for="Email" class="block text-sm font-medium leading-6 text-gray-900">Email Address</label>
+              <div class="mt-2">
+                <input asp-for="Email" type="email" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+              </div>
+              <p class="mt-2 text-sm text-red-600" asp-validation-for="FirstName">@Html.ValidationMessageFor(m => m.Email)</p>
+            </div>
+          </div>
+        </div>
+        <div class="grid gap-6 pb-8">
+          <div>
+            <h2 class="text-base font-semibold leading-7 text-gray-900">Privileges</h2>
+            <p class="mt-1 text-sm leading-6 text-gray-600">Information about the user privileges.</p>
+          </div>
+          <div class="grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-6">
+            <div class="sm:col-span-6">
+              <label asp-for="AllEducationOrganizations" class="block text-sm font-medium leading-6 text-gray-900">Education Organization</label>
+              <div class="mt-2">
+                <select asp-for="AllEducationOrganizations" asp-items="Html.GetEnumSelectList<PermissionType>()" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6"></select>
+              </div>
+              <p class="mt-2 text-sm text-red-600" asp-validation-for="AllEducationOrganizations">@Html.ValidationMessageFor(m => m.AllEducationOrganizations)</p>
+            </div>
+            <div class="sm:col-span-3 grid items-end">
+              <div class="relative flex items-start">
+                <div class="flex h-6 items-center">
+                    <input asp-for="IsSuperAdmin" aria-describedby="is-super-admin-description" class="h-4 w-4 rounded border-gray-300 text-tertiary-600 focus:ring-tertiary-600">
+                </div>
+                <div class="ml-3 text-sm leading-6">
+                    <label asp-for="IsSuperAdmin" class="font-medium text-gray-900">Super Admin</label>
+                    <p id="is-super-admin-description" class="text-gray-600">This user will have super administrator privileges.</p>
+                </div>
+              </div>
+              <p class="mt-2 text-sm text-red-600" asp-validation-for="IsSuperAdmin">@Html.ValidationMessageFor(m => m.IsSuperAdmin)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
+        <a
+          asp-controller="Users"
+          asp-action="Index"
+          asp-authorize
+          asp-policy="SuperAdmin"
+          class="text-sm font-semibold leading-6 text-gray-900"
+        >
+          Cancel
+        </a>
+        <input asp-for="UserId" type="hidden" />
+        <button type="submit" class="rounded-md bg-tertiary-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
