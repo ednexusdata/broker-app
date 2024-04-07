@@ -80,7 +80,7 @@
   </Target>
 
   <Target Name="BuildCopyConnectorsEdFi" BeforeTargets="Build">
-    <MSBuild Projects="..\..\..\broker-connector-edfi\src\EdNexusData.Broker.Connector.EdFiAlliance.EdFi\EdNexusData.Broker.Connector.EdFiAlliance.EdFi.csproj" Properties="Configuration=$(Configuration)">
+    <MSBuild Projects="..\..\..\broker-connector-edfi\src\EdNexusData.Broker.Connector.EdFiAlliance.EdFi.csproj" Properties="Configuration=$(Configuration)">
     </MSBuild>
     <Message Text="Executing BuildCopyConnectors EdFi task" Importance="High" />
 
