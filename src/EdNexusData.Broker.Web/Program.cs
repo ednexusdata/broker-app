@@ -94,7 +94,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-if (builder.Configuration["Authentication:Google:ClientId"] is not null)
+if (builder.Configuration["Authentication:Google:ClientId"] is not null &&
+    builder.Configuration["Authentication:Google:ClientId"] != "")
 {
     builder.Services.AddAuthentication().AddGoogle(googleOptions =>
     {
@@ -103,7 +104,8 @@ if (builder.Configuration["Authentication:Google:ClientId"] is not null)
     });
 }
 
-if (builder.Configuration["Authentication:Microsoft:ClientId"] is not null)
+if (builder.Configuration["Authentication:Microsoft:ClientId"] is not null &&
+    builder.Configuration["Authentication:Microsoft:ClientId"] != "")
 {
     builder.Services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
     {
