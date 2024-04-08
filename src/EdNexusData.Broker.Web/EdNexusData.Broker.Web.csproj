@@ -65,7 +65,7 @@
   
   <ItemGroup>
     <Edupoint_Files Include="..\..\..\broker-connector-edupointsynergy\src\bin\**\*.dll" />
-    <EdFi_Files Include="..\..\..\broker-connector-edfi\src\EdNexusData.Broker.Connector.EdFiAlliance.EdFi\bin\**\*.dll" />
+    <EdFi_Files Include="..\..\..\broker-connector-edfi\src\bin\**\*.dll" />
     <Fixture_Files Include="..\..\..\broker-connector-fixture\src\bin\**\*.dll" />
   </ItemGroup>
 
