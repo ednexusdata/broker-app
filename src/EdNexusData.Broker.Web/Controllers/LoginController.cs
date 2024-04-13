@@ -12,11 +12,8 @@ using EdNexusData.Broker.SharedKernel;
 using static EdNexusData.Broker.Web.Constants.Sessions.SessionKey;
 using EdNexusData.Broker.Web.Helpers;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
-using Microsoft.Identity.Web;
-using EdNexusData.Broker.Domain.Specifications;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -24,8 +21,6 @@ namespace EdNexusData.Broker.Web.Controllers;
 public class LoginController : AuthenticatedController<LoginController>
 {
     private readonly ILogger<LoginController> _logger;
-    //private readonly EdNexusData.Broker.Connector.Edupoint.Synergy.Authentication.ThirdPartyApplication _auth;
-    //private readonly AuthenticationProvidersLocator? _authProvidersLocator;
     public readonly BrokerDbContext _db;
     private readonly UserManager<IdentityUser<Guid>> _userManager;
     private readonly SignInManager<IdentityUser<Guid>> _signInManager;
