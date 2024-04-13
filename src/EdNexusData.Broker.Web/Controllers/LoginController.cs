@@ -58,27 +58,6 @@ public class LoginController : AuthenticatedController<LoginController>
         return View(externalLogins);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> CreateFirstUser()
-    {
-        var identityUser = new IdentityUser<Guid> { UserName = "luis.ruiz@developers.net", Email = "luis.ruiz@developers.net" }; 
-        var result = await _userManager.CreateAsync(identityUser);
-
-        var user = new User()
-        {
-            Id = identityUser.Id,
-            FirstName = "Luis",
-            LastName = "Ruiz",
-            IsSuperAdmin = true,
-            CreatedAt = DateTime.UtcNow,
-            AllEducationOrganizations = PermissionType.Write
-        };
-        _db.Add(user);
-        await _db.SaveChangesAsync();
-        
-        return RedirectToAction(nameof(Index));
-    }
-
     [HttpPost]
     [Route("login/externallogin")]
     public IActionResult ExternalLogin(string provider, string? returnUrl)

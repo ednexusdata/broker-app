@@ -174,6 +174,8 @@ builder.Services.Configure<IISServerOptions>(options =>
     options.AutomaticAuthentication = false;
 });
 
+builder.Services.AddHostedService<BrokerDbContextInitializationService>();
+
 var app = builder.Build();
 
 // Noted this way because of 

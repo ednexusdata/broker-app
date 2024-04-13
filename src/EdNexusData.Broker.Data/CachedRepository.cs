@@ -46,7 +46,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
 
     public Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return _sourceRepository.CountAsync(cancellationToken);
     }
 
     public Task DeleteAsync(T entity)
