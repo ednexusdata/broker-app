@@ -58,7 +58,7 @@ public class PayloadJobLoader
             await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
 
             // Execute the job
-            var result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!);
+            var result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!, outgoingPayloadContent.Settings);
             await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Received result: {0}", jobToExecute.GetType().FullName);
 
             // check if there is a result and if it is of type DataPayloadContent
