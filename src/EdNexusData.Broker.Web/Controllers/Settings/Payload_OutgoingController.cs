@@ -39,6 +39,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
                 settings.Add(new PayloadSettingsViewModel() {
                     FullName = currentSettings.PayloadContentType,
                     DisplayName = contentTypes.Where(a => a.FullName == currentSettings.PayloadContentType).FirstOrDefault()!.DisplayName,
+                    JobId = currentSettings.JobId,
                     Configuration = currentSettings.Settings
                 });
             }
@@ -111,6 +112,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
                 new PayloadSettingsContentType()
                 {
                     PayloadContentType = jsonSetting["fullName"].ToString(),
+                    JobId = (jsonSetting["jobId"] is not null && Guid.TryParse(jsonSetting["jobId"].ToString(), out Guid jobIdGuid)) ? jobIdGuid : Guid.NewGuid(),
                     Settings = jsonSetting["configuration"].ToString()
                 }
             );

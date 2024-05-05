@@ -7,4 +7,6 @@ public class PayloadSettingsViewModel
     public string DisplayName { get; set; } = default!;
 
     public string? Configuration { get; set; }
+
+    public Guid? JobId { get; set; }
 }
