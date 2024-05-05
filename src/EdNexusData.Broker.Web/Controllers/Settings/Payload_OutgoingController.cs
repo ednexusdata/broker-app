@@ -24,7 +24,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         var currentPayload = await _educationOrganizationPayloadSettings
             .FirstOrDefaultAsync(new PayloadSettingsByNameAndEdOrgIdSpec(payload, _focusedDistrictEdOrg!.Value));
 
-        var contentTypes = _payloadContentTypeService.GetPayloadContentTypes().OrderBy(i => i.DisplayName) ?? Enumerable.Empty<PayloadContentTypeDisplay>();
+        var contentTypes = _payloadJobService.GetPayloadJobs().OrderBy(i => i.DisplayName) ?? Enumerable.Empty<PayloadJobDisplay>();
 
         // Format for json on screen
         var settings = new List<PayloadSettingsViewModel>();

@@ -32,8 +32,8 @@ public class WorkerResolver
                     await sendRequest.Process(request);
                     break;
                 case RequestStatus.WaitingToLoad:
-                    var payloadContentLoader = (PayloadContentLoader)scoped.ServiceProvider.GetService(typeof(PayloadContentLoader))!;
-                    await payloadContentLoader.Process(request);
+                    var payloadJobLoader = (PayloadJobLoader)scoped.ServiceProvider.GetService(typeof(PayloadJobLoader))!;
+                    await payloadJobLoader.Process(request);
                     break;
                 case RequestStatus.WaitingToPrepare:
                     var prepareMappingLoader = (PrepareMapping)scoped.ServiceProvider.GetService(typeof(PrepareMapping))!;

@@ -4,7 +4,7 @@ using EdNexusData.Broker.Domain.Specifications;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using System.Dynamic;
-using EdNexusData.Broker.Connector.Payload;
+using EdNexusData.Broker.Connector;
 
 namespace EdNexusData.Broker.Service.Serializers;
 
@@ -19,9 +19,9 @@ public class OutgoingPayloadSerializer
         _serviceProvider = serviceProvider;
     }
 
-    public async Task<IPayload> DeseralizeAsync(Type connectorConfigType, Guid focusEducationOrganization)
+    public async Task<Payload> DeseralizeAsync(Type connectorConfigType, Guid focusEducationOrganization)
     {
-        var iPayloadModel = ActivatorUtilities.CreateInstance(_serviceProvider, connectorConfigType) as IPayload;
+        var iPayloadModel = ActivatorUtilities.CreateInstance(_serviceProvider, connectorConfigType) as Payload;
         var objTypeName = iPayloadModel!.GetType().FullName;
 
         // Get existing object
@@ -51,7 +51,7 @@ public class OutgoingPayloadSerializer
         return iPayloadModel!;
     }
 
-    public async Task<IPayload> SerializeAndSaveAsync(IPayload obj, Guid focusEducationOrganization)
+    public async Task<Payload> SerializeAndSaveAsync(Payload obj, Guid focusEducationOrganization)
     {
         var repoConnectorSettings = new EducationOrganizationPayloadSettings();
 

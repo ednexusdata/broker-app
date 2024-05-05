@@ -1,13 +1,9 @@
-using EdNexusData.Broker.Connector.Payload;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.SharedKernel;
-using EdNexusData.Broker.Connector.Resolvers;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Connector.PayloadContents;
+using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Connector.Attributes;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace EdNexusData.Broker.Service.Resolvers;
 
@@ -31,7 +27,7 @@ public class PayloadJobResolver //: IPayloadResolver
         _serviceProvider = serviceProvider;
     }
 
-    public IPayloadContentJob Resolve(string payloadContentType)
+    public PayloadJob Resolve(string payloadContentType)
     {
         Guard.Against.Null(payloadContentType);
 
@@ -44,11 +40,11 @@ public class PayloadJobResolver //: IPayloadResolver
 
         Guard.Against.Null(resolvedPayloadContentType, "", "Could not get payload content type");
 
-        // Locate the attribute to determien the job to run
+        // Locate the attribute to determine the job to run
         var jobPayloadContentType = ((JobAttribute)resolvedPayloadContentType.GetCustomAttributes(false).Where(x => x.GetType() == typeof(JobAttribute)).FirstOrDefault()!).JobType;
   
         var payloadContentJob = ActivatorUtilities.CreateInstance(_serviceProvider, jobPayloadContentType);
         
-        return (IPayloadContentJob)payloadContentJob;
+        return (PayloadJob)payloadContentJob;
     }
 }

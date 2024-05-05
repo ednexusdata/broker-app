@@ -3,22 +3,24 @@ using EdNexusData.Broker.SharedKernel;
 using System.Text.Json;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
+using Ardalis.GuardClauses;
+using EdNexusData.Broker.Connector;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
-public class PayloadContentLoader
+public class PayloadJobLoader
 {
     private readonly PayloadResolver _payloadResolver;
     private readonly PayloadJobResolver _payloadJobResolver;
     private readonly JobStatusService<SendRequest> _jobStatusService;
-    private readonly IRepository<PayloadContent> _payloadContentRepository;
+    private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
 
-    public PayloadContentLoader(
+    public PayloadJobLoader(
             PayloadResolver payloadResolver,
             PayloadJobResolver payloadJobResolver,
             JobStatusService<SendRequest> jobStatusService,
-            IRepository<PayloadContent> payloadContentRepository,
+            IRepository<Domain.PayloadContent> payloadContentRepository,
             FocusEducationOrganizationResolver focusEducationOrganizationResolver)
     {
         _payloadResolver = payloadResolver;
@@ -59,20 +61,47 @@ public class PayloadContentLoader
             var result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!);
             await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Received result: {0}", jobToExecute.GetType().FullName);
 
-            var payloadContentTypeType = AppDomain.CurrentDomain.GetAssemblies()
+            // check if there is a result and if it is of type DataPayloadContent
+            if (result is not null && result.GetType().IsAssignableFrom(typeof(DataPayloadContent)))
+            {
+                var payloadContentResult = (DataPayloadContent)result;
+
+                Guard.Against.Null(payloadContentResult, "payloadContentResult", "Unable to cast result to DataPayloadContent type.");
+                
+                var payloadContentTypeType = AppDomain.CurrentDomain.GetAssemblies()
                         .SelectMany(s => s.GetExportedTypes())
                         .Where(p => p.FullName == outgoingPayloadContent.PayloadContentType).FirstOrDefault();
 
-            // Save the result
-            var payloadContent = new PayloadContent()
+                // Save the result
+                var payloadContent = new Domain.PayloadContent()
+                {
+                    RequestId = request.Id,
+                    JsonContent = JsonSerializer.SerializeToDocument(result), // JsonDocument.Parse(result.Content),
+                    ContentType = payloadContentResult.Schema.ContentType,
+                    FileName =  $"{payloadContentTypeType?.Name}.json"
+                };
+                await _payloadContentRepository.AddAsync(payloadContent);
+                await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
+            }
+
+            // check if there is a result and if it is of type DataPayloadContent
+            if (result is not null && result.GetType().IsAssignableFrom(typeof(DocumentPayloadContent)))
             {
-                RequestId = request.Id,
-                JsonContent = JsonSerializer.SerializeToDocument(result), // JsonDocument.Parse(result.Content),
-                ContentType = result.Schema.ContentType,
-                FileName =  $"{payloadContentTypeType?.Name}.json"
-            };
-            await _payloadContentRepository.AddAsync(payloadContent);
-            await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Saved payload content: {0}", jobToExecute.GetType().FullName);
+                var payloadContentResult = (DocumentPayloadContent)result;
+
+                Guard.Against.Null(payloadContentResult, "payloadContentResult", "Unable to cast result to DocumentPayloadContent type.");
+
+                // Save the result
+                var payloadContent = new Domain.PayloadContent()
+                {
+                    RequestId = request.Id,
+                    BlobContent = payloadContentResult.Content,
+                    ContentType = payloadContentResult.ContentType,
+                    FileName =  payloadContentResult.FileName
+                };
+                await _payloadContentRepository.AddAsync(payloadContent);
+                await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Saved document payload content: {0}", jobToExecute.GetType().FullName);
+            }
         }
 
         await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loaded, "Finished updating request.");

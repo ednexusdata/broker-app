@@ -17,7 +17,7 @@ using System.Linq.Expressions;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 using EdNexusData.Broker.Web.Extensions.States;
 using EdNexusData.Broker.Web.Extensions.Genders;
-using EdNexusData.Broker.Connector.Payload;
+using EdNexusData.Broker.Connector.Payloads;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Domain.Specifications;
 using Ardalis.GuardClauses;

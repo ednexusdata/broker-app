@@ -1,4 +1,4 @@
-using EdNexusData.Broker.Connector.Payload;
+using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.SharedKernel;
@@ -24,7 +24,7 @@ public class PayloadResolver : IPayloadResolver
         _serviceProvider = serviceProvider;
     }
     
-    public async Task<IncomingPayloadSettings> FetchIncomingPayloadSettingsAsync<T>(Guid educationOrganizationId) where T : IPayload
+    public async Task<IncomingPayloadSettings> FetchIncomingPayloadSettingsAsync<T>(Guid educationOrganizationId) where T : Payload
     {
         return await FetchIncomingPayloadSettingsAsync(typeof(T), educationOrganizationId);
     }
@@ -55,7 +55,7 @@ public class PayloadResolver : IPayloadResolver
         return repoConnectorSettings!.IncomingPayloadSettings;
     }
 
-    public async Task<OutgoingPayloadSettings> FetchOutgoingPayloadSettingsAsync<T>(Guid educationOrganizationId) where T : IPayload
+    public async Task<OutgoingPayloadSettings> FetchOutgoingPayloadSettingsAsync<T>(Guid educationOrganizationId) where T : Payload
     {
         return await FetchOutgoingPayloadSettingsAsync(typeof(T), educationOrganizationId);
     }

@@ -1,7 +1,7 @@
 using EdNexusData.Broker.Connector.StudentLookup;
 using EdNexusData.Broker.Connector.Resolvers;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Connector.Payload;
+using EdNexusData.Broker.Connector.Payloads;
 using EdNexusData.Broker.Service.Resolvers;
 using EdNexusData.Broker.Connector;
 using Ardalis.GuardClauses;

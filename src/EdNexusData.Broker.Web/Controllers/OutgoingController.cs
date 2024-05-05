@@ -17,7 +17,7 @@ using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.Extensions.Genders;
 using Ardalis.GuardClauses;
 using System.Text.Json;
-using EdNexusData.Broker.Connector.Payload;
+using EdNexusData.Broker.Connector.Payloads;
 using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.Web.Utilities;
 using EdNexusData.Broker.Web.Constants.DesignSystems;

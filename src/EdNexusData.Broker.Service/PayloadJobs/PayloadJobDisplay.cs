@@ -1,8 +1,6 @@
-using EdNexusData.Broker.Connector;
-
 namespace EdNexusData.Broker.Service;
 
-public class PayloadContentTypeDisplay
+public class PayloadJobDisplay
 {
     public string DisplayName { get; set; } = default!;
     public string Name { get; set; } = default!;

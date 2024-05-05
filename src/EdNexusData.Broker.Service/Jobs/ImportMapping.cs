@@ -19,7 +19,7 @@ public class ImportMapping
     private readonly ConnectorResolver _connectorResolver;
     private readonly PayloadResolver _payloadResolver;
     private readonly JobStatusService<SendRequest> _jobStatusService;
-    private readonly IRepository<PayloadContent> _payloadContentRepository;
+    private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
@@ -29,7 +29,7 @@ public class ImportMapping
             ConnectorResolver connectorResolver,
             PayloadResolver payloadResolver,
             JobStatusService<SendRequest> jobStatusService,
-            IRepository<PayloadContent> payloadContentRepository,
+            IRepository<Domain.PayloadContent> payloadContentRepository,
             IServiceProvider serviceProvider,
             IRepository<Mapping> mappingRepository,
             FocusEducationOrganizationResolver focusEducationOrganizationResolver)

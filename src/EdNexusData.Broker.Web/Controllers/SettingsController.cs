@@ -22,7 +22,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<EducationOrganizationConnectorSettings> _repo;
     private readonly IRepository<EducationOrganizationPayloadSettings> _educationOrganizationPayloadSettings;
-    private readonly PayloadContentTypeService _payloadContentTypeService;
+    private readonly PayloadJobService _payloadJobService;
     
     private readonly FocusHelper _focusHelper;
 
@@ -37,7 +37,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         IRepository<EducationOrganizationPayloadSettings> educationOrganizationPayloadSettings,
         IncomingPayloadSerializer incomingPayloadSerializer,
         OutgoingPayloadSerializer outgoingPayloadSerializer,
-        PayloadContentTypeService payloadContentTypeService
+        PayloadJobService payloadJobService
         )
     {
         ArgumentNullException.ThrowIfNull(connectorLoader);
@@ -50,7 +50,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         _educationOrganizationPayloadSettings = educationOrganizationPayloadSettings;
         _incomingPayloadSerializer = incomingPayloadSerializer;
         _outgoingPayloadSerializer = outgoingPayloadSerializer;
-        _payloadContentTypeService = payloadContentTypeService;
+        _payloadJobService = payloadJobService;
     }
 
     public async Task<IActionResult> Index()

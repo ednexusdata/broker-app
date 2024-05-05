@@ -46,7 +46,7 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         // Services
         services.AddScoped<StudentLookupService>();
         services.AddScoped<StudentService>();
-        services.AddScoped<PayloadContentTypeService>();
+        services.AddScoped<PayloadJobService>();
         services.AddScoped<DirectoryLookupService>();
         services.AddScoped<ManifestService>();
         services.AddScoped<MappingLookupService>();
@@ -73,7 +73,7 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         
         // Jobs
         services.AddScoped<SendRequest>();
-        services.AddScoped<PayloadContentLoader>();
+        services.AddScoped<PayloadJobLoader>();
         services.AddScoped<PrepareMapping>();
         services.AddScoped<ImportMapping>();
 

@@ -1,4 +1,4 @@
-using EdNexusData.Broker.Connector.Payload;
+using EdNexusData.Broker.Connector.Payloads;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.SharedKernel;

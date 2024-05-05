@@ -5,11 +5,8 @@ using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Domain.Specifications;
-using System.Text.Json.Nodes;
-using System.Reflection;
 using EdNexusData.Broker.Connector;
 using Microsoft.Extensions.DependencyInjection;
-using System.Globalization;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
@@ -19,7 +16,7 @@ public class PrepareMapping
     private readonly ConnectorResolver _connectorResolver;
     private readonly PayloadResolver _payloadResolver;
     private readonly JobStatusService<SendRequest> _jobStatusService;
-    private readonly IRepository<PayloadContent> _payloadContentRepository;
+    private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<Mapping> _mappingRepository;
 
@@ -28,7 +25,7 @@ public class PrepareMapping
             ConnectorResolver connectorResolver,
             PayloadResolver payloadResolver,
             JobStatusService<SendRequest> jobStatusService,
-            IRepository<PayloadContent> payloadContentRepository,
+            IRepository<Domain.PayloadContent> payloadContentRepository,
             IServiceProvider serviceProvider,
             IRepository<Mapping> mappingRepository)
     {
