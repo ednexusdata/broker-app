@@ -8,6 +8,7 @@ using EdNexusData.Broker.Service;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.ViewModels.Settings;
+using System.Text.Json;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -108,12 +109,19 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         
         foreach(var jsonSetting in jsonSettings)
         {
+            JsonDocument? settingsToSave = null;
+            
+            if (!string.IsNullOrEmpty(jsonSetting!["configuration"]!.ToString()))
+            {
+                settingsToSave = JsonDocument.Parse(jsonSetting["configuration"].ToString()!);
+            }
+
             payloadContentTypeSettings.Add(
                 new PayloadSettingsContentType()
                 {
-                    PayloadContentType = jsonSetting["fullName"].ToString(),
-                    JobId = (jsonSetting["jobId"] is not null && Guid.TryParse(jsonSetting["jobId"].ToString(), out Guid jobIdGuid)) ? jobIdGuid : Guid.NewGuid(),
-                    Settings = jsonSetting["configuration"].ToString()
+                    PayloadContentType = jsonSetting!["fullName"]!.ToString(),
+                    JobId = (jsonSetting["jobId"] is not null && Guid.TryParse(jsonSetting!["jobId"]!.ToString(), out Guid jobIdGuid)) ? jobIdGuid : Guid.NewGuid(),
+                    Settings = settingsToSave.ToJsonString()
                 }
             );
         }

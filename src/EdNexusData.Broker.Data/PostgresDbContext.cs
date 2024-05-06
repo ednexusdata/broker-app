@@ -13,6 +13,7 @@ public class PostgresDbContext : BrokerDbContext
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
         options.UseNpgsql(Configuration.GetConnectionString("PostgreSqlConnection"));
+        options.EnableSensitiveDataLogging();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
