@@ -109,11 +109,13 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         
         foreach(var jsonSetting in jsonSettings)
         {
-            JsonDocument? settingsToSave = null;
+            string? settingsToSave = null;
             
-            if (!string.IsNullOrEmpty(jsonSetting!["configuration"]!.ToString()))
+            if (jsonSetting!["configuration"] is not null && !string.IsNullOrEmpty(jsonSetting!["configuration"]!.ToString()))
             {
-                settingsToSave = JsonDocument.Parse(jsonSetting["configuration"].ToString()!);
+                var options = new JsonSerializerOptions { WriteIndented = false };
+                var jsonDoc = JsonDocument.Parse(jsonSetting["configuration"].ToString()!);
+                settingsToSave = JsonSerializer.Serialize(jsonDoc, options);
             }
 
             payloadContentTypeSettings.Add(
@@ -121,7 +123,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
                 {
                     PayloadContentType = jsonSetting!["fullName"]!.ToString(),
                     JobId = (jsonSetting["jobId"] is not null && Guid.TryParse(jsonSetting!["jobId"]!.ToString(), out Guid jobIdGuid)) ? jobIdGuid : Guid.NewGuid(),
-                    Settings = settingsToSave.ToJsonString()
+                    Settings = settingsToSave
                 }
             );
         }
