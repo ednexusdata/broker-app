@@ -59,10 +59,10 @@ public class PayloadJobLoader
 
             // Execute the job
             var result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!, JsonSerializer.SerializeToDocument(outgoingPayloadContent.Settings));
-            await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Received result: {0}", jobToExecute.GetType().FullName);
-
+            await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Received result: {0}", result?.GetType().FullName);
+            
             // check if there is a result and if it is of type DataPayloadContent
-            if (result is not null && result.GetType().IsAssignableFrom(typeof(DataPayloadContent)))
+            if (result is not null && result.GetType().IsAssignableTo(typeof(DataPayloadContent)))
             {
                 var payloadContentResult = (DataPayloadContent)result;
 
@@ -78,14 +78,14 @@ public class PayloadJobLoader
                     RequestId = request.Id,
                     JsonContent = JsonSerializer.SerializeToDocument(result), // JsonDocument.Parse(result.Content),
                     ContentType = payloadContentResult.Schema.ContentType,
-                    FileName =  $"{payloadContentTypeType?.Name}.json"
+                    FileName =  $"{result?.GetType().Name}.json"
                 };
                 await _payloadContentRepository.AddAsync(payloadContent);
                 await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
             }
 
             // check if there is a result and if it is of type DataPayloadContent
-            if (result is not null && result.GetType().IsAssignableFrom(typeof(DocumentPayloadContent)))
+            if (result is not null && result.GetType().IsAssignableTo(typeof(DocumentPayloadContent)))
             {
                 var payloadContentResult = (DocumentPayloadContent)result;
 

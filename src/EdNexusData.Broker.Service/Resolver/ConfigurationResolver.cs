@@ -41,6 +41,7 @@ public class ConfigurationResolver : IConfigurationResolver
 
         // Get existing object
         var connectorSpec = new ConnectorByNameAndEdOrgIdSpec(typeof(T).Assembly.GetName().Name!, educationOrganizationId);
+
         var repoConnectorSettings = await _edOrgConnectorSettings.FirstOrDefaultAsync(connectorSpec);
 
         Guard.Against.Null(repoConnectorSettings);

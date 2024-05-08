@@ -40,10 +40,7 @@ public class PayloadJobResolver //: IPayloadResolver
 
         Guard.Against.Null(resolvedPayloadContentType, "", "Could not get payload content type");
 
-        // Locate the attribute to determine the job to run
-        var jobPayloadContentType = ((JobAttribute)resolvedPayloadContentType.GetCustomAttributes(false).Where(x => x.GetType() == typeof(JobAttribute)).FirstOrDefault()!).JobType;
-  
-        var payloadContentJob = ActivatorUtilities.CreateInstance(_serviceProvider, jobPayloadContentType);
+        var payloadContentJob = ActivatorUtilities.CreateInstance(_serviceProvider, resolvedPayloadContentType);
         
         return (PayloadJob)payloadContentJob;
     }
