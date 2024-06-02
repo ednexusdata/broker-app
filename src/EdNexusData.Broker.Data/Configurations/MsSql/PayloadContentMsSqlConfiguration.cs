@@ -14,5 +14,6 @@ internal class PayloadContentMsSqlConfiguration : IEntityTypeConfiguration<Paylo
     public void Configure(EntityTypeBuilder<PayloadContent> builder)
     {   
         builder.Property(i => i.JsonContent).HasColumnType("nvarchar(max)");
+        builder.Property(i => i.Actions).HasColumnType("nvarchar(max)");
     }
 }

@@ -14,5 +14,6 @@ internal class PayloadContentPostgresConfiguration : IEntityTypeConfiguration<Pa
     public void Configure(EntityTypeBuilder<PayloadContent> builder)
     {   
         builder.Property(i => i.JsonContent).HasColumnType("jsonb");
+        builder.Property(i => i.Actions).HasColumnType("jsonb");
     }
 }
