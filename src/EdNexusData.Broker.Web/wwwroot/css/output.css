@@ -819,6 +819,10 @@ select {
   margin: -0.625rem;
 }
 
+.m-2 {
+  margin: 0.5rem;
+}
+
 .-mx-1 {
   margin-left: -0.25rem;
   margin-right: -0.25rem;
@@ -1708,6 +1712,11 @@ select {
 .px-4 {
   padding-left: 1rem;
   padding-right: 1rem;
+}
+
+.px-5 {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
 }
 
 .px-8 {

@@ -6,6 +6,7 @@ using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.SharedKernel;
+using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Extensions;
 using EdNexusData.Broker.Web.ViewModels.Preparing;
 using Microsoft.AspNetCore.Authorization;
@@ -106,6 +107,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
                 payloadContent.Actions!.RemoveAll(action => true == true);
                 payloadContent.Actions.Add(payloadContentAction);
                 await _payloadContentRepository.UpdateAsync(payloadContent);
+
+                TempData[VoiceTone.Positive] = $"Updated payload actions.";
             }
         }
         

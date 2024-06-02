@@ -24,7 +24,7 @@
                         <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Mapped</th>
                         <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Added</th>
                         <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ignored</th>
-                        <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-3">Action</th>
+                        <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Action</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white">
@@ -59,16 +59,18 @@
                             <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">&nbsp;</td>
                             <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">&nbsp;</td>
                             <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">&nbsp;</td>
-                            <td class="relative whitespace-nowrap py-2 pl-3 pr-4 text-sm font-medium sm:pr-3">
-                                <div class="flex justify-end gap-2">
-                                    <input type="hidden" name="PayloadContent.Items[@counter].PayloadContentId" value="@file.PayloadContentId">
+                            <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">
+                                <input type="hidden" name="PayloadContent.Items[@counter].PayloadContentId" value="@file.PayloadContentId">
                                     <select
                                     name="PayloadContent.Items[@counter].PayloadContentAction"
                                     asp-for="@file.PayloadContentAction.ConnectorAction"
                                     asp-items="@Model.PayloadContentActions"
-                                    class="block w-full rounded-md border-0 py-1.5 px-2.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                                    class="rounded-md border-0 py-1.5 px-5.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
                                     </select>
-                                </div>
+                                    @if(file.ContentCategory == "Data" && file.PayloadContentAction.ConnectorAction != typeof(EdNexusData.Broker.Connector.PayloadContentActions.IgnorePayloadContentAction).FullName)
+                                    {
+                                        <a asp-controller="Mapping" asp-action="Index" asp-route-id="@file.PayloadContentId" asp-authorize asp-policy="@TransferIncomingRecords" class="m-2 text-tertiary-700 hover:text-tertiary-900">Map</a>
+                                    } 
                             </td>
                         </tr>
                         counter++;
@@ -81,8 +83,9 @@
 </div>
 <div class="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
         <a
-          asp-controller="Preparting"
+          asp-controller="Preparing"
           asp-action="Index"
+          asp-route-id="@Model.RequestId"
           asp-authorize
           asp-policy="@TransferIncomingRecords"
           class="text-sm font-semibold leading-6 text-gray-900"
