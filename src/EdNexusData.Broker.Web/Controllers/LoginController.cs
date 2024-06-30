@@ -53,6 +53,43 @@ public class LoginController : AuthenticatedController<LoginController>
         return View(externalLogins);
     }
 
+    [HttpGet]
+    [Route("login/anonymous")]
+    public async Task<IActionResult> AnonymousLogin(string email)
+    {
+        Guard.Against.Null(email, "email", $"Missing email in force login");
+
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user is null)
+        {
+            _logger.LogInformation("{Email} not found in database.", email);
+            return RedirectToAction("Index");
+        }
+
+        var currentUser = await _userRepo.GetByIdAsync(user.Id);
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Email!),
+            new Claim(ClaimTypes.Email, user.Email!)
+        };
+
+        var claimsIdentity = new ClaimsIdentity(
+            claims, IdentityConstants.ApplicationScheme);
+
+        await HttpContext!.SignInAsync(
+            IdentityConstants.ApplicationScheme,
+            new ClaimsPrincipal(claimsIdentity));
+        
+        HttpContext?.Session?.SetObjectAsJson(UserCurrent, currentUser!);
+        await _focusHelper.SetInitialFocus();
+        HttpContext?.Session?.SetString(LastAccessedKey, $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}");
+
+        return LocalRedirect("~/");
+    }
+
     [HttpPost]
     [Route("login/externallogin")]
     public IActionResult ExternalLogin(string provider, string? returnUrl)
