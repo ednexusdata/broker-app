@@ -8,17 +8,17 @@ Then do the instructions to add it to the profile
 
 ### Create Migration
 ```
-dotnet-ef migrations add InitialRequests --startup-project ../../broker-web/src/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.PostgresDbContext --output-dir Migrations/PostgreSql
+dotnet-ef migrations add InitialRequests --startup-project ../EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.PostgresDbContext --output-dir Migrations/PostgreSql
 ```
 ```
-dotnet-ef migrations add InitialRequests --startup-project ../../broker-web/src/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.MsSqlDbContext --output-dir Migrations/MsSql
+dotnet-ef migrations add InitialRequests --startup-project ../EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.MsSqlDbContext --output-dir Migrations/MsSql
 ```
 ### Remove Last Migration
 ```
-dotnet-ef migrations remove --startup-project ../../broker-web/src/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.PostgresDbContext
+dotnet-ef migrations remove --startup-project ../EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.PostgresDbContext
 ```
 ```
-dotnet-ef migrations remove --startup-project ../../broker-web/src/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.MsSqlDbContext
+dotnet-ef migrations remove --startup-project ../EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.MsSqlDbContext
 ```
 ### Apply to latest migration
 ```
