@@ -22,6 +22,8 @@ using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.Web.Utilities;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Service;
+using EdNexusData.Broker.Domain.Worker;
+using EdNexusData.Broker.Service.Jobs;
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = TransferOutgoingRecords)]
@@ -34,6 +36,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     private readonly FocusHelper _focusHelper;
     private readonly ICurrentUser _currentUser;
     private readonly ManifestService _manifestService;
+    private readonly JobService _jobService;
 
     public OutgoingController(
         IHttpContextAccessor httpContextAccessor,
@@ -43,7 +46,8 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         IPayloadContentService payloadContentService,
         FocusHelper focusHelper,
         ICurrentUser currentUser,
-        ManifestService manifestService)
+        ManifestService manifestService,
+        JobService jobService)
     {
         _outgoingRequestRepository = outgoingRequestRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -52,6 +56,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         _focusHelper = focusHelper;
         _currentUser = currentUser;
         _manifestService = manifestService;
+        _jobService = jobService;
     }
 
     public async Task<IActionResult> Index(
@@ -303,6 +308,8 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
 
         await _outgoingRequestRepository.UpdateAsync(outgoingRequest);
 
+        await _jobService.CreateJobAsync(typeof(PayloadLoaderJob), typeof(Request), outgoingRequest.Id);
+
         TempData[VoiceTone.Positive] = $"Request set to load outgoing payload ({outgoingRequest.Id}).";
         return RedirectToAction(nameof(Update), new { requestId = id });
     }
@@ -327,6 +334,8 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         outgoingRequest.ResponseManifest!.RequestId = outgoingRequest.RequestManifest?.RequestId;
 
         await _outgoingRequestRepository.UpdateAsync(outgoingRequest);
+
+        await _jobService.CreateJobAsync(typeof(SendRequestJob), typeof(Request), outgoingRequest.Id);
 
         TempData[VoiceTone.Positive] = $"Request marked to send ({outgoingRequest.Id}).";
         return RedirectToAction(nameof(Update), new { requestId = id });

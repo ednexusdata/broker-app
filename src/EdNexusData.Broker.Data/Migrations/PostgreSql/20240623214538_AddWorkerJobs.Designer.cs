@@ -3,6 +3,7 @@ using System;
 using EdNexusData.Broker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 {
     [DbContext(typeof(PostgresDbContext))]
-    partial class PostgresDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240623214538_AddWorkerJobs")]
+    partial class AddWorkerJobs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,7 +169,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Property<string>("OriginalSchema")
                         .HasColumnType("jsonb");
 
-                    b.Property<Guid?>("PayloadContentId")
+                    b.Property<Guid?>("RequestId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("SourceMapping")
@@ -183,7 +186,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PayloadContentId");
+                    b.HasIndex("RequestId");
 
                     b.ToTable("Mappings", (string)null);
                 });
@@ -799,11 +802,11 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
             modelBuilder.Entity("EdNexusData.Broker.Domain.Mapping", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.PayloadContent", "PayloadContent")
+                    b.HasOne("EdNexusData.Broker.Domain.Request", "Request")
                         .WithMany()
-                        .HasForeignKey("PayloadContentId");
+                        .HasForeignKey("RequestId");
 
-                    b.Navigation("PayloadContent");
+                    b.Navigation("Request");
                 });
 
             modelBuilder.Entity("EdNexusData.Broker.Domain.Message", b =>

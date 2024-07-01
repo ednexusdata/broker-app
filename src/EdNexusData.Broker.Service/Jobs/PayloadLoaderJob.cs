@@ -5,36 +5,46 @@ using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Connector;
+using EdNexusData.Broker.Domain.Worker;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
-public class PayloadJobLoader
+public class PayloadLoaderJob : IJob
 {
     private readonly PayloadResolver _payloadResolver;
     private readonly PayloadJobResolver _payloadJobResolver;
-    private readonly JobStatusService<SendRequest> _jobStatusService;
+    private readonly JobStatusService<PayloadLoaderJob> _jobStatusService;
+    private readonly IRepository<Request> _requestRepository;
     private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
 
-    public PayloadJobLoader(
+    public PayloadLoaderJob(
             PayloadResolver payloadResolver,
             PayloadJobResolver payloadJobResolver,
-            JobStatusService<SendRequest> jobStatusService,
+            JobStatusService<PayloadLoaderJob> jobStatusService,
+            IRepository<Request> requestRepository,
             IRepository<Domain.PayloadContent> payloadContentRepository,
             FocusEducationOrganizationResolver focusEducationOrganizationResolver)
     {
         _payloadResolver = payloadResolver;
         _payloadJobResolver = payloadJobResolver;
         _jobStatusService = jobStatusService;
+        _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
         _focusEducationOrganizationResolver = focusEducationOrganizationResolver;
     }
     
-    public async Task Process(Request request)
+    public async Task ProcessAsync(Job jobInstance)
     {
-        await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Begin outgoing jobs loading for: {0}", request.Payload);
+        Guard.Against.Null(jobInstance.ReferenceGuid, "referenceGuid", $"Unable to find request Id {jobInstance.ReferenceGuid}");
+        
+        var request = await _requestRepository.GetByIdAsync(jobInstance.ReferenceGuid.Value);
+        
+        Guard.Against.Null(request, "request", $"Unable to find request id {jobInstance.ReferenceGuid}");
 
-        await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Begin fetching payload contents for: {0}", request.EducationOrganization?.ParentOrganizationId);
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Begin outgoing jobs loading for: {0}", request.Payload);
+
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Begin fetching payload contents for: {0}", request.EducationOrganization?.ParentOrganizationId);
 
         // Get outgoing payload settings
         var outgoingPayloadSettings = await _payloadResolver.FetchOutgoingPayloadSettingsAsync(request.Payload, request.EducationOrganization!.ParentOrganizationId!.Value);
@@ -42,7 +52,7 @@ public class PayloadJobLoader
 
         if (outgoingPayloadContents is null || outgoingPayloadContents.Count <= 0)
         {
-            await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "No payload contents");
+            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "No payload contents");
             return;
         }
 
@@ -53,13 +63,13 @@ public class PayloadJobLoader
             _focusEducationOrganizationResolver.EducationOrganizationId = request.EducationOrganization!.ParentOrganizationId!.Value;
 
             // Resolve job to execute
-            await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Resolving job to execute for payload content type: {0}", outgoingPayloadContent.PayloadContentType);
+            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolving job to execute for payload content type: {0}", outgoingPayloadContent.PayloadContentType);
             var jobToExecute = _payloadJobResolver.Resolve(outgoingPayloadContent.PayloadContentType);
-            await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
+            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
 
             // Execute the job
             var result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!, JsonSerializer.SerializeToDocument(outgoingPayloadContent.Settings));
-            await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Received result: {0}", result?.GetType().FullName);
+            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Received result: {0}", result?.GetType().FullName);
             
             // check if there is a result and if it is of type DataPayloadContent
             if (result is not null && result.GetType().IsAssignableTo(typeof(DataPayloadContent)))
@@ -81,7 +91,7 @@ public class PayloadJobLoader
                     FileName =  $"{result?.GetType().Name}.json"
                 };
                 await _payloadContentRepository.AddAsync(payloadContent);
-                await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
+                await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
             }
 
             // check if there is a result and if it is of type DataPayloadContent
@@ -100,10 +110,10 @@ public class PayloadJobLoader
                     FileName =  payloadContentResult.FileName
                 };
                 await _payloadContentRepository.AddAsync(payloadContent);
-                await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loading, "Saved document payload content: {0}", jobToExecute.GetType().FullName);
+                await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved document payload content: {0}", jobToExecute.GetType().FullName);
             }
         }
 
-        await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Loaded, "Finished updating request.");
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Finished updating request.");
     }
 }

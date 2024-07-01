@@ -1,7 +1,10 @@
 using EdNexusData.Broker.SharedKernel;
-using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.Service.Resolvers;
+using EdNexusData.Broker.Domain.Worker;
+using Ardalis.GuardClauses;
+using EdNexusData.Broker.Connector;
+using EdNexusData.Broker.Service.Worker;
 
 namespace EdNexusData.Broker.Worker;
 
@@ -25,28 +28,53 @@ public class Worker : BackgroundService
 
             using (var scoped = _serviceProvider.CreateScope())
             {
-                //_logger.LogInformation("Start scope.");
-                var _requestsRepository = (IRepository<Request>)scoped.ServiceProvider.GetService(typeof(IRepository<Request>))!;
-                var _workerResolver = (WorkerResolver)scoped.ServiceProvider.GetService(typeof(WorkerResolver))!;
+                var _jobsRepository = (IRepository<Job>)scoped.ServiceProvider.GetService(typeof(IRepository<Job>))!;
+                var _jobStatusService = (JobStatusService<Worker>)scoped.ServiceProvider.GetService(typeof(JobStatusService<Worker>))!;
 
-                var request = await _requestsRepository.FirstOrDefaultAsync(new RequestsReadyForProcessing());
+                var jobRecord = await _jobsRepository.FirstOrDefaultAsync(new JobsWaitingToProcess());
 
-                if (request is not null)
+                if (jobRecord is not null)
                 {
-                    request.ProcessState = "Begin Processing";
-                    request.WorkerInstance = Environment.MachineName;
+                    jobRecord.WorkerState = "Begin Job Run";
+                    jobRecord.WorkerInstance = Environment.MachineName;
+                    jobRecord.JobStatus = JobStatus.Running;
+                    jobRecord.StartDateTime = DateTime.UtcNow;
 
-                    await _requestsRepository.UpdateAsync(request);
+                    await _jobsRepository.UpdateAsync(jobRecord);
 
-                    _logger.LogInformation("{requestId} is processing.", request.Id);
+                    _logger.LogInformation("Captured {jobRecordId}.", jobRecord.Id);
 
-                    await _workerResolver.ProcessAsync(request);
+                    // Run job
+                    try
+                    {
+                        _logger.LogInformation("Resolving job type for {jobRecordId}.", jobRecord.Id);
 
-                    _logger.LogInformation("{requestId} is processed.", request.Id);
+                        // Get job type
+                        var jobType = AppDomain.CurrentDomain.GetAssemblies()
+                            .SelectMany(s => s.GetExportedTypes())
+                            .Where(p => p.FullName == jobRecord.JobType!).FirstOrDefault();
+
+                        Guard.Against.Null(jobType, "jobType", $"Unable to find job type: {jobRecord.JobType!}");
+
+                        _logger.LogInformation("Resolved job type for {jobRecordId} to {jobType}.", jobRecord.Id, jobType.FullName);
+
+                        // Instantiate and cast as IJob
+                        var job = (IJob)ActivatorUtilities.CreateInstance(scoped.ServiceProvider, jobType);
+                        
+                        await _jobStatusService.UpdateJobStatus(jobRecord, JobStatus.Running, "Begin running.");
+                        _logger.LogInformation("Begin running {jobRecordId}.", jobRecord.Id);
+
+                        await job.ProcessAsync(jobRecord);
+                        await _jobStatusService.UpdateJobStatus(jobRecord, JobStatus.Complete, "Complete.");
+                        _logger.LogInformation("{jobRecordId} completed.", jobRecord.Id);
+
+                    } catch (Exception e)
+                    {
+                        await _jobStatusService.UpdateJobStatus(jobRecord, JobStatus.Failed, e.Message + "\n\n" + e.StackTrace?.ToString());
+                        _logger.LogInformation("{jobRecordId} failed.", jobRecord.Id);
+                    }
                 }
-                //_logger.LogInformation("End scope.");
             }
-
         }
     }
 }

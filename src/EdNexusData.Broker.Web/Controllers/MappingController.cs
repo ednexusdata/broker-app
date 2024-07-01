@@ -42,7 +42,7 @@ public class MappingController : AuthenticatedController<MappingController>
         var incomingRequest = await _incomingRequestRepository.GetByIdAsync(id);
         if (incomingRequest is null) return NotFound();
 
-        var mappings = await _mappingRepository.ListAsync(new MappingByRequestId(incomingRequest.Id));
+        var mappings = await _mappingRepository.ListAsync(new MappingByPayloadContentId(incomingRequest.Id));
 
         if (mappings is not null && mappings.Count > 0)
         {
@@ -72,10 +72,10 @@ public class MappingController : AuthenticatedController<MappingController>
         var mapping = await _mappingRepository.GetByIdAsync(id);
         if (mapping is null) return NotFound();
 
-        var incomingRequest = await _incomingRequestRepository.GetByIdAsync(mapping.RequestId!.Value);
+        var incomingRequest = await _incomingRequestRepository.GetByIdAsync(mapping.PayloadContentId!.Value);
         if (incomingRequest is null) return NotFound();
 
-        var mappings = await _mappingRepository.ListAsync(new MappingByRequestId(mapping.RequestId!.Value));
+        var mappings = await _mappingRepository.ListAsync(new MappingByPayloadContentId(mapping.PayloadContentId!.Value));
 
         Type mappingType = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(s => s.GetTypes())

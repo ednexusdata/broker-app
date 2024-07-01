@@ -1,40 +1,39 @@
-using System.Net.Mail;
 using Microsoft.Extensions.Logging;
 using EdNexusData.Broker.Data;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.SharedKernel;
-using MimeKit;
 using DnsClient;
 using EdNexusData.Broker.Service.Lookup;
 using Ardalis.GuardClauses;
 using System.Text.Json;
-using System.Text;
 using System.Net.Http.Json;
 using EdNexusData.Broker.Service.Worker;
+using EdNexusData.Broker.Domain.Worker;
+using EdNexusData.Broker.Connector;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
-public class SendRequest
+public class SendRequestJob : IJob
 {
-    private readonly ILogger<SendRequest> _logger;
+    private readonly ILogger<SendRequestJob> _logger;
     private readonly BrokerDbContext _brokerDbContext;
     private readonly IRepository<Request> _requestRepository;
     private readonly IRepository<Message> _messageRepository;
-    private readonly IRepository<PayloadContent> _payloadContentRepository;
+    private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
     private readonly ILookupClient _lookupClient;
-    private readonly JobStatusService<SendRequest> _jobStatusService;
+    private readonly JobStatusService<SendRequestJob> _jobStatusService;
     private readonly DirectoryLookupService _directoryLookupService;
     private readonly MessageService _messageService;
     private readonly HttpClient _httpClient;
 
-    public SendRequest( ILogger<SendRequest> logger, 
+    public SendRequestJob( ILogger<SendRequestJob> logger, 
                         BrokerDbContext brokerDbContext,
                         IRepository<Request> requestRepository, 
                         IRepository<Message> messageRepository,
-                        IRepository<PayloadContent> payloadContentRepository,
+                        IRepository<Domain.PayloadContent> payloadContentRepository,
                         ILookupClient lookupClient,
-                        JobStatusService<SendRequest> jobStatusService,
+                        JobStatusService<SendRequestJob> jobStatusService,
                         DirectoryLookupService directoryLookupService, 
                         IHttpClientFactory httpClientFactory,
                         MessageService messageService)
@@ -51,21 +50,27 @@ public class SendRequest
         _httpClient = httpClientFactory.CreateClient("IgnoreSSL");
     }
     
-    public async Task Process(Request request)
+    public async Task ProcessAsync(Job jobInstance)
     {
-        var message = await _messageService.Create(request);
+        Guard.Against.Null(jobInstance.ReferenceGuid, "referenceGuid", $"Unable to find request Id {jobInstance.ReferenceGuid}");
+        
+        var request = await _requestRepository.GetByIdAsync(jobInstance.ReferenceGuid.Value);
+        
+        Guard.Against.Null(request, "request", $"Unable to find request id {jobInstance.ReferenceGuid}");
+        
+        var message = await _messageService.Create(jobInstance, request);
         var messageContent = JsonSerializer.Deserialize<Manifest>(message.MessageContents.ToJsonString()!);
 
         Guard.Against.Null(messageContent, "Message did not convert to type Manifest");
         Guard.Against.Null(messageContent?.To?.District?.Domain, "Domain is missing");
 
         // Determine where to send the information
-        await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Sending, "Resolving domain {0}", messageContent.To.District.Domain);
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sending, "Resolving domain {0}", messageContent.To.District.Domain);
         var brokerAddress = await _directoryLookupService.ResolveBrokerUrl(messageContent.To.District.Domain);
         var url = $"https://{brokerAddress.Host}";
         var path = "/" + _directoryLookupService.StripPathSlashes(brokerAddress.Path);
 
-        await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Sending, "Resolved domain {0}: url {1} | path {2}", messageContent.To.District.Domain, url, path);
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sending, "Resolved domain {0}: url {1} | path {2}", messageContent.To.District.Domain, url, path);
 
         // Prepare request
         using MultipartFormDataContent multipartContent = new();
@@ -95,7 +100,7 @@ public class SendRequest
 
         var content = await result.Content.ReadAsStringAsync();
 
-        await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Sending, "Sent request result: {0} / {1}", result.StatusCode, content);
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sending, "Sent request result: {0} / {1}", result.StatusCode, content);
 
         // mark message as sent
         await _messageService.MarkSent(message);
@@ -105,6 +110,6 @@ public class SendRequest
         dbRequest!.InitialRequestSentDate = DateTime.UtcNow;
         await _requestRepository.UpdateAsync(dbRequest);
 
-        await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Sent, "Finished updating request.");
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sent, "Finished updating request.");
     }
 }

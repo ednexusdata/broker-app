@@ -50,6 +50,7 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         services.AddScoped<DirectoryLookupService>();
         services.AddScoped<ManifestService>();
         services.AddScoped<MappingLookupService>();
+        services.AddScoped<JobService>();
 
         return services;
     }
@@ -60,10 +61,10 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         services.AddSingleton<ILookupClient, LookupClient>();
         services.AddScoped<DirectoryLookupService>();
         services.AddScoped<MessageService>();
+        services.AddScoped<JobService>();
         
         // Resolvers
         services.AddScoped<IConfigurationResolver, ConfigurationResolver>();
-        services.AddSingleton<WorkerResolver>();
         services.AddScoped<IPayloadResolver, PayloadResolver>();
         services.AddScoped<PayloadResolver>();
         services.AddScoped<ConnectorResolver>();
@@ -72,10 +73,10 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         services.AddScoped<PayloadJobResolver>();
         
         // Jobs
-        services.AddScoped<SendRequest>();
-        services.AddScoped<PayloadJobLoader>();
-        services.AddScoped<PrepareMapping>();
-        services.AddScoped<ImportMapping>();
+        services.AddScoped<SendRequestJob>();
+        services.AddScoped<PayloadLoaderJob>();
+        services.AddScoped<PrepareMappingJob>();
+        services.AddScoped<ImportMappingJob>();
 
         // Worker
         services.AddScoped(typeof(JobStatusService<>));

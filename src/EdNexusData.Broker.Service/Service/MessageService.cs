@@ -3,6 +3,7 @@ using Ardalis.GuardClauses;
 using EdNexusData.Broker.Data;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.SharedKernel;
 
@@ -29,9 +30,9 @@ public class MessageService
         _brokerDbContext = brokerDbContext;
     }
 
-    public async Task<Message> Create(Request request)
+    public async Task<Message> Create(Job jobInstance, Request request)
     {
-        await _jobStatusService.UpdateRequestJobStatus(request, RequestStatus.Sending, "Create message and move attachments");
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sending, "Create message and move attachments");
 
         Guard.Against.Null(request);
 

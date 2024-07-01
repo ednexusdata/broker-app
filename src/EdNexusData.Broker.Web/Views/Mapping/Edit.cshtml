@@ -113,11 +113,11 @@
 @section HeaderAction
 {
   <div class="flex space-x-4">
-  <div>@Model.Mapping.Request.RequestStatus.ToString()</div>
-  @if (Model.Mapping.Request.RequestStatus == EdNexusData.Broker.Domain.RequestStatus.Prepared)
+  <div>@Model.Mapping.PayloadContent.Request.RequestStatus.ToString()</div>
+  @if (Model.Mapping.PayloadContent.Request.RequestStatus == EdNexusData.Broker.Domain.RequestStatus.Prepared)
   {
     <div>
-    <form method="post" asp-action="Import" asp-route-id="@Model.Mapping.Request.Id" autocomplete="off">
+    <form method="post" asp-action="Import" asp-route-id="@Model.Mapping.PayloadContent.Request.Id" autocomplete="off">
       <input type="hidden" name="_METHOD" value="PUT" />
       <button
         type="submit"

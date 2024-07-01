@@ -1,13 +1,12 @@
 ﻿// Copyright: 2023 Education Nexus Oregon
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
 using System.Reflection;
-using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using EdNexusData.Broker.Domain;
 using Microsoft.Extensions.Configuration;
+using EdNexusData.Broker.Domain.Worker;
 
 namespace EdNexusData.Broker.Data;
 
@@ -26,6 +25,7 @@ public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRol
     public DbSet<User>? ApplicationUsers { get; set; }
     public DbSet<Request>? Requests { get; set; }
     public DbSet<Mapping>? Mappings { get; set; }
+    public DbSet<Job>? WorkerJobs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,7 +34,7 @@ public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRol
 
     protected void ApplyConfiguration(ModelBuilder modelBuilder, string[] namespaces)
     {
-        var methodInfo = (typeof(ModelBuilder).GetMethods()).Single((e =>
+        var methodInfo = typeof(ModelBuilder).GetMethods().Single((e =>
             e.Name == "ApplyConfiguration" &&
             e.ContainsGenericParameters &&
             e.GetParameters().SingleOrDefault()?.ParameterType.GetGenericTypeDefinition() ==

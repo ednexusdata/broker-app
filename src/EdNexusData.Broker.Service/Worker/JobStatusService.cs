@@ -1,28 +1,52 @@
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.SharedKernel;
+using EdNexusData.Broker.Domain.Worker;
 
 namespace EdNexusData.Broker.Service.Worker;
 
 public class JobStatusService<T>
 {
-    private readonly IRepository<Request> _requestsRepo;
-
+    private readonly IRepository<Job> _jobRepo;
+    private readonly IRepository<Request> _requestRepo;
     private readonly ILogger<T> _logger;
 
-    public JobStatusService(ILogger<T> logger, IRepository<Request> requestsRepo)
+    public JobStatusService(ILogger<T> logger, 
+           IRepository<Job> jobRepo,
+           IRepository<Request> requestRepo)
     {
         _logger = logger;
-        _requestsRepo = requestsRepo;
+        _jobRepo = jobRepo;
+        _requestRepo = requestRepo;
     }
 
-    public async Task UpdateRequestJobStatus(Request request, RequestStatus? newRequestStatus, string? message, params object?[] messagePlaceholders)
+    public async Task UpdateJobStatus(Job jobRecord, JobStatus? newJobStatus, string? message, params object?[] messagePlaceholders)
+    {
+        if (newJobStatus is not null) { jobRecord.JobStatus = newJobStatus.Value; }
+        jobRecord.WorkerState = message;
+        jobRecord.JobStatus = newJobStatus!.Value;
+
+        var endStatuses = new List<JobStatus> { JobStatus.Interrupted, JobStatus.Complete, JobStatus.Aborted, JobStatus.Failed };
+
+        if (endStatuses.Contains(newJobStatus!.Value))
+        {
+            jobRecord.FinishDateTime = DateTime.UtcNow;
+        }
+        
+        await _jobRepo.UpdateAsync(jobRecord);
+
+        _logger.LogInformation($"{jobRecord.Id}: {message}", messagePlaceholders);
+    }
+
+    public async Task UpdateRequestStatus(Job jobRecord, Request request, RequestStatus? newRequestStatus, string? message, params object?[] messagePlaceholders)
     {
         if (newRequestStatus is not null) { request.RequestStatus = newRequestStatus.Value; }
         request.ProcessState = message;
-        await _requestsRepo.UpdateAsync(request);
+        await _requestRepo.UpdateAsync(request);
+        await UpdateJobStatus(jobRecord, JobStatus.Running, message, messagePlaceholders);
 
-        _logger.LogInformation($"{request.Id}: {message}", messagePlaceholders);
+        _logger.LogInformation($"{jobRecord.Id} / {request.Id}: {message}", messagePlaceholders);
     }
 
 }

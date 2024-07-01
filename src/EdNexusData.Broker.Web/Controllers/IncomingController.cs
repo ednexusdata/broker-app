@@ -26,6 +26,7 @@ using System.Text.Json;
 using EdNexusData.Broker.Web.Utilities;
 using System.ComponentModel.DataAnnotations;
 using EdNexusData.Broker.Service;
+using EdNexusData.Broker.Service.Jobs;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -39,6 +40,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
     private readonly FocusHelper _focusHelper;
     private readonly ICurrentUser _currentUser;
     private readonly ManifestService _manifestService;
+    private readonly JobService _jobService;
 
     public IncomingController(
         IReadRepository<EducationOrganization> educationOrganizationRepository,
@@ -47,7 +49,8 @@ public class IncomingController : AuthenticatedController<IncomingController>
         IPayloadContentService payloadContentService,
         FocusHelper focusHelper,
         ICurrentUser currentUser,
-        ManifestService manifestService)
+        ManifestService manifestService,
+        JobService jobService)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -56,6 +59,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
         _focusHelper = focusHelper;
         _currentUser = currentUser;
         _manifestService = manifestService;
+        _jobService = jobService;
     }
 
     public async Task<IActionResult> Index(
@@ -398,6 +402,8 @@ public class IncomingController : AuthenticatedController<IncomingController>
         incomingRequest.RequestManifest = manifestWithFrom;
 
         await _incomingRequestRepository.UpdateAsync(incomingRequest);
+
+        await _jobService.CreateJobAsync(typeof(SendRequestJob), typeof(Request), incomingRequest.Id);
 
         TempData[VoiceTone.Positive] = $"Request marked to send ({incomingRequest.Id}).";
         return RedirectToAction(nameof(Update), new { id = id });
