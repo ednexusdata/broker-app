@@ -54,7 +54,7 @@ public class SendRequestJob : IJob
     {
         Guard.Against.Null(jobInstance.ReferenceGuid, "referenceGuid", $"Unable to find request Id {jobInstance.ReferenceGuid}");
         
-        var request = await _requestRepository.GetByIdAsync(jobInstance.ReferenceGuid.Value);
+        var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(jobInstance.ReferenceGuid.Value));
         
         Guard.Against.Null(request, "request", $"Unable to find request id {jobInstance.ReferenceGuid}");
         

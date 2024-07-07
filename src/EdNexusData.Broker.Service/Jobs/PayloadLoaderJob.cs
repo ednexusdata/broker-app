@@ -6,6 +6,7 @@ using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Domain.Worker;
+using EdNexusData.Broker.Domain.Specifications;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
@@ -38,7 +39,7 @@ public class PayloadLoaderJob : IJob
     {
         Guard.Against.Null(jobInstance.ReferenceGuid, "referenceGuid", $"Unable to find request Id {jobInstance.ReferenceGuid}");
         
-        var request = await _requestRepository.GetByIdAsync(jobInstance.ReferenceGuid.Value);
+        var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(jobInstance.ReferenceGuid.Value));
         
         Guard.Against.Null(request, "request", $"Unable to find request id {jobInstance.ReferenceGuid}");
 
