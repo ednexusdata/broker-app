@@ -10,6 +10,7 @@ namespace EdNexusData.Broker.Web.ViewModels.Preparing;
 public class RequestManifestListViewModel
 {
     public Guid RequestId { get; set; }
+    public RequestStatus RequestStatus { get; set; }
     
     public List<RequestManifestViewModel> PayloadContents { get; set; } = new List<RequestManifestViewModel>();
 

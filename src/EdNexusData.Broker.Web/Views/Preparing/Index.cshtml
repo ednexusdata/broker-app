@@ -118,3 +118,21 @@
         </div>
     </div>
 </form>
+@section HeaderAction
+{
+  <div class="flex space-x-4">
+  <div>@Model.RequestStatus.ToString()</div>
+  @if (Model.RequestStatus == EdNexusData.Broker.Domain.RequestStatus.Prepared)
+  {
+    <div>
+    <form method="post" asp-action="Import" asp-route-id="@Model.RequestId" autocomplete="off">
+      <input type="hidden" name="_METHOD" value="PUT" />
+      <button
+        type="submit"
+        class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10"
+      >Import</button>
+    </form>
+    </div>
+  } 
+  </div>
+}

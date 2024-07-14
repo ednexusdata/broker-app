@@ -184,17 +184,6 @@
                                                 || @incomingRequest.Status == EdNexusData.Broker.Domain.RequestStatus.Prepared.GetDescription())
                                             {
                                                 <a
-                                                    asp-controller="Mapping"
-                                                    asp-action="Index"
-                                                    asp-route-id="@incomingRequest.Id"
-                                                    asp-authorize
-                                                    asp-policy="@TransferIncomingRecords"
-                                                    class="text-tertiary-700 hover:text-tertiary-900"
-                                                >
-                                                    Mapping
-                                                </a>
-
-                                                <a
                                                     asp-controller="Preparing"
                                                     asp-action="Index"
                                                     asp-route-id="@incomingRequest.Id"

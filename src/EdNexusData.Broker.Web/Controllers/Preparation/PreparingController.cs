@@ -40,7 +40,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
 
         var viewModel = new RequestManifestListViewModel
         {
-            RequestId = id
+            RequestId = id,
+            RequestStatus = request.RequestStatus
         };
 
         foreach (var contentPayloadAction in _connectorLoader.GetPayloadContentActions()!)

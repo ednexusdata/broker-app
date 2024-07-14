@@ -44,127 +44,126 @@ public class PrepareMappingJob : IJob
     
     public async Task ProcessAsync(Job jobInstance)
     {
-        Guard.Against.Null(jobInstance.ReferenceGuid, "referenceGuid", $"Unable to find request Id {jobInstance.ReferenceGuid}");
+        Guard.Against.Null(jobInstance.ReferenceGuid, "referenceGuid", $"Missing payload content id {jobInstance.ReferenceGuid}");
         
-        var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(jobInstance.ReferenceGuid.Value));
+        var payloadContent = await _payloadContentRepository.FirstOrDefaultAsync(new PayloadContentsWithRequest(jobInstance.ReferenceGuid.Value));
         
-        Guard.Against.Null(request, "request", $"Unable to find request id {jobInstance.ReferenceGuid}");
+        Guard.Against.Null(payloadContent, "payloadContent", $"Unable to find payload content id {jobInstance.ReferenceGuid}");
+        Guard.Against.Null(payloadContent.Request, "payloadContent.Request", $"Payload content missing request {jobInstance.ReferenceGuid}");
         
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Preparing, "Begin preparing mapping for for: {0}", request.Payload);
-
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Preparing, "Begin fetching payload contents for: {0}", request.EducationOrganization?.ParentOrganizationId);
+        await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Begin preparing mapping for: {0}", payloadContent.FileName);
 
         // Get incoming payload settings
-        var payloadSettings = await _payloadResolver.FetchIncomingPayloadSettingsAsync(request.Payload, request.EducationOrganization!.ParentOrganizationId!.Value);
+        var payloadSettings = await _payloadResolver.FetchIncomingPayloadSettingsAsync(payloadContent.Request.RequestManifest!.RequestType, payloadContent.Request.EducationOrganization!.ParentOrganizationId!.Value);
 
         // Resolve the SIS connector
         Guard.Against.Null(payloadSettings.StudentInformationSystem, null, "No SIS incoming connector set.");
         var sisConnectorType = _connectorResolver.Resolve(payloadSettings.StudentInformationSystem);
         Guard.Against.Null(sisConnectorType, null, "Unable to load connector.");
 
-        // Get file contents
-        var payloadContents = request.ResponseManifest?.Contents?.Where(x => x.ContentType == "application/json").ToList();
-        if (payloadContents is null || payloadContents.Count == 0)
-        {
-            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Preparing, "Nothing to process.");
-            return;
-        }
+        // Extract contents and collapse to distinct types
+        await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Begin processing file {0} with schema {1}.", payloadContent.FileName, payloadContent.ContentType);
 
-        // For each file run, extract contents and collapse to distinct types
-        foreach(var payloadContentDetails in payloadContents)
-        {
-            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Preparing, "Begin processing file {0} with schema {1}.", payloadContentDetails.FileName, payloadContentDetails.ContentType);
-            // Retrieve from database
-            var payloadContent = await _payloadContentRepository.FirstOrDefaultAsync(new PayloadContentsByRequestIdAndFileName(request.Id, payloadContentDetails.FileName));
+        Guard.Against.Null(payloadContent.JsonContent, null, "No Json content in retrieved content payload.");
+
+        // Get Schema
+        var payloadContentSchemaJson = payloadContent.JsonContent?.RootElement.GetProperty("Schema");
+        Guard.Against.Null(payloadContentSchemaJson, null, "Missing schema element.");
+        var payloadContentSchema = JsonSerializer.Deserialize<PayloadContentSchema>(payloadContentSchemaJson.ToString()!);
+        Guard.Against.Null(payloadContentSchema?.ObjectType, null, "Schema missing");
+
+        // Deseralize object to the type
+        await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Will deseralize object of type: {0}.", payloadContentSchema.ObjectType);
+        var payloadContentSchemaType = AppDomain.CurrentDomain.GetAssemblies()
+                    .SelectMany(s => s.GetExportedTypes())
+                    .Where(p => p.FullName == payloadContentSchema.ObjectType).FirstOrDefault();
+        Guard.Against.Null(payloadContentSchemaType, null, $"Unable to find concrete type {payloadContentSchema?.ObjectType}");
         
-            Guard.Against.Null(payloadContent, null, "Could not retrieve payload content as specified in manifest.");
-            Guard.Against.Null(payloadContent.JsonContent, null, "No Json content in retrieved content payload.");
+        dynamic payloadContentObject = Convert.ChangeType(JsonSerializer.Deserialize(payloadContent.JsonContent!, payloadContentSchemaType), payloadContentSchemaType)!;
 
-            // Get Schema
-            var payloadContentSchemaJson = payloadContent.JsonContent?.RootElement.GetProperty("Schema");
-            Guard.Against.Null(payloadContentSchemaJson, null, "Missing schema element.");
-            var payloadContentSchema = JsonSerializer.Deserialize<PayloadContentSchema>(payloadContentSchemaJson.ToString()!);
-            Guard.Against.Null(payloadContentSchema?.ObjectType, null, "Schema missing");
+        // Find appropriate transformer
+        var transformerType = _connectorLoader.Transformers.Where(x => x.Key == $"{sisConnectorType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}").FirstOrDefault().Value;
+        
+        if (transformerType is null)
+        { 
+            Guard.Against.Null(transformerType, null, $"Unable to resolve transformer type: {sisConnectorType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}");
+        }
+        var methodInfo = transformerType.GetMethod("Map");
 
-            // Deseralize object to the type
-            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Preparing, "Will deseralize object of type: {0}.", payloadContentSchema.ObjectType);
-            var payloadContentSchemaType = AppDomain.CurrentDomain.GetAssemblies()
-                        .SelectMany(s => s.GetExportedTypes())
-                        .Where(p => p.FullName == payloadContentSchema.ObjectType).FirstOrDefault();
-            Guard.Against.Null(payloadContentSchemaType, null, $"Unable to find concrete type {payloadContentSchema?.ObjectType}");
-            
-            dynamic payloadContentObject = Convert.ChangeType(JsonSerializer.Deserialize(payloadContent.JsonContent!, payloadContentSchemaType), payloadContentSchemaType)!;
-
-            // Find appropriate transformer
-            var transformerType = _connectorLoader.Transformers.Where(x => x.Key == $"{sisConnectorType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}").FirstOrDefault().Value;
-            
-            if (transformerType is null) { continue; }
-
-            var methodInfo = transformerType.GetMethod("Map");
-
-            if (methodInfo is null) { continue; }
-
-            var transformMethodInfo = transformerType.GetMethod("Transform");
-
-            var transformerContentType = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetExportedTypes())
-                .Where(p => p.FullName == payloadContentSchema?.ContentObjectType).FirstOrDefault();
-
-            var records = new List<dynamic>();
-            var transformedRecords = new List<dynamic>();
-
-            var contentRecords = JsonSerializer.Deserialize<List<dynamic>>(payloadContentObject.Content);
-
-            Type? recordType = null;
-
-            foreach(var record in contentRecords)
-            {
-
-                var correctRecordType = Convert.ChangeType(JsonSerializer.Deserialize(record, transformerContentType, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }), transformerContentType);
-
-                // Run through connector's transformer
-                dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, transformerType);
-                var result = methodInfo!.Invoke(transformer, new object[] { correctRecordType, request.RequestManifest?.Student!, request.EducationOrganization, request.ResponseManifest! });
-                
-                recordType = result.GetType();
-
-                var transformResult = result;
-
-                if (transformMethodInfo is not null)
-                {
-                    transformResult = transformMethodInfo!.Invoke(transformer, new object[] { correctRecordType, request.RequestManifest?.Student!, request.EducationOrganization, request.ResponseManifest! });
-                    transformResult.BrokerId = result.BrokerId;
-                }
-                
-                // Save each
-                records.Add(result);
-                transformedRecords.Add(transformResult);
-            }
-
-            List<dynamic>? outRecords = null;
-            List<dynamic>? outTransformedRecords = null;
-
-            outRecords = (List<dynamic>)transformerType.GetMethod("Sort")?.Invoke(null, [records])!;
-            outTransformedRecords = (List<dynamic>)transformerType.GetMethod("Sort")?.Invoke(null, [transformedRecords])!;
-            
-            var recordsSerialized = JsonSerializer.SerializeToDocument((outRecords is null) ? records : outRecords);
-            var transformedRecordsSerialized = JsonSerializer.SerializeToDocument((outTransformedRecords is null) ? transformedRecords : outTransformedRecords);
-
-            await _mappingRepository.AddAsync(new Mapping()
-            {
-                PayloadContentId = request.Id,
-                OriginalSchema = payloadContentSchema,
-                MappingType = recordType?.FullName,
-                StudentAttributes = null,
-                SourceMapping = recordsSerialized,
-                DestinationMapping = transformedRecordsSerialized
-            });
-
+        if (methodInfo is null)
+        { 
+            Guard.Against.Null(transformerType, null, $"Unable to find method map on transformerType: {transformerType.FullName}");
         }
 
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Prepared, "Finished preparing mapping.");
+        var transformMethodInfo = transformerType.GetMethod("Transform");
+
+        var transformerContentType = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(s => s.GetExportedTypes())
+            .Where(p => p.FullName == payloadContentSchema?.ContentObjectType).FirstOrDefault();
+
+        var records = new List<dynamic>();
+        var transformedRecords = new List<dynamic>();
+
+        var contentRecords = JsonSerializer.Deserialize<List<dynamic>>(payloadContentObject.Content);
+
+        Type? recordType = null;
+
+        foreach(var record in contentRecords)
+        {
+
+            var correctRecordType = Convert.ChangeType(JsonSerializer.Deserialize(record, transformerContentType, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }), transformerContentType);
+
+            // Run through connector's transformer
+            dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, transformerType);
+            var result = methodInfo!.Invoke(transformer, new object[] { 
+                correctRecordType, 
+                payloadContent.Request.RequestManifest?.Student!, 
+                payloadContent.Request.EducationOrganization, 
+                payloadContent.Request.ResponseManifest!
+            });
+            
+            recordType = result.GetType();
+
+            var transformResult = result;
+
+            if (transformMethodInfo is not null)
+            {
+                transformResult = transformMethodInfo!.Invoke(transformer, new object[] { 
+                    correctRecordType, 
+                    payloadContent.Request.RequestManifest?.Student!, 
+                    payloadContent.Request.EducationOrganization, 
+                    payloadContent.Request.ResponseManifest!
+                });
+                transformResult.BrokerId = result.BrokerId;
+            }
+            
+            // Save each
+            records.Add(result);
+            transformedRecords.Add(transformResult);
+        }
+
+        List<dynamic>? outRecords = null;
+        List<dynamic>? outTransformedRecords = null;
+
+        outRecords = (List<dynamic>)transformerType.GetMethod("Sort")?.Invoke(null, [records])!;
+        outTransformedRecords = (List<dynamic>)transformerType.GetMethod("Sort")?.Invoke(null, [transformedRecords])!;
+        
+        var recordsSerialized = JsonSerializer.SerializeToDocument((outRecords is null) ? records : outRecords);
+        var transformedRecordsSerialized = JsonSerializer.SerializeToDocument((outTransformedRecords is null) ? transformedRecords : outTransformedRecords);
+
+        await _mappingRepository.AddAsync(new Mapping()
+        {
+            PayloadContentId = payloadContent.Id,
+            OriginalSchema = payloadContentSchema,
+            MappingType = recordType?.FullName,
+            StudentAttributes = null,
+            SourceMapping = recordsSerialized,
+            DestinationMapping = transformedRecordsSerialized
+        });
+
+        await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Complete, "Finished preparing mapping.");
     }
 }

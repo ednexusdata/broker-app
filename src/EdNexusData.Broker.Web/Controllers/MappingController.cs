@@ -14,6 +14,8 @@ using EdNexusData.Broker.Web.ViewModels.Mappings;
 using EdNexusData.Broker.Web.ViewModels.Requests;
 using EdNexusData.Broker.Service.Lookup;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+using EdNexusData.Broker.Service;
+using EdNexusData.Broker.Service.Jobs;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -23,59 +25,58 @@ public class MappingController : AuthenticatedController<MappingController>
     private readonly IReadRepository<EducationOrganization> _educationOrganizationRepository;
     private readonly IRepository<Request> _incomingRequestRepository;
     private readonly IRepository<Mapping> _mappingRepository;
+    private readonly IRepository<PayloadContent> _payloadContentRepository;
+    private readonly JobService _jobService;
     private readonly IServiceProvider _serviceProvider;
 
     public MappingController(
         IReadRepository<EducationOrganization> educationOrganizationRepository,
         IRepository<Request> incomingRequestRepository,
         IRepository<Mapping> mappingRepository,
+        IRepository<PayloadContent> payloadContentRepository,
+        JobService jobService,
         IServiceProvider serviceProvider)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
         _incomingRequestRepository = incomingRequestRepository;
         _mappingRepository = mappingRepository;
+        _payloadContentRepository = payloadContentRepository;
+        _jobService = jobService;
         _serviceProvider = serviceProvider;
     }
 
     public async Task<IActionResult> Index(Guid id)
     {
-        var incomingRequest = await _incomingRequestRepository.GetByIdAsync(id);
-        if (incomingRequest is null) return NotFound();
-
-        var mappings = await _mappingRepository.ListAsync(new MappingByPayloadContentId(incomingRequest.Id));
-
-        if (mappings is not null && mappings.Count > 0)
+        var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingByPayloadContentId(id));
+        if (mapping is null) // Mapping needs preparing
         {
-            return RedirectToAction(nameof(Edit), new { id = mappings.FirstOrDefault()!.Id } );
+            var payloadContent = await _payloadContentRepository.GetByIdAsync(id);
+            return View(payloadContent);
         }
 
-        return View(incomingRequest);
+        return RedirectToAction(nameof(Edit), new { id = mapping.Id });
     }
 
     [HttpPost]
     public async Task<IActionResult> Prepare(Guid id)
     {
-        var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));
+        var payloadContent = await _payloadContentRepository.GetByIdAsync(id);
 
-        Guard.Against.Null(incomingRequest);
+        Guard.Against.Null(payloadContent, "payloadContent", "Invalid payload content");
 
-        incomingRequest.RequestStatus = RequestStatus.WaitingToPrepare;
+        // Prepare mapping
+        await _jobService.CreateJobAsync(typeof(PrepareMappingJob), typeof(PayloadContent), payloadContent.Id);
 
-        await _incomingRequestRepository.UpdateAsync(incomingRequest);
-
-        TempData[VoiceTone.Positive] = $"Preparing mapping for request ({incomingRequest.Id}).";
+        TempData[VoiceTone.Positive] = $"Preparing mapping for {payloadContent.FileName} ({payloadContent.Id}).";
         return RedirectToAction(nameof(Index), new { id = id });
     }
 
     public async Task<IActionResult> Edit(Guid id)
     {
-        var mapping = await _mappingRepository.GetByIdAsync(id);
+        var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(id));
         if (mapping is null) return NotFound();
 
-        var incomingRequest = await _incomingRequestRepository.GetByIdAsync(mapping.PayloadContentId!.Value);
-        if (incomingRequest is null) return NotFound();
-
-        var mappings = await _mappingRepository.ListAsync(new MappingByPayloadContentId(mapping.PayloadContentId!.Value));
+        var mappings = await _mappingRepository.ListAsync(new MappingByRequestId(mapping.PayloadContent!.RequestId));
 
         Type mappingType = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(s => s.GetTypes())

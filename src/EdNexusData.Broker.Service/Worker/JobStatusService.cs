@@ -24,7 +24,7 @@ public class JobStatusService<T>
     public async Task UpdateJobStatus(Job jobRecord, JobStatus? newJobStatus, string? message, params object?[] messagePlaceholders)
     {
         if (newJobStatus is not null) { jobRecord.JobStatus = newJobStatus.Value; }
-        jobRecord.WorkerState = message;
+        if (message is not null) { jobRecord.WorkerState = string.Format(message, messagePlaceholders); }
         jobRecord.JobStatus = newJobStatus!.Value;
 
         var endStatuses = new List<JobStatus> { JobStatus.Interrupted, JobStatus.Complete, JobStatus.Aborted, JobStatus.Failed };
