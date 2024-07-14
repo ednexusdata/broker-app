@@ -161,7 +161,14 @@ public class RequestsController : Controller
                             RequestId = request.Id,
                             MessageId = message!.Id,
                             ContentType = fileContentType?.ContentType,
-                            FileName = file.FileName
+                            FileName = file.FileName,
+                            Actions = new List<PayloadContentAction>
+                            {
+                                new PayloadContentAction()
+                                {
+                                    ConnectorAction = typeof(Connector.PayloadContentActions.IgnorePayloadContentAction).FullName!
+                                }
+                            }
                         };
 
                         if (messageContent.ContentType == "application/json")

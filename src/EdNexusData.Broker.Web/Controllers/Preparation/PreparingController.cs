@@ -69,7 +69,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
         {
             if (file.JsonContent is not null)
             {
-                viewModel.PayloadContents.Add(new RequestManifestViewModel() {
+                var test = new RequestManifestViewModel() {
                     PayloadContentId = file.Id,
                     PayloadContentAction = file.Actions!.FirstOrDefault()!,
                     ReceivedDate = file.CreatedAt,
@@ -77,7 +77,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     ContentCategory = (file.XmlContent is not null || file.JsonContent is not null) ? "Data" : "File",
                     ContentType = file.ContentType!,
                     ReceviedCount = file.JsonContent!.RootElement.GetProperty("Content").EnumerateArray().Count() // json["Content"].AsJEnumerable().Count(),
-                });
+                };
+                viewModel.PayloadContents.Add(test);
             }
             
             

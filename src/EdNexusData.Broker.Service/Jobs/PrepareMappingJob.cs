@@ -164,6 +164,8 @@ public class PrepareMappingJob : IJob
             DestinationMapping = transformedRecordsSerialized
         });
 
+        await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContent.Request, RequestStatus.Prepared, "Prepared");
+
         await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Complete, "Finished preparing mapping.");
     }
 }
