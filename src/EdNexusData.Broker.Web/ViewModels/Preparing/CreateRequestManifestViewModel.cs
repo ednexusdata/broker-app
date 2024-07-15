@@ -10,5 +10,6 @@ public class CreateRequestManifestViewModel
 public class CreateRequestManifestItemViewModel
 {
     public Guid? PayloadContentId { get; set;}
-    public string? PayloadContentAction { get; set; }
+    public string? OriginalAction { get; set; }
+    public string? Action { get; set; }
 }

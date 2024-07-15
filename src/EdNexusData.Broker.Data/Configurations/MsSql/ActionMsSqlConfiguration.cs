@@ -9,10 +9,10 @@ using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Data.Configurations.MsSql;
 
-internal class PayloadContentMsSqlConfiguration : IEntityTypeConfiguration<PayloadContent>
+internal class ActionMsSqlConfiguration : IEntityTypeConfiguration<Domain.Action>
 {
-    public void Configure(EntityTypeBuilder<PayloadContent> builder)
+    public void Configure(EntityTypeBuilder<Domain.Action> builder)
     {   
-        builder.Property(i => i.JsonContent).HasColumnType("nvarchar(max)");
+        builder.Property(i => i.Settings).HasColumnType("nvarchar(max)");
     }
 }

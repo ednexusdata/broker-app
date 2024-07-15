@@ -76,7 +76,7 @@ public class MappingController : AuthenticatedController<MappingController>
         var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(id));
         if (mapping is null) return NotFound();
 
-        var mappings = await _mappingRepository.ListAsync(new MappingByRequestId(mapping.PayloadContent!.RequestId));
+        var mappings = await _mappingRepository.ListAsync(new MappingByRequestId(mapping.Action.PayloadContent!.RequestId));
 
         Type mappingType = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(s => s.GetTypes())
@@ -88,8 +88,8 @@ public class MappingController : AuthenticatedController<MappingController>
         {
             MappingId = mapping.Id,
             RequestMappings = mappings,
-            MappingSourceRecords = JsonConvert.DeserializeObject(mapping.SourceMapping.ToJsonString()!, mappingCollectionType)!,
-            MappingDestinationRecords = JsonConvert.DeserializeObject(mapping.DestinationMapping.ToJsonString()!, mappingCollectionType)!,
+            MappingSourceRecords = JsonConvert.DeserializeObject(mapping.JsonSourceMapping.ToJsonString()!, mappingCollectionType)!,
+            MappingDestinationRecords = JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, mappingCollectionType)!,
             Mapping = mapping,
             MappingLookupService = _serviceProvider.GetService<MappingLookupService>()
         };
@@ -118,7 +118,7 @@ public class MappingController : AuthenticatedController<MappingController>
         await TryUpdateModelAsync(mappedForm, mappingCollectionType, "mapping");
 
         // Persist the data
-        mapping.DestinationMapping = mappedForm.ToJsonDocument();
+        mapping.JsonDestinationMapping = mappedForm.ToJsonDocument();
 
         await _mappingRepository.UpdateAsync(mapping);
         

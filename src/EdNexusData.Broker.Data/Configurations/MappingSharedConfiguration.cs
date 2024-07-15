@@ -1,7 +1,6 @@
 // Copyright: 2023 Education Nexus Oregon
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
 
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using EdNexusData.Broker.Domain;
@@ -19,7 +18,11 @@ internal class MappingSharedConfiguration : IEntityTypeConfiguration<Mapping>
         // Json Fields
         builder.Property(i => i.OriginalSchema).HasJsonConversion();
         builder.Property(i => i.StudentAttributes).HasJsonConversion();
-        builder.Property(i => i.SourceMapping).HasJsonConversion();
-        builder.Property(i => i.DestinationMapping).HasJsonConversion();
+        builder.Property(i => i.JsonSourceMapping).HasJsonConversion();
+        builder.Property(i => i.JsonDestinationMapping).HasJsonConversion();
+
+        builder.Property(i => i.Version).HasDefaultValue(1);
+
+        builder.HasIndex(x => new { x.ActionId, x.Version } ).IsUnique();
     }
 }

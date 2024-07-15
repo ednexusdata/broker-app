@@ -23,13 +23,19 @@ public class PreparingController : AuthenticatedController<RequestsController>
 {
     private readonly IRepository<Request> _requestRepository;
     private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
+    private readonly IRepository<Domain.Action> _actionRepository;
     private readonly ConnectorLoader _connectorLoader;
 
-    public PreparingController(IRepository<Request> requestRepository, IRepository<Domain.PayloadContent> payloadContentRepository, ConnectorLoader connectorLoader)
+    public PreparingController(
+        IRepository<Request> requestRepository, 
+        IRepository<Domain.PayloadContent> payloadContentRepository, 
+        IRepository<Domain.Action> actionRepository,
+        ConnectorLoader connectorLoader)
     {
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
         _connectorLoader = connectorLoader;
+        _actionRepository = actionRepository;
     }
 
     [Route("/Preparing/{id:guid}")]
@@ -37,6 +43,10 @@ public class PreparingController : AuthenticatedController<RequestsController>
     {
         // Get all payload content files for request
         var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdWithMessagesPayloadContents(id));
+        if (request == null)
+        {
+            return NotFound();
+        }
 
         var viewModel = new RequestManifestListViewModel
         {
@@ -65,18 +75,33 @@ public class PreparingController : AuthenticatedController<RequestsController>
 
         viewModel.PayloadContentActions = viewModel.PayloadContentActions.OrderBy(x => x.Text).ToList();
 
+        viewModel.PayloadContentActions.Insert(0, 
+            new SelectListItem() {
+                Text = "Ignore",
+                Value = "Ignore"
+            }
+        );
+
         foreach (var file in request?.PayloadContents!)
         {
             if (file.JsonContent is not null)
             {
+                string contentActionType = "Ignore";
+                
+                if (file.Actions?.FirstOrDefault()?.Process == true)
+                {
+                    contentActionType = file.Actions?.FirstOrDefault()?.PayloadContentActionType!;
+                } 
+
                 var test = new RequestManifestViewModel() {
                     PayloadContentId = file.Id,
-                    PayloadContentAction = file.Actions!.FirstOrDefault()!,
+                    Action = file.Actions?.FirstOrDefault(),
                     ReceivedDate = file.CreatedAt,
                     FileName = file.FileName!,
                     ContentCategory = (file.XmlContent is not null || file.JsonContent is not null) ? "Data" : "File",
                     ContentType = file.ContentType!,
-                    ReceviedCount = file.JsonContent!.RootElement.GetProperty("Content").EnumerateArray().Count() // json["Content"].AsJEnumerable().Count(),
+                    ReceviedCount = file.JsonContent!.RootElement.GetProperty("Content").EnumerateArray().Count(), // json["Content"].AsJEnumerable().Count(),
+                    PayloadContentActionType = contentActionType
                 };
                 viewModel.PayloadContents.Add(test);
             }
@@ -100,15 +125,28 @@ public class PreparingController : AuthenticatedController<RequestsController>
                 var payloadContent = await _payloadContentRepository.GetByIdAsync(item.PayloadContentId.Value);
 
                 if (payloadContent is null) break;
+                if (item.Action is null) break;
 
-                var payloadContentAction = new PayloadContentAction()
+                // Check if action exists
+                var action = await _actionRepository.FirstOrDefaultAsync(new ActionByPayloadContentActionType(item.PayloadContentId.Value, item.OriginalAction));
+
+                if (action is null && item.Action != "Ignore")
                 {
-                    ConnectorAction = item.PayloadContentAction!
-                };
-
-                payloadContent.Actions!.RemoveAll(action => true == true);
-                payloadContent.Actions.Add(payloadContentAction);
-                await _payloadContentRepository.UpdateAsync(payloadContent);
+                    // Create Action
+                    var newAction = new Domain.Action()
+                    {
+                        PayloadContentId = item.PayloadContentId,
+                        PayloadContentActionType = item.Action,
+                        Process = true
+                    };
+                    await _actionRepository.AddAsync(newAction);
+                }
+                else if (action is not null)
+                {
+                    // Action exists, update it
+                    action.Process = (item.Action == "Ignore") ? false : true;
+                    await _actionRepository.UpdateAsync(action);
+                }
 
                 TempData[VoiceTone.Positive] = $"Updated payload actions.";
             }

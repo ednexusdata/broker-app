@@ -87,7 +87,7 @@ public class ImportMappingJob : IJob
 
             Type mappingCollectionType = typeof(List<>).MakeGenericType([mappingType]);
 
-            dynamic mappingCollection = JsonConvert.DeserializeObject(mapping.DestinationMapping.ToJsonString()!, mappingCollectionType)!;
+            dynamic mappingCollection = JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, mappingCollectionType)!;
 
             // Find appropriate importer
             var importerType = _connectorLoader.Importers.Where(x => x.Key == mappingType).FirstOrDefault().Value;

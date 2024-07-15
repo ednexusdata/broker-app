@@ -19,7 +19,6 @@ internal class PayloadContentSharedConfiguration : IEntityTypeConfiguration<Payl
 
         // Json Fields
         builder.Property(i => i.JsonContent).HasJsonConversion();
-        builder.Property(i => i.Actions).HasJsonConversion();
 
         // Set to xml
         builder.Property(e => e.XmlContent)

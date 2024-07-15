@@ -1,7 +1,7 @@
 // Copyright: 2023 Education Nexus Oregon
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
 
-using System.Xml.Linq;
+using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -9,10 +9,11 @@ using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Data.Configurations.PostgreSql;
 
-internal class PayloadContentPostgresConfiguration : IEntityTypeConfiguration<PayloadContent>
+internal class ActionPostgresConfiguration : IEntityTypeConfiguration<Domain.Action>
 {
-    public void Configure(EntityTypeBuilder<PayloadContent> builder)
+    public void Configure(EntityTypeBuilder<Domain.Action> builder)
     {   
-        builder.Property(i => i.JsonContent).HasColumnType("jsonb");
+        // Json Fields
+        builder.Property(i => i.Settings).HasColumnType("jsonb");
     }
 }

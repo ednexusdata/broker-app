@@ -16,7 +16,7 @@ internal class MappingPostgresConfiguration : IEntityTypeConfiguration<Mapping>
         // Json Fields
         builder.Property(i => i.StudentAttributes).HasColumnType("jsonb");
         builder.Property(i => i.OriginalSchema).HasColumnType("jsonb");
-        builder.Property(i => i.SourceMapping).HasColumnType("jsonb");
-        builder.Property(i => i.DestinationMapping).HasColumnType("jsonb");
+        builder.Property(i => i.JsonSourceMapping).HasColumnType("jsonb");
+        builder.Property(i => i.JsonDestinationMapping).HasColumnType("jsonb");
     }
 }

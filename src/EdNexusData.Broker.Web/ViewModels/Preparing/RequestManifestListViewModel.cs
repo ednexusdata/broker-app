@@ -29,6 +29,7 @@ public class RequestManifestViewModel
     public string ContentType { get; set; } = default!;
     public int? ReceviedCount { get; set; }
     public int? MappedCount { get; set; }
-    public Guid PayloadContentId { get; set;}
-    public PayloadContentAction PayloadContentAction { get; set; } = new PayloadContentAction() { ConnectorAction = nameof(IgnorePayloadContentAction) };
+    public Guid PayloadContentId { get; set; }
+    public Domain.Action? Action { get; set; }
+    public string? PayloadContentActionType { get; set; }
 }
