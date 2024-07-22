@@ -47,9 +47,14 @@ public class PrepareMappingJob : IJob
     
     public async Task ProcessAsync(Job jobInstance)
     {
-        Guard.Against.Null(jobInstance.ReferenceGuid, "referenceGuid", $"Missing payload content id {jobInstance.ReferenceGuid}");
+        Guard.Against.Null(jobInstance.ReferenceGuid, "referenceGuid", $"Missing action id {jobInstance.ReferenceGuid}");
+
+        var action = await _actionRepository.GetByIdAsync(jobInstance.ReferenceGuid.Value);
+
+        Guard.Against.Null(action, "action", "Unable to find action.");
+        Guard.Against.Null(action.PayloadContentId, "action.PayloadContentId", "Action missing payload content ID.");
         
-        var payloadContent = await _payloadContentRepository.FirstOrDefaultAsync(new PayloadContentsWithRequest(jobInstance.ReferenceGuid.Value));
+        var payloadContent = await _payloadContentRepository.FirstOrDefaultAsync(new PayloadContentsWithRequest(action.PayloadContentId.Value));
         
         Guard.Against.Null(payloadContent, "payloadContent", $"Unable to find payload content id {jobInstance.ReferenceGuid}");
         Guard.Against.Null(payloadContent.Request, "payloadContent.Request", $"Payload content missing request {jobInstance.ReferenceGuid}");
@@ -159,6 +164,7 @@ public class PrepareMappingJob : IJob
 
         await _mappingRepository.AddAsync(new Mapping()
         {
+            ActionId = action.Id,
             OriginalSchema = payloadContentSchema,
             MappingType = recordType?.FullName,
             StudentAttributes = null,

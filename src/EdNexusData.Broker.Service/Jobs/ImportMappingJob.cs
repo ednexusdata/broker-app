@@ -67,7 +67,7 @@ public class ImportMappingJob : IJob
         Guard.Against.Null(sisConnectorType, null, "Unable to load connector.");
 
         // Get mappings
-        var mappings = await _mappingRepository.ListAsync(new MappingByPayloadContentId(request.Id));
+        var mappings = await _mappingRepository.ListAsync(new MappingByActionId(request.Id));
 
         await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Importing, "Found {0} mappings for job.", mappings.Count);
 

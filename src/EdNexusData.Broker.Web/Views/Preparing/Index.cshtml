@@ -92,7 +92,7 @@
 
                                         @if (file.ContentCategory == "Data" && file.Action is not null && file.Action.Process == true)
                                         {
-                                            <a asp-controller="Mapping" asp-action="Index" asp-route-id="@file.PayloadContentId"
+                                            <a asp-controller="Mapping" asp-action="Index" asp-route-id="@file.Action.Id"
                                                 asp-authorize asp-policy="@TransferIncomingRecords"
                                                 class="m-2 text-tertiary-700 hover:text-tertiary-900">Map</a>
                                         }

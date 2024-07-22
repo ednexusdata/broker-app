@@ -13,6 +13,8 @@ public class MappingViewModel
     
     public Guid? MappingId { get; set; }
 
+    public Guid? RequestId { get; set; }
+
     public List<Mapping>? RequestMappings { get; set; }
 
     public Mapping? Mapping { get; set; }
