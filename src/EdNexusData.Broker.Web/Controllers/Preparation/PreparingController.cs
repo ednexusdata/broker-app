@@ -23,13 +23,13 @@ public class PreparingController : AuthenticatedController<RequestsController>
 {
     private readonly IRepository<Request> _requestRepository;
     private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
-    private readonly IRepository<Domain.Action> _actionRepository;
+    private readonly IRepository<PayloadContentAction> _actionRepository;
     private readonly ConnectorLoader _connectorLoader;
 
     public PreparingController(
         IRepository<Request> requestRepository, 
         IRepository<Domain.PayloadContent> payloadContentRepository, 
-        IRepository<Domain.Action> actionRepository,
+        IRepository<PayloadContentAction> actionRepository,
         ConnectorLoader connectorLoader)
     {
         _requestRepository = requestRepository;
@@ -88,14 +88,14 @@ public class PreparingController : AuthenticatedController<RequestsController>
             {
                 string contentActionType = "Ignore";
                 
-                if (file.Actions?.FirstOrDefault()?.Process == true)
+                if (file.PayloadContentActions?.FirstOrDefault()?.Process == true)
                 {
-                    contentActionType = file.Actions?.FirstOrDefault()?.PayloadContentActionType!;
+                    contentActionType = file.PayloadContentActions?.FirstOrDefault()?.PayloadContentActionType!;
                 } 
 
                 var test = new RequestManifestViewModel() {
                     PayloadContentId = file.Id,
-                    Action = file.Actions?.FirstOrDefault(),
+                    Action = file.PayloadContentActions?.FirstOrDefault(),
                     ReceivedDate = file.CreatedAt,
                     FileName = file.FileName!,
                     ContentCategory = (file.XmlContent is not null || file.JsonContent is not null) ? "Data" : "File",
@@ -133,7 +133,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
                 if (action is null && item.Action != "Ignore")
                 {
                     // Create Action
-                    var newAction = new Domain.Action()
+                    var newAction = new PayloadContentAction()
                     {
                         PayloadContentId = item.PayloadContentId,
                         PayloadContentActionType = item.Action,

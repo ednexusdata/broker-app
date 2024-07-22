@@ -19,7 +19,7 @@ public class PrepareMappingJob : IJob
     private readonly JobStatusService<PrepareMappingJob> _jobStatusService;
     private readonly IRepository<Request> _requestRepository;
     private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
-    private readonly IRepository<Domain.Action> _actionRepository;
+    private readonly IRepository<PayloadContentAction> _actionRepository;
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<Mapping> _mappingRepository;
 
@@ -30,7 +30,7 @@ public class PrepareMappingJob : IJob
             JobStatusService<PrepareMappingJob> jobStatusService,
             IRepository<Request> requestRepository,
             IRepository<Domain.PayloadContent> payloadContentRepository,
-            IRepository<Domain.Action> actionRepository,
+            IRepository<PayloadContentAction> actionRepository,
             IServiceProvider serviceProvider,
             IRepository<Mapping> mappingRepository)
     {
@@ -164,7 +164,7 @@ public class PrepareMappingJob : IJob
 
         await _mappingRepository.AddAsync(new Mapping()
         {
-            ActionId = action.Id,
+            PayloadContentActionId = action.Id,
             OriginalSchema = payloadContentSchema,
             MappingType = recordType?.FullName,
             StudentAttributes = null,

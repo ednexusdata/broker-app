@@ -30,6 +30,6 @@ public class RequestManifestViewModel
     public int? ReceviedCount { get; set; }
     public int? MappedCount { get; set; }
     public Guid PayloadContentId { get; set; }
-    public Domain.Action? Action { get; set; }
+    public PayloadContentAction? Action { get; set; }
     public string? PayloadContentActionType { get; set; }
 }

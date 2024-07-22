@@ -9,9 +9,9 @@ using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Data.Configurations.MsSql;
 
-internal class ActionMsSqlConfiguration : IEntityTypeConfiguration<Domain.Action>
+internal class ActionMsSqlConfiguration : IEntityTypeConfiguration<PayloadContentAction>
 {
-    public void Configure(EntityTypeBuilder<Domain.Action> builder)
+    public void Configure(EntityTypeBuilder<PayloadContentAction> builder)
     {   
         builder.Property(i => i.Settings).HasColumnType("nvarchar(max)");
     }

@@ -23,6 +23,6 @@ internal class MappingSharedConfiguration : IEntityTypeConfiguration<Mapping>
 
         builder.Property(i => i.Version).HasDefaultValue(1);
 
-        builder.HasIndex(x => new { x.ActionId, x.Version } ).IsUnique();
+        builder.HasIndex(x => new { x.PayloadContentActionId, x.Version } ).IsUnique();
     }
 }

@@ -26,7 +26,7 @@ public class MappingController : AuthenticatedController<MappingController>
     private readonly IRepository<Request> _incomingRequestRepository;
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly IRepository<PayloadContent> _payloadContentRepository;
-    private readonly IRepository<Domain.Action> _actionRepository;
+    private readonly IRepository<PayloadContentAction> _actionRepository;
     private readonly JobService _jobService;
     private readonly IServiceProvider _serviceProvider;
 
@@ -35,7 +35,7 @@ public class MappingController : AuthenticatedController<MappingController>
         IRepository<Request> incomingRequestRepository,
         IRepository<Mapping> mappingRepository,
         IRepository<PayloadContent> payloadContentRepository,
-        IRepository<Domain.Action> actionRepository,
+        IRepository<PayloadContentAction> actionRepository,
         JobService jobService,
         IServiceProvider serviceProvider)
     {
@@ -69,7 +69,7 @@ public class MappingController : AuthenticatedController<MappingController>
         Guard.Against.Null(action.PayloadContent, "action.PayloadContent", "Invalid payload content to action");
 
         // Prepare mapping
-        await _jobService.CreateJobAsync(typeof(PrepareMappingJob), typeof(Domain.Action), action.Id);
+        await _jobService.CreateJobAsync(typeof(PrepareMappingJob), typeof(PayloadContentAction), action.Id);
 
         TempData[VoiceTone.Positive] = $"Preparing mapping for {action.PayloadContent!.FileName} ({action.PayloadContent!.Id}).";
         return RedirectToAction(nameof(Index), new { id = id });
@@ -80,16 +80,14 @@ public class MappingController : AuthenticatedController<MappingController>
         var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(id));
         if (mapping is null) return NotFound();
 
-        var action = await _actionRepository.FirstOrDefaultAsync(new ActionWithPayloadContent(mapping.ActionId.Value));
-
         Type mappingType = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(s => s.GetTypes())
             .Where(p => p.FullName == mapping.MappingType).FirstOrDefault()!;
 
         Type mappingCollectionType = typeof(List<>).MakeGenericType([mappingType]);
 
-        Guard.Against.Null(action, "mapping.Action", "Action missing");
-        Guard.Against.Null(action.PayloadContent, "mapping.Action.PayloadContent", "Payload content missing");
+        Guard.Against.Null(mapping.PayloadContentAction, "mapping.Action", "Action missing");
+        Guard.Against.Null(mapping.PayloadContentAction.PayloadContent, "mapping.Action.PayloadContent", "Payload content missing");
         
         var viewModel = new MappingViewModel()
         {
@@ -98,7 +96,7 @@ public class MappingController : AuthenticatedController<MappingController>
             MappingDestinationRecords = JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, mappingCollectionType)!,
             Mapping = mapping,
             MappingLookupService = _serviceProvider.GetService<MappingLookupService>(),
-            RequestId = action.PayloadContent.RequestId
+            RequestId = mapping.PayloadContentAction.PayloadContent.RequestId
         };
 
         viewModel.SetProperties(mapping.MappingType!);

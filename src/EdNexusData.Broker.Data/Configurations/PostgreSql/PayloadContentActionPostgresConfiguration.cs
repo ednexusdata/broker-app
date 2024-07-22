@@ -9,9 +9,9 @@ using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Data.Configurations.PostgreSql;
 
-internal class ActionPostgresConfiguration : IEntityTypeConfiguration<Domain.Action>
+internal class ActionPostgresConfiguration : IEntityTypeConfiguration<PayloadContentAction>
 {
-    public void Configure(EntityTypeBuilder<Domain.Action> builder)
+    public void Configure(EntityTypeBuilder<PayloadContentAction> builder)
     {   
         // Json Fields
         builder.Property(i => i.Settings).HasColumnType("jsonb");

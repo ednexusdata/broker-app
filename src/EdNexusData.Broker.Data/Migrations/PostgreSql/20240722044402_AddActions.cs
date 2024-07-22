@@ -31,7 +31,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
             migrationBuilder.RenameColumn(
                 name: "PayloadContentId",
                 table: "Mappings",
-                newName: "ActionId");
+                newName: "PayloadContentActionId");
 
             migrationBuilder.RenameColumn(
                 name: "DestinationMapping",
@@ -46,10 +46,10 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 defaultValue: (byte)1);
 
             migrationBuilder.CreateTable(
-                name: "Actions",
+                name: "PayloadContentActions",
                 columns: table => new
                 {
-                    ActionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PayloadContentActionId = table.Column<Guid>(type: "uuid", nullable: false),
                     PayloadContentId = table.Column<Guid>(type: "uuid", nullable: true),
                     PayloadContentActionType = table.Column<string>(type: "text", nullable: true),
                     ActiveMappingId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -62,62 +62,67 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Actions", x => x.ActionId);
+                    table.PrimaryKey("PK_PayloadContentActions", x => x.PayloadContentActionId);
                     table.ForeignKey(
-                        name: "FK_Actions_Mappings_ActiveMappingId",
+                        name: "FK_PayloadContentActions_Mappings_ActiveMappingId",
                         column: x => x.ActiveMappingId,
                         principalTable: "Mappings",
                         principalColumn: "MappingId");
                     table.ForeignKey(
-                        name: "FK_Actions_PayloadContents_PayloadContentId",
+                        name: "FK_PayloadContentActions_PayloadContents_PayloadContentId",
                         column: x => x.PayloadContentId,
                         principalTable: "PayloadContents",
                         principalColumn: "PayloadContentId");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Mappings_ActionId_Version",
+                name: "IX_Mappings_PayloadContentActionId_Version",
                 table: "Mappings",
-                columns: new[] { "ActionId", "Version" },
+                columns: new[] { "PayloadContentActionId", "Version" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Actions_ActiveMappingId",
-                table: "Actions",
+                name: "IX_PayloadContentActions_ActiveMappingId",
+                table: "PayloadContentActions",
                 column: "ActiveMappingId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Actions_PayloadContentId_PayloadContentActionType",
-                table: "Actions",
+                name: "IX_PayloadContentActions_PayloadContentId_PayloadContentAction~",
+                table: "PayloadContentActions",
                 columns: new[] { "PayloadContentId", "PayloadContentActionType" },
                 unique: true);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Mappings_Actions_ActionId",
+                name: "FK_Mappings_PayloadContentActions_PayloadContentActionId",
                 table: "Mappings",
-                column: "ActionId",
-                principalTable: "Actions",
-                principalColumn: "ActionId");
+                column: "PayloadContentActionId",
+                principalTable: "PayloadContentActions",
+                principalColumn: "PayloadContentActionId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Mappings_Actions_ActionId",
+                name: "FK_Mappings_PayloadContentActions_PayloadContentActionId",
                 table: "Mappings");
 
             migrationBuilder.DropTable(
-                name: "Actions");
+                name: "PayloadContentActions");
 
             migrationBuilder.DropIndex(
-                name: "IX_Mappings_ActionId_Version",
+                name: "IX_Mappings_PayloadContentActionId_Version",
                 table: "Mappings");
 
             migrationBuilder.DropColumn(
                 name: "Version",
                 table: "Mappings");
+
+            migrationBuilder.RenameColumn(
+                name: "PayloadContentActionId",
+                table: "Mappings",
+                newName: "PayloadContentId");
 
             migrationBuilder.RenameColumn(
                 name: "JsonSourceMapping",
@@ -128,11 +133,6 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 name: "JsonDestinationMapping",
                 table: "Mappings",
                 newName: "DestinationMapping");
-
-            migrationBuilder.RenameColumn(
-                name: "ActionId",
-                table: "Mappings",
-                newName: "PayloadContentId");
 
             migrationBuilder.AddColumn<string>(
                 name: "Actions",
