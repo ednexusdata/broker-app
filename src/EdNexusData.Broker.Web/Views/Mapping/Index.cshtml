@@ -6,6 +6,31 @@
     ViewData["FocusBarReadOnly"] = true;
 }
 
+@if(ViewBag.JobId is not null && ViewBag.JobId.ToString() != "")
+{
+<div x-data="{ status: 'Preparing', interval: null }">
+  <span x-text="status"></span>
+  <script>
+    const fetchStatus = async () => {
+      try {
+        const response = await fetch('/api/v1/jobs/status?jobId=@ViewBag.JobId');
+        const data = await response.json();
+        this.status = data.status;
+      } catch (error) {
+        console.error('Error fetching status:', error);
+      }
+    }
+
+    const startPolling = () => {
+      this.interval = setInterval(fetchStatus, 2000); // Poll every 2 seconds (adjust as needed)
+    }
+
+    startPolling();
+  </script>
+</div>
+} 
+else 
+{
 <form
   method="post"
   asp-action="Prepare"
@@ -17,3 +42,5 @@
             class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10"
     >Start</button>
 </form>
+}
+

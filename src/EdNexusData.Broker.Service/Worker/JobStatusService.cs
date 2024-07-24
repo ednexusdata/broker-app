@@ -3,6 +3,7 @@ using System.Linq;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Domain.Worker;
+using Ardalis.GuardClauses;
 
 namespace EdNexusData.Broker.Service.Worker;
 
@@ -19,6 +20,13 @@ public class JobStatusService<T>
         _logger = logger;
         _jobRepo = jobRepo;
         _requestRepo = requestRepo;
+    }
+
+    public async Task<Job?> Get(Guid? jobId)
+    {
+        Guard.Against.Null(jobId, "jobId", "Job id missing");
+        
+        return await _jobRepo.GetByIdAsync(jobId.Value);
     }
 
     public async Task UpdateJobStatus(Job jobRecord, JobStatus? newJobStatus, string? message, params object?[] messagePlaceholders)

@@ -48,12 +48,13 @@ public class MappingController : AuthenticatedController<MappingController>
         _serviceProvider = serviceProvider;
     }
 
-    public async Task<IActionResult> Index(Guid id)
+    public async Task<IActionResult> Index(Guid id, Guid? jobId)
     {
         var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingByActionId(id));
         if (mapping is null) // Mapping needs preparing
         {
             var action = await _actionRepository.GetByIdAsync(id);
+            ViewBag.JobId = jobId;
             return View(action);
         }
 
@@ -69,10 +70,10 @@ public class MappingController : AuthenticatedController<MappingController>
         Guard.Against.Null(action.PayloadContent, "action.PayloadContent", "Invalid payload content to action");
 
         // Prepare mapping
-        await _jobService.CreateJobAsync(typeof(PrepareMappingJob), typeof(PayloadContentAction), action.Id);
+        var createdJob = await _jobService.CreateJobAsync(typeof(PrepareMappingJob), typeof(PayloadContentAction), action.Id);
 
         TempData[VoiceTone.Positive] = $"Preparing mapping for {action.PayloadContent!.FileName} ({action.PayloadContent!.Id}).";
-        return RedirectToAction(nameof(Index), new { id = id });
+        return RedirectToAction(nameof(Index), new { id = id, jobId = createdJob.Id });
     }
 
     public async Task<IActionResult> Edit(Guid id)

@@ -51,6 +51,7 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         services.AddScoped<ManifestService>();
         services.AddScoped<MappingLookupService>();
         services.AddScoped<JobService>();
+        services.AddScoped(typeof(JobStatusService<>));
 
         return services;
     }
