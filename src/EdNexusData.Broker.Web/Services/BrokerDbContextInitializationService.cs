@@ -57,8 +57,15 @@ public class BrokerDbContextInitializationService : IHostedService
                 _logger.LogDebug("Creating first user in AspNet users");
 
                 var identityUser = new IdentityUser<Guid> { UserName = firstUserEmail, Email = firstUserEmail }; 
-                await _userManager.CreateAsync(identityUser, firstUserPassword);
-
+                if (firstUserPassword != "")
+                {
+                    await _userManager.CreateAsync(identityUser, firstUserPassword);
+                }
+                else
+                {
+                    await _userManager.CreateAsync(identityUser);
+                }
+                
                 _logger.LogDebug("Creating first user in Broker users");
 
                 var user = new User()
