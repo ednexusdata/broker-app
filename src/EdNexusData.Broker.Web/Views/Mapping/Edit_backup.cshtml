@@ -1,0 +1,114 @@
+@model EdNexusData.Broker.Web.ViewModels.Mappings.MappingViewModel;
+@using EdNexusData.Broker.Web.ViewModels.Mappings;
+@using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+@{
+  // Copyright: 2023 Education Nexus Oregon
+  // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+  ViewData["Title"] = "Mapping";
+  Layout = "_AuthenticatedLayout";
+  ViewData["FocusBar"] = true;
+  ViewData["FocusBarReadOnly"] = true;
+
+  var propertyCounter = 0;
+}
+
+<form method="post" asp-action="Update" autocomplete="off">
+  <input type="hidden" name="MappingId" value="@Model.MappingId" />
+  <input type="hidden" name="_METHOD" value="PUT" />
+  <div class="space-y-10 divide-y divide-gray-900/10">
+    <div class="px-4 sm:px-0">
+      <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+        <div class="grid gap-6 px-4 py-6 sm:p-8">
+          <div>
+            <h2 class="text-base font-semibold leading-7 text-gray-900">Releasing School Student Data</h2>
+            <p class="mt-1 text-sm leading-6 text-gray-600">The student data provided by the releasing school.</p>
+          </div>
+          <div class="grid gap-6">
+            <div>
+              <div class="hidden sm:block">
+                <div class="border-b border-gray-200">
+                  <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    @if(Model.RequestMappings is not null)
+                    {
+                    @foreach(var mapping in Model.RequestMappings)
+                    {
+                      <a asp-action="Edit" asp-route-id="@mapping.Id" class="@Html.ActiveClassForId(mapping.Id.ToString(), "text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium border-tertiary-500 text-tertiary-600", "text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium border-transparent")">
+                        @Model.ResolveMappingTypeDisplayName(mapping.MappingType!)?.DisplayName
+                      </a>
+                    }
+                    }
+                  </nav>
+                </div>
+              </div>
+            </div>
+            <div class="grid gap-6 rounded-lg shadow-sm ring-1 ring-gray-900/5">
+              <table class="min-w-full divide-y divide-gray-300 table-fixed">
+                <thead>
+                  <tr>
+                    @foreach(var property in Model.EditingProperties!)
+                    {
+                      <th colspan="2" scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3 border-x-2">@Model.GetPropertyDisplayName(property)?.DisplayName</th>
+                    }
+                  </tr>
+                  <tr>
+                    @foreach(var property in Model.EditingProperties!)
+                    {
+                      <th scope="col" class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-3 w-8 border-l-2">Sent</th>
+                      <th scope="col" class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-3 w-8 border-r-2">Import</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach(var record in Model.MappingDestinationRecords!)
+                  {
+                  <tr class="even:bg-gray-50">
+                    <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerId")" value="@record.BrokerId">
+                    <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerOriginalId")" value="@record.BrokerOriginalId">
+                    @foreach(var property in Model.EditingProperties!)
+                    {
+                      <td class="whitespace-nowrap px-0.5 py-1 text-sm text-center text-gray-600 border-l-2">@MappingViewModel.ValueForProperty(record, Model.MappingSourceRecords, property)</td>
+                      <td class="whitespace-nowrap px-0.5 py-1 text-sm text-center text-gray-600 border-r-2">
+                        @if(MappingViewModel.GetPropertyLookupType(property) != null)
+                        {
+                          var optionValues = await Model.MappingLookupService!.SelectAsync(MappingViewModel.GetPropertyLookupType(property), MappingViewModel.ValueForProperty(record, property));
+                          <select name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, property)" class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm">
+                            <option value=""></option>
+                            @if (optionValues is not null && optionValues.Count > 0)
+                            {
+                              @foreach(var option in optionValues!)
+                              {
+                                <!option value="@option.Value" @(option.Selected ? "selected" : "")>@option.Text</!option>
+                              }
+                            }
+                          </select>
+                        }
+                        else
+                        {
+                          <input name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, property)" type="text" value="@MappingViewModel.ValueForProperty(record, property)"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm leading-6">
+                        }
+                      </td>
+                    }
+                  </tr>
+                    propertyCounter++;
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
+          <a asp-controller="Preparing" asp-action="Index" asp-route-id="@Model.RequestId" asp-authorize asp-policy="@TransferIncomingRecords"
+            class="text-sm font-semibold leading-6 text-gray-900">
+            Back to Prepare
+          </a>
+          <input asp-for="MappingId" type="hidden" />
+          <button type="submit"
+            class="rounded-md bg-tertiary-50 px-3 py-2 text-sm font-semibold text-tertiary-600 shadow-sm hover:bg-tertiary-100">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

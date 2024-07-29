@@ -1,6 +1,7 @@
 @model EdNexusData.Broker.Web.ViewModels.Mappings.MappingViewModel;
 @using EdNexusData.Broker.Web.ViewModels.Mappings;
 @using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+@using EdNexusData.Broker.Domain;
 @{
   // Copyright: 2023 Education Nexus Oregon
   // Author: Makoa Jacobsen, makoa@makoajacobsen.com
@@ -24,76 +25,48 @@
             <p class="mt-1 text-sm leading-6 text-gray-600">The student data provided by the releasing school.</p>
           </div>
           <div class="grid gap-6">
-            <div>
-              <div class="hidden sm:block">
-                <div class="border-b border-gray-200">
-                  <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    @if(Model.RequestMappings is not null)
-                    {
-                    @foreach(var mapping in Model.RequestMappings)
-                    {
-                      <a asp-action="Edit" asp-route-id="@mapping.Id" class="@Html.ActiveClassForId(mapping.Id.ToString(), "text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium border-tertiary-500 text-tertiary-600", "text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium border-transparent")">
-                        @Model.ResolveMappingTypeDisplayName(mapping.MappingType!)?.DisplayName
-                      </a>
-                    }
-                    }
-                  </nav>
-                </div>
-              </div>
-            </div>
             <div class="grid gap-6 rounded-lg shadow-sm ring-1 ring-gray-900/5">
-              <table class="min-w-full divide-y divide-gray-300 table-fixed">
-                <thead>
-                  <tr>
+              <div class="border border-gray-200">
+                <div class="flex flex-col">
+                  <div class="flex bg-gray-100">
+                    <div class="flex-2 px-4 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900 ">
+                      <div class="flex space-x-2 justify-evenly">
+                      <input type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 invisible">
+                      <svg class="h-5 w-5 invisible" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                      </svg>
+                      </div>
+                    </div>
                     @foreach(var property in Model.EditingProperties!)
                     {
-                      <th colspan="2" scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3 border-x-2">@Model.GetPropertyDisplayName(property)?.DisplayName</th>
+                      <div class="flex-1 px-4 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900 ">@Model.GetPropertyDisplayName(property)?.DisplayName</div>
                     }
-                  </tr>
-                  <tr>
-                    @foreach(var property in Model.EditingProperties!)
-                    {
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-3 w-8 border-l-2">Sent</th>
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-900 sm:pl-3 w-8 border-r-2">Import</th>
-                    }
-                  </tr>
-                </thead>
-                <tbody>
+                  </div>
                   @foreach(var record in Model.MappingDestinationRecords!)
                   {
-                  <tr class="even:bg-gray-50">
-                    <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerId")" value="@record.BrokerId">
-                    <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerOriginalId")" value="@record.BrokerOriginalId">
+                  <div class="flex">
+                    <div class="flex-2 px-4 py-2 text-sm text-center text-gray-600 border-r border-gray-200">
+                      <div class="flex space-x-2 justify-evenly">
+                      <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerId")" value="@record.BrokerId">
+                      <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerOriginalId")" value="@record.BrokerOriginalId">
+                      <input type="checkbox" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" 
+                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        value="@MappingRecordAction.Ignore"
+                        checked="@(record.BrokerMappingRecordAction == MappingRecordAction.Ignore)">
+                      <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                      </svg>
+                      </div>
+                    </div>
                     @foreach(var property in Model.EditingProperties!)
                     {
-                      <td class="whitespace-nowrap px-0.5 py-1 text-sm text-center text-gray-600 border-l-2">@MappingViewModel.ValueForProperty(record, Model.MappingSourceRecords, property)</td>
-                      <td class="whitespace-nowrap px-0.5 py-1 text-sm text-center text-gray-600 border-r-2">
-                        @if(MappingViewModel.GetPropertyLookupType(property) != null)
-                        {
-                          var optionValues = await Model.MappingLookupService!.SelectAsync(MappingViewModel.GetPropertyLookupType(property), MappingViewModel.ValueForProperty(record, property));
-                          <select name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, property)" class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm">
-                            <option value=""></option>
-                            @if (optionValues is not null && optionValues.Count > 0)
-                            {
-                              @foreach(var option in optionValues!)
-                              {
-                                <!option value="@option.Value" @(option.Selected ? "selected" : "")>@option.Text</!option>
-                              }
-                            }
-                          </select>
-                        }
-                        else
-                        {
-                          <input name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, property)" type="text" value="@MappingViewModel.ValueForProperty(record, property)"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm leading-6">
-                        }
-                      </td>
+                    <div class="flex-1 px-4 py-2 text-sm text-center text-gray-600 border-r border-gray-200">@MappingViewModel.ValueForProperty(record, property)</div>
                     }
-                  </tr>
-                    propertyCounter++;
+                  </div>
+                  propertyCounter++;
                   }
-                </tbody>
-              </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>

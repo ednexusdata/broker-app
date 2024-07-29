@@ -123,8 +123,47 @@ public class MappingController : AuthenticatedController<MappingController>
         // Perform the model binding
         await TryUpdateModelAsync(mappedForm, mappingCollectionType, "mapping");
 
+        // Cast mappedForm to IEnumerable
+        var mappedFormEnumerable = (IEnumerable<dynamic>)mappedForm;
+
+        ArgumentNullException.ThrowIfNull(mapping.JsonDestinationMapping);
+
+        var originalMappedForm = (IEnumerable<dynamic>)System.Text.Json.JsonSerializer.Deserialize(mapping.JsonDestinationMapping, mappingCollectionType)!;
+
+        // Loop through new values and update original
+        foreach(var record in mappedFormEnumerable)
+        {
+            // Get properties
+            Type recordType = record.GetType();
+            var properties = recordType.GetProperties().Where(prop => prop.CanRead && prop.CanWrite);
+            
+            // Find corresponding object in original
+            var originalRecord = originalMappedForm.Where(x => x.BrokerId == record.BrokerId).FirstOrDefault();
+            if (originalRecord != null)
+            {
+                // Loop through properties
+                foreach(var property in properties.Where(x => x.Name != "BrokerId"))
+                {
+                    // Update property value not null
+                    if (property.GetValue(record) != null)
+                    {
+                        var newValue = property.GetValue(record);
+                        
+                        PropertyInfo originalProperty = originalRecord.GetType().GetProperty(property.Name);
+                        if (originalProperty is not null)
+                        {
+                            originalProperty.SetValue(originalRecord, newValue);
+                        }
+                    }
+                }
+                break;
+            }
+            // TODO: Add the ability to add a record
+            
+        }
+
         // Persist the data
-        mapping.JsonDestinationMapping = mappedForm.ToJsonDocument();
+        mapping.JsonDestinationMapping = originalMappedForm.ToJsonDocument();
 
         await _mappingRepository.UpdateAsync(mapping);
         
@@ -147,5 +186,34 @@ public class MappingController : AuthenticatedController<MappingController>
 
         TempData[VoiceTone.Positive] = $"Request waiting to import ({incomingRequest.Id}).";
         return RedirectToAction(nameof(Index), new { id = id });
+    }
+
+    public async Task<IActionResult> Detail(Guid mappingId, Guid mappingBrokerId)
+    {
+        var mapping = await _mappingRepository.GetByIdAsync(mappingId);
+
+        ArgumentNullException.ThrowIfNull(mapping);
+
+        Type mappingType = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(s => s.GetTypes())
+            .Where(p => p.FullName == mapping.MappingType).FirstOrDefault()!;
+
+        Type mappingCollectionType = typeof(List<>).MakeGenericType([mappingType]);
+
+        var sourceMapping = (IEnumerable<dynamic>)JsonConvert.DeserializeObject(mapping.JsonSourceMapping.ToJsonString()!, mappingCollectionType)!;
+        var destinationMapping = (IEnumerable<dynamic>)JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, mappingCollectionType)!;
+
+        var sourceRecord = sourceMapping.Where(x => x.BrokerId == mappingBrokerId).FirstOrDefault();
+        var destinationRecord = destinationMapping.Where(x => x.BrokerId == mappingBrokerId).FirstOrDefault();
+
+        var detailViewModel = new MappingDetailViewModel()
+        {
+            MappingBrokerId = mappingBrokerId,
+            Source = sourceRecord!,
+            Destination = destinationRecord!,
+
+        };
+
+        return View(detailViewModel);
     }
 }

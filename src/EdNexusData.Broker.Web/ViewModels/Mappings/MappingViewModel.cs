@@ -4,6 +4,7 @@ using EdNexusData.Broker.Domain;
 using System.Reflection;
 using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Service.Lookup;
+using EdNexusData.Broker.Connector.Attributes;
 
 namespace EdNexusData.Broker.Web.ViewModels.Mappings;
 
@@ -41,11 +42,18 @@ public class MappingViewModel
 
     public DataTypeAttribute? GetPropertyDataType(PropertyInfo property)
     {
+        if (property?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayInTableAttribute)).Count() > 0)
+        {
+
+        
         var dataType = property?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DataTypeAttribute));
         if (dataType is not null && dataType.Count() > 0)
         {
             return (DataTypeAttribute)dataType.FirstOrDefault()!;
         }
+
+        }
+
         return null;
     }
 
