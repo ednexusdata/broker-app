@@ -27,7 +27,7 @@
           <div class="grid gap-6">
             <div class="grid gap-6 rounded-lg shadow-sm ring-1 ring-gray-900/5">
               <div class="border border-gray-200">
-                <div class="flex flex-col">
+                <div class="flex flex-col" x-data="dataTable">
                   <div class="flex bg-gray-100">
                     <div class="flex-2 px-4 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900 ">
                       <div class="flex space-x-2 justify-evenly">
@@ -44,8 +44,8 @@
                   </div>
                   @foreach(var record in Model.MappingDestinationRecords!)
                   {
-                  <div class="flex">
-                    <div class="flex-2 px-4 py-2 text-sm text-center text-gray-600 border-r border-gray-200">
+                  <div class="flex" x-on:click="loadDetail" data-detailLoaded="no" data-brokerid="@record.BrokerId">
+                    <div class="flex-2 px-4 py-2 text-sm text-center text-gray-600 border-r border-b border-gray-200">
                       <div class="flex space-x-2 justify-evenly">
                       <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerId")" value="@record.BrokerId">
                       <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerOriginalId")" value="@record.BrokerOriginalId">
@@ -60,8 +60,11 @@
                     </div>
                     @foreach(var property in Model.EditingProperties!)
                     {
-                    <div class="flex-1 px-4 py-2 text-sm text-center text-gray-600 border-r border-gray-200">@MappingViewModel.ValueForProperty(record, property)</div>
+                    <div class="flex-1 px-4 py-2 text-sm text-center text-gray-600 border-r border-b border-gray-200">@MappingViewModel.ValueForProperty(record, property)</div>
                     }
+                  </div>
+                  <!-- Detail Row -->
+                  <div class="m-2 border border-gray-200" data-detailbrokerid="@record.BrokerId">
                   </div>
                   propertyCounter++;
                   }
@@ -85,3 +88,35 @@
     </div>
   </div>
 </form>
+
+@section scripts
+{
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('dataTable', () => ({
+      loadDetail: async (e) => {
+        console.log(e);
+
+        const targetElement = e.target;
+        const parentWithBrokerId = targetElement.closest('[data-brokerid]');
+
+        console.log(parentWithBrokerId.dataset.brokerid)
+
+        try {
+          const response = await fetch('/mapping/detail/@Model.MappingId?mappingBrokerId=' + parentWithBrokerId.dataset.brokerid);
+          const data = await response.text();
+
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(data, 'text/html');
+          const elementToInsert = doc.body.firstElementChild;
+
+          parentWithBrokerId.after(elementToInsert)
+          //console.log(data);
+          //e.target
+        } catch (error) {
+          console.error('Error fetching status:', error);
+        }
+    }}));
+  });
+</script>
+}

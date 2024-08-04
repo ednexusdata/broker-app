@@ -1,1 +1,29 @@
 @model EdNexusData.Broker.Web.ViewModels.Mappings.MappingDetailViewModel;
+@{
+  Layout = null;
+}
+
+  <div class="flex flex-col">
+      <div class="flex bg-gray-100">
+        <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Property</div>
+        <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Original</div>
+        <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Mapped</div>
+        <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Final</div>
+      </div>
+      <div class="flex">
+        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">Cal Month</div>
+        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">06</div>
+        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">06</div>
+        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">
+          <input type="text" name="CalMonth" value="06" class="block w-full text-center text-sm border-0.1 border-gray-200 p-0.5 text-gray-900 focus:ring-2 focus:ring-inset focus:ring-tertiary-700" />
+        </div>
+      </div>
+      <div class="flex">
+        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">Cal Year</div>
+        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">2022</div>
+        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">2022</div>
+        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">
+          <input type="text" name="CalMonth" value="2022" class="block w-full text-center text-sm border-0.1 border-gray-200 p-0.5 text-gray-900 focus:ring-2 focus:ring-inset focus:ring-tertiary-700" />
+        </div>
+      </div>
+  </div>

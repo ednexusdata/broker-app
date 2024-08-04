@@ -188,9 +188,9 @@ public class MappingController : AuthenticatedController<MappingController>
         return RedirectToAction(nameof(Index), new { id = id });
     }
 
-    public async Task<IActionResult> Detail(Guid mappingId, Guid mappingBrokerId)
+    public async Task<IActionResult> Detail(Guid id, Guid mappingBrokerId)
     {
-        var mapping = await _mappingRepository.GetByIdAsync(mappingId);
+        var mapping = await _mappingRepository.GetByIdAsync(id);
 
         ArgumentNullException.ThrowIfNull(mapping);
 
@@ -203,8 +203,8 @@ public class MappingController : AuthenticatedController<MappingController>
         var sourceMapping = (IEnumerable<dynamic>)JsonConvert.DeserializeObject(mapping.JsonSourceMapping.ToJsonString()!, mappingCollectionType)!;
         var destinationMapping = (IEnumerable<dynamic>)JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, mappingCollectionType)!;
 
-        var sourceRecord = sourceMapping.Where(x => x.BrokerId == mappingBrokerId).FirstOrDefault();
-        var destinationRecord = destinationMapping.Where(x => x.BrokerId == mappingBrokerId).FirstOrDefault();
+        var sourceRecord = sourceMapping.Where(x => x.BrokerId == mappingBrokerId.ToString()).FirstOrDefault();
+        var destinationRecord = destinationMapping.Where(x => x.BrokerId == mappingBrokerId.ToString()).FirstOrDefault();
 
         var detailViewModel = new MappingDetailViewModel()
         {
