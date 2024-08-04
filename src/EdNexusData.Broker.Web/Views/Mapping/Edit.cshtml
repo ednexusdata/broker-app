@@ -27,7 +27,7 @@
           <div class="grid gap-6">
             <div class="grid gap-6 rounded-lg shadow-sm ring-1 ring-gray-900/5">
               <div class="border border-gray-200">
-                <div class="flex flex-col" x-data="dataTable">
+                <div class="flex flex-col">
                   <div class="flex bg-gray-100">
                     <div class="flex-2 px-4 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900 ">
                       <div class="flex space-x-2 justify-evenly">
@@ -44,27 +44,30 @@
                   </div>
                   @foreach(var record in Model.MappingDestinationRecords!)
                   {
-                  <div class="flex" x-on:click="loadDetail" data-detailLoaded="no" data-brokerid="@record.BrokerId">
-                    <div class="flex-2 px-4 py-2 text-sm text-center text-gray-600 border-r border-b border-gray-200">
-                      <div class="flex space-x-2 justify-evenly">
-                      <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerId")" value="@record.BrokerId">
-                      <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerOriginalId")" value="@record.BrokerOriginalId">
-                      <input type="checkbox" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" 
-                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                        value="@MappingRecordAction.Ignore"
-                        checked="@(record.BrokerMappingRecordAction == MappingRecordAction.Ignore)">
-                      <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-                      </svg>
+                    var bgColor = "";
+                    @if(propertyCounter % 2 == 0) { bgColor = "bg-gray-50"; } else { bgColor = "bg-white"; }
+                  <div class="@bgColor" x-data="dataTable" data-detailLoaded="no" data-brokerid="@record.BrokerId" data-brokerCounter="@propertyCounter">
+                    <div class="flex">
+                      <div class="flex-2 px-4 py-2 text-sm text-center text-gray-600 border-r border-b border-gray-200">
+                        <div class="flex space-x-2 justify-evenly">
+                        <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerId")" value="@record.BrokerId">
+                        <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerOriginalId")" value="@record.BrokerOriginalId">
+                        <input type="checkbox" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" 
+                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                          value="@MappingRecordAction.Ignore"
+                          checked="@(record.BrokerMappingRecordAction == MappingRecordAction.Ignore)">
+                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" x-on:click="loadDetail">
+                          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                        </svg>
+                        </div>
                       </div>
+                      @foreach(var property in Model.EditingProperties!)
+                      {
+                      <div class="flex-1 px-4 py-2 text-sm text-center text-gray-600 border-r border-b border-gray-200" x-on:click="loadDetail">@MappingViewModel.ValueForProperty(record, property)</div>
+                      }
                     </div>
-                    @foreach(var property in Model.EditingProperties!)
-                    {
-                    <div class="flex-1 px-4 py-2 text-sm text-center text-gray-600 border-r border-b border-gray-200">@MappingViewModel.ValueForProperty(record, property)</div>
-                    }
-                  </div>
-                  <!-- Detail Row -->
-                  <div class="m-2 border border-gray-200" data-detailbrokerid="@record.BrokerId">
+                    <!-- Detail Table -->
+                    <div class="m-2 border border-gray-200" data-detailRow="yes" x-show="detailOpen" x-transition>Test Row</div>  
                   </div>
                   propertyCounter++;
                   }
@@ -94,27 +97,33 @@
 <script>
   document.addEventListener('alpine:init', () => {
     Alpine.data('dataTable', () => ({
-      loadDetail: async (e) => {
-        console.log(e);
-
+      detailOpen: false,
+      detailLoaded: false,
+      async loadDetail(e) {
         const targetElement = e.target;
         const parentWithBrokerId = targetElement.closest('[data-brokerid]');
 
-        console.log(parentWithBrokerId.dataset.brokerid)
+        const detailRow = parentWithBrokerId.querySelector('[data-detailRow]');
 
-        try {
-          const response = await fetch('/mapping/detail/@Model.MappingId?mappingBrokerId=' + parentWithBrokerId.dataset.brokerid);
-          const data = await response.text();
+        if (this.detailLoaded === false) {
+          try {
+            const response = await fetch('/mapping/detail/@Model.MappingId?mappingBrokerId=' + parentWithBrokerId.dataset.brokerid + '&propertyCounter=' + parentWithBrokerId.dataset.brokercounter);
+            const data = await response.text();
 
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(data, 'text/html');
-          const elementToInsert = doc.body.firstElementChild;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data, 'text/html');
+            const elementToInsert = doc.body.firstElementChild;
 
-          parentWithBrokerId.after(elementToInsert)
-          //console.log(data);
-          //e.target
-        } catch (error) {
-          console.error('Error fetching status:', error);
+            this.detailLoaded = true;
+            this.detailOpen = true;
+            
+            detailRow.innerHTML = data;
+            
+          } catch (error) {
+            console.error('Error fetching status:', error);
+          }
+        } else {
+          this.detailOpen = !this.detailOpen;
         }
     }}));
   });

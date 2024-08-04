@@ -156,7 +156,6 @@ public class MappingController : AuthenticatedController<MappingController>
                         }
                     }
                 }
-                break;
             }
             // TODO: Add the ability to add a record
             
@@ -188,7 +187,7 @@ public class MappingController : AuthenticatedController<MappingController>
         return RedirectToAction(nameof(Index), new { id = id });
     }
 
-    public async Task<IActionResult> Detail(Guid id, Guid mappingBrokerId)
+    public async Task<IActionResult> Detail(Guid id, Guid mappingBrokerId, int propertyCounter)
     {
         var mapping = await _mappingRepository.GetByIdAsync(id);
 
@@ -211,8 +210,12 @@ public class MappingController : AuthenticatedController<MappingController>
             MappingBrokerId = mappingBrokerId,
             Source = sourceRecord!,
             Destination = destinationRecord!,
-
+            Mapping = mapping,
+            MappingLookupService = _serviceProvider.GetService<MappingLookupService>(),
+            PropertyCounter = propertyCounter
         };
+
+        detailViewModel.SetProperties(mapping.MappingType!);
 
         return View(detailViewModel);
     }

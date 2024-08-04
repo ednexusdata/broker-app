@@ -1,29 +1,49 @@
 @model EdNexusData.Broker.Web.ViewModels.Mappings.MappingDetailViewModel;
+@using EdNexusData.Broker.Web.ViewModels.Mappings;
 @{
   Layout = null;
+  var counter = 0;
+  var bgColorOdd = "";
+  var bgColorEven = "";
+  @if(Model.PropertyCounter % 2 == 0) { bgColorEven = "bg-white"; bgColorOdd = "bg-gray-50"; } else { bgColorEven = "bg-gray-50"; bgColorOdd = "bg-white"; }
 }
-
-  <div class="flex flex-col">
-      <div class="flex bg-gray-100">
-        <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Property</div>
-        <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Original</div>
-        <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Mapped</div>
-        <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Final</div>
+<div class="flex flex-col">
+    <div class="flex bg-gray-100">
+      <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Property</div>
+      <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Original</div>
+      <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Mapped</div>
+      <div class="flex-1 px-2 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900">Final</div>
+    </div>
+    @foreach(var property in Model.EditingProperties!)
+    {
+      var bgColorDetail = "";
+      if (counter % 2 == 0) { bgColorDetail = bgColorEven; } else { bgColorDetail = bgColorOdd; } 
+    <div class="flex @bgColorDetail">
+      <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.GetPropertyDisplayName(property)?.DisplayName</div>
+      <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.OriginalValueForProperty(property)</div>
+      <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.MappedValueForProperty(property)</div>
+      <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">
+        @if(MappingDetailViewModel.GetPropertyLookupType(property) != null)
+        {
+          var optionValues = await Model.MappingLookupService!.SelectAsync(MappingDetailViewModel.GetPropertyLookupType(property), @Model.MappedValueForProperty(property).ToString());
+          <select name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, Model.PropertyCounter, property)" class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm">
+            <option value=""></option>
+            @if (optionValues is not null && optionValues.Count > 0)
+            {
+              @foreach(var option in optionValues!)
+              {
+                <!option value="@option.Value" @(option.Selected ? "selected" : "")>@option.Text</!option>
+              }
+            }
+          </select>
+        }
+        else
+        {
+          <input name="@MappingDetailViewModel.InputName(Model.Mapping!.MappingType!, Model.PropertyCounter, property)" type="text" value="@Model.MappedValueForProperty(property)"
+          class="block w-full text-center text-sm border-0.1 border-gray-200 p-0.5 text-gray-900 focus:ring-2 focus:ring-inset focus:ring-tertiary-700">
+        }
       </div>
-      <div class="flex">
-        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">Cal Month</div>
-        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">06</div>
-        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">06</div>
-        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">
-          <input type="text" name="CalMonth" value="06" class="block w-full text-center text-sm border-0.1 border-gray-200 p-0.5 text-gray-900 focus:ring-2 focus:ring-inset focus:ring-tertiary-700" />
-        </div>
-      </div>
-      <div class="flex">
-        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">Cal Year</div>
-        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">2022</div>
-        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">2022</div>
-        <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">
-          <input type="text" name="CalMonth" value="2022" class="block w-full text-center text-sm border-0.1 border-gray-200 p-0.5 text-gray-900 focus:ring-2 focus:ring-inset focus:ring-tertiary-700" />
-        </div>
-      </div>
-  </div>
+    </div>
+    counter++;
+    }
+</div>
