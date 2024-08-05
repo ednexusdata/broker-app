@@ -64,9 +64,9 @@
                                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.ReceivedDateDisplay</td>
                                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.FileName
                                     <div class="flex flex-row">
-                                        <div class="mr-2 text-xs text-gray-500">View</div>
-                                        <div class="mx-2 text-xs text-gray-500">Raw</div>
-                                        <div class="ml-2 text-xs text-gray-500">Download</div>
+                                        <!--<div class="mr-2 text-xs text-gray-500">View</div>-->
+                                        <div class="mr-2 text-xs text-gray-500"><a asp-controller="Requests" asp-action="ViewAttachment" asp-route-id="@file.PayloadContentId" target="_blank">Raw</a></div>
+                                        <div class="mx-2 text-xs text-gray-500"><a asp-controller="Requests" asp-action="ViewAttachment" asp-route-id="@file.PayloadContentId" asp-route-attachmentContentDisposition="true" target="_blank">Download</a></div>
                                     </div>
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.ContentCategory <div
@@ -108,7 +108,7 @@
             </div>
         </div>
         <div class="flex items-center justify-end gap-x-6 border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-            <a asp-controller="Preparing" asp-action="Index" asp-route-id="@Model.RequestId" asp-authorize
+            <a asp-controller="Incoming" asp-action="Index" asp-authorize
                 asp-policy="@TransferIncomingRecords"
                 class="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0">
                 Cancel

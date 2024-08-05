@@ -25,11 +25,15 @@ public class RequestsController : AuthenticatedController<RequestsController>
         _payloadContentRepository = payloadContentRepository;
     }
 
-    public async Task<IActionResult> View(Guid id)
+    public async Task<IActionResult> View(Guid id, Guid? jobId)
     {
         var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdWithMessagesPayloadContents(id));
-        
         Guard.Against.Null(request);
+
+        if (request.RequestStatus.NotIn(RequestStatus.Sent, RequestStatus.Received))
+        {
+            ViewBag.JobId = jobId;
+        }
 
         var payloadContents = request.PayloadContents;
         var releasingFileNames = request.ResponseManifest?.Contents?.Select(x => x.FileName).ToList();
@@ -60,13 +64,23 @@ public class RequestsController : AuthenticatedController<RequestsController>
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> ViewAttachment(Guid id)
+    public async Task<IActionResult> ViewAttachment(Guid id, bool attachmentContentDisposition = false)
     {
         var payloadContent = await _payloadContentRepository.GetByIdAsync(id);
 
         Guard.Against.Null(payloadContent);
         Guard.Against.Null(payloadContent.ContentType, "ContentType", "ContentType missing from payload content.");
 
+        if (attachmentContentDisposition == true)
+        {
+            Response.Headers.Append("Content-Disposition", $"attachment;filename={payloadContent.FileName}");
+            //return File(fileStream, contentType);
+        }
+        else
+        {
+            Response.Headers.Append("Content-Disposition", "inline");
+        }
+        
         if (payloadContent.JsonContent is not null)
         {
             return Ok(payloadContent.JsonContent.ToJsonString());

@@ -204,12 +204,17 @@ public class IncomingController : AuthenticatedController<IncomingController>
     }
 
     [Route("/incoming-requests/edit/{id:guid}")]
-    public async Task<IActionResult> Update(Guid id)
+    public async Task<IActionResult> Update(Guid id, Guid? jobId)
     {
         var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdWithPayloadContents(id));
         if (incomingRequest is null) return NotFound();
 
         var requestManifest = incomingRequest.RequestManifest;
+
+        if (incomingRequest.RequestStatus.NotIn(RequestStatus.Sent, RequestStatus.Received))
+        {
+            ViewBag.JobId = jobId;
+        }
 
         var viewModel = new CreateIncomingRequestViewModel
         {
@@ -403,10 +408,10 @@ public class IncomingController : AuthenticatedController<IncomingController>
 
         await _incomingRequestRepository.UpdateAsync(incomingRequest);
 
-        await _jobService.CreateJobAsync(typeof(SendRequestJob), typeof(Request), incomingRequest.Id);
+        var job = await _jobService.CreateJobAsync(typeof(SendRequestJob), typeof(Request), incomingRequest.Id);
 
         TempData[VoiceTone.Positive] = $"Request marked to send ({incomingRequest.Id}).";
-        return RedirectToAction(nameof(Update), new { id = id });
+        return RedirectToAction(nameof(View), "Requests", new { id = id, jobId = job.Id });
     }
 }
 
