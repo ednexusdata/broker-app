@@ -14,6 +14,7 @@ using EdNexusData.Broker.Web.Helpers;
 using System.Security.Claims;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
+using EdNexusData.Broker.Web.Constants.DesignSystems;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -143,7 +144,24 @@ public class LoginController : AuthenticatedController<LoginController>
             var email = info.Principal.Claims.Where(x => x.Type == ClaimTypes.Email).FirstOrDefault()!.Value!;
             var user = await _userManager.FindByEmailAsync(email);
 
-            var currentUser = await _userRepo.GetByIdAsync(user!.Id);
+            if (user is null)
+            {
+                await ProcessLogout();
+                TempData[VoiceTone.Critical] = $"User {email} not found.";
+                _logger.LogInformation($"User {email} not found in AspNetUsers.");
+                return RedirectToAction("Index");
+            }
+
+            var currentUser = await _userRepo.GetByIdAsync(user.Id);
+            
+            if (currentUser is null)
+            {
+                await ProcessLogout();
+                TempData[VoiceTone.Critical] = $"User {email} not found.";
+                _logger.LogInformation($"User {email} not found in Users.");
+                return RedirectToAction("Index");
+            }
+
             HttpContext?.Session?.SetObjectAsJson(UserCurrent, currentUser!);
             await _focusHelper.SetInitialFocus();
 
@@ -216,10 +234,15 @@ public class LoginController : AuthenticatedController<LoginController>
     [Route("login/logout")]
     public async Task<IActionResult> Logout()
     {
-         await _signInManager.SignOutAsync();
-        HttpContext?.Session.Clear();
+        await ProcessLogout();
         _logger.LogInformation("User logged out.");
         return RedirectToAction("Index");
+    }
+
+    private async Task ProcessLogout()
+    {
+        await _signInManager.SignOutAsync();
+        HttpContext?.Session.Clear();
     }
 
 }
