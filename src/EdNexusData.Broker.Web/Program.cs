@@ -57,6 +57,8 @@ foreach (var assembly in Assembly.GetExecutingAssembly().GetExportedTypes().Wher
     builder.Services.AddScoped(assembly, assembly);
 }
 
+builder.Services.AddBrokerDataServices();
+
 builder.Services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
 {
     options.User.RequireUniqueEmail = false;
@@ -177,6 +179,12 @@ builder.Services.Configure<IISServerOptions>(options =>
 builder.Services.AddHostedService<BrokerDbContextInitializationService>();
 
 var app = builder.Build();
+
+using (var service = app.Services.CreateAsyncScope())
+{
+    var seederService = service.ServiceProvider.GetRequiredService<SeederService>();
+    await seederService!.Invoke();
+}
 
 // Noted this way because of 
 // https://github.com/dotnet/aspnetcore/issues/51888

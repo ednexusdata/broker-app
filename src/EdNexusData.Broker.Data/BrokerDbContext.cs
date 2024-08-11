@@ -26,6 +26,8 @@ public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRol
     public DbSet<Request>? Requests { get; set; }
     public DbSet<Job>? WorkerJobs { get; set; }
 
+    public DbSet<Seed>? Seeds { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
