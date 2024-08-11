@@ -213,7 +213,7 @@ public class InitialSeed
                 {
                     Name = "Grace D. Cross",
                     Email = "cross@co.skamania.wa.us",
-                    JobTitle = "County AuditoCounty Clerk & Clerk of the Superior Courtr",
+                    JobTitle = "County Clerk & Clerk of the Superior Court",
                     Phone = "509-427-3771"
                 }
             }
