@@ -29,12 +29,11 @@
               <div class="border border-gray-200">
                 <div class="flex flex-col">
                   <div class="flex bg-gray-100">
-                    <div class="flex-2 px-4 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900 ">
+                    <div class="flex-2 px-6 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900 ">
                       <div class="flex space-x-2 justify-evenly">
-                      <input type="checkbox" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 invisible">
-                      <svg class="h-5 w-5 invisible" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-                      </svg>
+                      <span>🚫</span>
+                      <span>📝</span>
+                      <span>✅</span>
                       </div>
                     </div>
                     @foreach(var property in Model.EditingProperties!)
@@ -52,13 +51,9 @@
                         <div class="flex space-x-2 justify-evenly">
                         <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerId")" value="@record.BrokerId">
                         <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerOriginalId")" value="@record.BrokerOriginalId">
-                        <input type="checkbox" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" 
-                          class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                          value="@MappingRecordAction.Ignore"
-                          checked="@(record.BrokerMappingRecordAction == MappingRecordAction.Ignore)">
-                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" x-on:click="loadDetail">
-                          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-                        </svg>
+                        <input type="radio" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" value="@MappingRecordAction.Ignore" checked="@(record.BrokerMappingRecordAction == MappingRecordAction.Ignore)">
+                        <input type="radio" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" value="@MappingRecordAction.None" checked="@(record.BrokerMappingRecordAction == MappingRecordAction.None)">
+                        <input type="radio" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" value="@MappingRecordAction.Import" checked="@(record.BrokerMappingRecordAction == MappingRecordAction.Import)">
                         </div>
                       </div>
                       @foreach(var property in Model.EditingProperties!)
