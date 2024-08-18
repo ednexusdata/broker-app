@@ -95,6 +95,7 @@ public class MappingController : AuthenticatedController<MappingController>
             MappingId = mapping.Id,
             MappingSourceRecords = JsonConvert.DeserializeObject(mapping.JsonSourceMapping.ToJsonString()!, mappingCollectionType)!,
             MappingDestinationRecords = JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, mappingCollectionType)!,
+            
             Mapping = mapping,
             MappingLookupService = _serviceProvider.GetService<MappingLookupService>(),
             RequestId = mapping.PayloadContentAction.PayloadContent.RequestId
@@ -174,6 +175,23 @@ public class MappingController : AuthenticatedController<MappingController>
     [Authorize]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Import(Guid id)
+    {
+        var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));
+
+        Guard.Against.Null(incomingRequest);
+
+        incomingRequest.RequestStatus = RequestStatus.WaitingToImport;
+
+        await _incomingRequestRepository.UpdateAsync(incomingRequest);
+
+        TempData[VoiceTone.Positive] = $"Request waiting to import ({incomingRequest.Id}).";
+        return RedirectToAction(nameof(Index), new { id = id });
+    }
+
+    [HttpPut]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ImportDetail(Guid id)
     {
         var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));
 

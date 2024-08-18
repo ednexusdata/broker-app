@@ -106,9 +106,9 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     FileName = file.FileName!,
                     ContentCategory = (file.XmlContent is not null || file.JsonContent is not null) ? "Data" : "File",
                     ContentType = file.ContentType!,
-                    ReceviedCount = file.JsonContent!.RootElement.GetProperty("Content").EnumerateArray().Count(), // json["Content"].AsJEnumerable().Count(),
-                    MappedCount = mapping?.JsonDestinationMapping?.RootElement.EnumerateArray().Where(x => x.GetProperty("BrokerMappingRecordAction").GetUInt16() == (int)MappingRecordAction.Import).Count(),
-                    IgnoredCount = mapping?.JsonDestinationMapping?.RootElement.EnumerateArray().Where(x => x.GetProperty("BrokerMappingRecordAction").GetUInt16() == (int)MappingRecordAction.Ignore).Count(), 
+                    ReceviedCount = mapping?.ReceviedCount,
+                    MappedCount = mapping?.MappedCount,
+                    IgnoredCount = mapping?.IgnoredCount, 
                     PayloadContentActionType = contentActionType
                 };
                 viewModel.PayloadContents.Add(test);
