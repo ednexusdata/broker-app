@@ -16,6 +16,7 @@ internal class MappingMsSqlConfiguration : IEntityTypeConfiguration<Mapping>
         builder.Property(i => i.StudentAttributes).HasColumnType("nvarchar(max)");
         builder.Property(i => i.OriginalSchema).HasColumnType("nvarchar(max)");
         builder.Property(i => i.JsonSourceMapping).HasColumnType("nvarchar(max)");
+        builder.Property(i => i.JsonInitialMapping).HasColumnType("nvarchar(max)");
         builder.Property(i => i.JsonDestinationMapping).HasColumnType("nvarchar(max)");
     }
 }

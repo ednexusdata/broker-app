@@ -15,7 +15,7 @@ public class MappingDetailViewModel
     public MappingLookupService? MappingLookupService { get; set; }
 
     public dynamic Source { get; set; } = new object();
-
+    public dynamic Initial { get; set; } = new object();
     public dynamic Destination { get; set; } = new object();
     
     public Mapping? Mapping { get; set; }
@@ -81,6 +81,11 @@ public class MappingDetailViewModel
     public object OriginalValueForProperty(PropertyInfo property)
     {
         return property.GetValue(Source);
+    }
+
+    public object InitialValueForProperty(PropertyInfo property)
+    {
+        return property.GetValue(Initial);
     }
 
     public object MappedValueForProperty(PropertyInfo property)

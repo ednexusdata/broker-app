@@ -169,6 +169,7 @@ public class PrepareMappingJob : IJob
             MappingType = recordType?.FullName,
             StudentAttributes = null,
             JsonSourceMapping = recordsSerialized,
+            JsonInitialMapping = transformedRecordsSerialized,
             JsonDestinationMapping = transformedRecordsSerialized
         };
 

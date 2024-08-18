@@ -200,15 +200,18 @@ public class MappingController : AuthenticatedController<MappingController>
         Type mappingCollectionType = typeof(List<>).MakeGenericType([mappingType]);
 
         var sourceMapping = (IEnumerable<dynamic>)JsonConvert.DeserializeObject(mapping.JsonSourceMapping.ToJsonString()!, mappingCollectionType)!;
+        var initialMapping = (IEnumerable<dynamic>)JsonConvert.DeserializeObject(mapping.JsonInitialMapping.ToJsonString()!, mappingCollectionType)!;
         var destinationMapping = (IEnumerable<dynamic>)JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, mappingCollectionType)!;
 
         var sourceRecord = sourceMapping.Where(x => x.BrokerId == mappingBrokerId.ToString()).FirstOrDefault();
+        var initialRecord = initialMapping.Where(x => x.BrokerId == mappingBrokerId.ToString()).FirstOrDefault();
         var destinationRecord = destinationMapping.Where(x => x.BrokerId == mappingBrokerId.ToString()).FirstOrDefault();
 
         var detailViewModel = new MappingDetailViewModel()
         {
             MappingBrokerId = mappingBrokerId,
             Source = sourceRecord!,
+            Initial = initialRecord!,
             Destination = destinationRecord!,
             Mapping = mapping,
             MappingLookupService = _serviceProvider.GetService<MappingLookupService>(),
