@@ -162,7 +162,7 @@ public class PrepareMappingJob : IJob
         var recordsSerialized = JsonSerializer.SerializeToDocument((outRecords is null) ? records : outRecords);
         var transformedRecordsSerialized = JsonSerializer.SerializeToDocument((outTransformedRecords is null) ? transformedRecords : outTransformedRecords);
 
-        await _mappingRepository.AddAsync(new Mapping()
+        var newMapping = new Mapping()
         {
             PayloadContentActionId = action.Id,
             OriginalSchema = payloadContentSchema,
@@ -170,7 +170,12 @@ public class PrepareMappingJob : IJob
             StudentAttributes = null,
             JsonSourceMapping = recordsSerialized,
             JsonDestinationMapping = transformedRecordsSerialized
-        });
+        };
+
+        await _mappingRepository.AddAsync(newMapping);
+
+        action.ActiveMappingId = newMapping.Id;
+        await _actionRepository.UpdateAsync(action);
 
         await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContent.Request, RequestStatus.Prepared, "Prepared");
 
