@@ -28,7 +28,9 @@ public class RequestManifestViewModel
     public string ContentCategory { get; set; } = default!;
     public string ContentType { get; set; } = default!;
     public int? ReceviedCount { get; set; }
+    public int? IgnoredCount { get; set; }
     public int? MappedCount { get; set; }
+    public int? RemainingCount { get { return ReceviedCount - IgnoredCount - MappedCount; } }
     public Guid PayloadContentId { get; set; }
     public PayloadContentAction? Action { get; set; }
     public string? PayloadContentActionType { get; set; }

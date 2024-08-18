@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Ardalis.Specification;
 using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Specifications;
@@ -18,17 +19,20 @@ public class PreparingController : AuthenticatedController<RequestsController>
     private readonly IRepository<Request> _requestRepository;
     private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
     private readonly IRepository<PayloadContentAction> _actionRepository;
+    private readonly IRepository<Mapping> _mappingRepository;
     private readonly ConnectorLoader _connectorLoader;
 
     public PreparingController(
         IRepository<Request> requestRepository, 
         IRepository<Domain.PayloadContent> payloadContentRepository, 
         IRepository<PayloadContentAction> actionRepository,
+        IRepository<Mapping> mappingRepository,
         ConnectorLoader connectorLoader)
     {
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
         _connectorLoader = connectorLoader;
+        _mappingRepository = mappingRepository;
         _actionRepository = actionRepository;
     }
 
@@ -87,6 +91,14 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     contentActionType = file.PayloadContentActions?.FirstOrDefault()?.PayloadContentActionType!;
                 } 
 
+                // Get mapping if exists
+                var activeMappingId = file.PayloadContentActions?.Where(x => x.PayloadContentActionType == contentActionType).Select(x => x.ActiveMappingId).FirstOrDefault();
+                Mapping? mapping = null;
+                if (activeMappingId != null)
+                {
+                    mapping = await _mappingRepository.GetByIdAsync(activeMappingId.Value);
+                }
+
                 var test = new RequestManifestViewModel() {
                     PayloadContentId = file.Id,
                     Action = file.PayloadContentActions?.FirstOrDefault(),
@@ -95,6 +107,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     ContentCategory = (file.XmlContent is not null || file.JsonContent is not null) ? "Data" : "File",
                     ContentType = file.ContentType!,
                     ReceviedCount = file.JsonContent!.RootElement.GetProperty("Content").EnumerateArray().Count(), // json["Content"].AsJEnumerable().Count(),
+                    MappedCount = mapping?.JsonDestinationMapping?.RootElement.EnumerateArray().Where(x => x.GetProperty("BrokerMappingRecordAction").GetUInt16() == (int)MappingRecordAction.Import).Count(),
+                    IgnoredCount = mapping?.JsonDestinationMapping?.RootElement.EnumerateArray().Where(x => x.GetProperty("BrokerMappingRecordAction").GetUInt16() == (int)MappingRecordAction.Ignore).Count(), 
                     PayloadContentActionType = contentActionType
                 };
                 viewModel.PayloadContents.Add(test);

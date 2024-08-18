@@ -25,13 +25,10 @@
                                 class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">File Name
                             </th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Type</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Received
-                            </th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Mapped
-                            </th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Added</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ignored
-                            </th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Received</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Mapped</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ignored</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Remaining</th>
                             <th scope="col" colspan="2"
                                 class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Action</th>
                         </tr>
@@ -73,9 +70,9 @@
                                         class="text-xs text-gray-500">@file.ContentType</div>
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.ReceviedCount</td>
-                                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">&nbsp;</td>
-                                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">&nbsp;</td>
-                                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">&nbsp;</td>
+                                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.MappedCount</td>
+                                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.IgnoredCount</td>
+                                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.RemainingCount</td>
                                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">
                                     <input type="hidden" name="PayloadContent.Items[@counter].PayloadContentId"
                                         value="@file.PayloadContentId">
