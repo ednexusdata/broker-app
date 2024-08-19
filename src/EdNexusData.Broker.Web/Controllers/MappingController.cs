@@ -179,26 +179,6 @@ public class MappingController : AuthenticatedController<MappingController>
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ImportRequest(Guid id)
-    {
-        var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));
-
-        Guard.Against.Null(incomingRequest);
-
-        // Create job
-        var createdJob = await _jobService.CreateJobAsync(typeof(ImportRequestMappingsJob), typeof(Request), id);
-
-        incomingRequest.RequestStatus = RequestStatus.WaitingToImport;
-
-        await _incomingRequestRepository.UpdateAsync(incomingRequest);
-
-        TempData[VoiceTone.Positive] = $"Request waiting to import ({incomingRequest.Id}).";
-        return RedirectToAction(nameof(Index), new { id = id, jobId = createdJob.Id });
-    }
-
-    [HttpPut]
-    [Authorize]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Import(Guid id)
     {
         var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(id));

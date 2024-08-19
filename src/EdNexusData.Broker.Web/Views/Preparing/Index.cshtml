@@ -10,7 +10,7 @@
     ViewData["FocusBar"] = true;
 }
 <form method="post" asp-action="Update" asp-route-id="@Model.RequestId" autocomplete="off">
-    <div class="flow-root overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+    <div class="flow-root overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg" x-data="{ }">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                 <table class="min-w-full divide-y divide-gray-300">
@@ -29,8 +29,9 @@
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Mapped</th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ignored</th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Remaining</th>
-                            <th scope="col" colspan="2"
-                                class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Action</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Action</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+                            <th scope="col">&nbsp;</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white">
@@ -85,6 +86,16 @@
                                         class="rounded-md border-0 py-1.5 px-5.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
                                     </select>
                                 </td>
+                                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600"> <span
+                                            :class="{
+                                                'text-neutral-700 bg-neutral-50 ring-neutral-600/20': @Html.Raw(Json.Serialize(@file.Action?.PayloadContentActionStatus.ToString() == "Ready")),
+                                                'text-caution-700 bg-caution-50 ring-caution-600/20': @Html.Raw(Json.Serialize(@file.Action?.PayloadContentActionStatus.ToString() == "Prepared")),
+                                                'text-promote-700 bg-promote-50 ring-promote-600/20': @Html.Raw(Json.Serialize(@file.Action?.PayloadContentActionStatus.ToString() == "Imported")),
+                                            }"
+                                            class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                                        >
+                                            @file.Action?.PayloadContentActionStatus.ToString()
+                                        </span></td>
                                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">
                                     <div class="flex justify-end gap-2">
 
@@ -119,7 +130,15 @@
 @section HeaderAction
 {
   <div class="flex space-x-4">
-  <div>@Model.RequestStatus.ToString()</div>
+  @if(ViewBag.JobId is not null && ViewBag.JobId.ToString() != "")
+    {
+    <div x-data="preparingIndex">
+      <span x-text="status">@Model.RequestStatus.GetDescription()</span>
+    </div>
+    } else
+    {
+        <div>@Model.RequestStatus.ToString()</div>
+    }
   @if (Model.RequestStatus == EdNexusData.Broker.Domain.RequestStatus.Prepared)
   {
     <div>
@@ -133,4 +152,55 @@
     </div>
   } 
   </div>
+}
+
+
+@section scripts
+{
+<script>
+  document.addEventListener('alpine:init', () => {
+
+    Alpine.data('preparingIndex', () => ({
+      status: "Preparing...",
+      interval: null,
+      fetchData: null,
+      initFetchData: function() {
+        this.fetchData = async () => {
+          try {
+            const response = await fetch('/api/v1/jobs?jobId=@ViewBag.JobId');
+            const data = await response.json();
+            //console.log(data);
+            this.status = data.workerState;
+            //console.log("Worker State: " + data.workerState);
+
+            //console.log("Job Status: " + data.jobStatus);
+            if (data.jobStatus == 2)
+            {
+              //console.log("Inside job status");
+              location.reload();
+              clearInterval(this.interval);
+            }
+
+          } catch (error) {
+            console.error('Error fetching status:', error);
+            clearInterval(this.interval);
+          }
+        };
+      },
+      init() {
+        this.initFetchData();
+        //console.log("Called startPolling and about to call setInterval");
+        this.interval = setInterval(this.fetchData, 2000); // Poll every 2 seconds (adjust as needed)
+        //this.status = "Called setInternal";
+        //console.log("Called setInterval");
+        
+      },
+      destroy() {
+          // Detach the handler, avoiding memory and side-effect leakage
+          clearInterval(this.interval);
+      },
+    }))
+    
+  });
+</script>
 }

@@ -1,8 +1,12 @@
 using System.ComponentModel;
+using Ardalis.GuardClauses;
 using Ardalis.Specification;
 using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Worker;
+using EdNexusData.Broker.Service;
+using EdNexusData.Broker.Service.Jobs;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.ViewModels.Preparing;
@@ -20,6 +24,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
     private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
     private readonly IRepository<PayloadContentAction> _actionRepository;
     private readonly IRepository<Mapping> _mappingRepository;
+    private readonly JobService _jobService;
     private readonly ConnectorLoader _connectorLoader;
 
     public PreparingController(
@@ -27,23 +32,31 @@ public class PreparingController : AuthenticatedController<RequestsController>
         IRepository<Domain.PayloadContent> payloadContentRepository, 
         IRepository<PayloadContentAction> actionRepository,
         IRepository<Mapping> mappingRepository,
-        ConnectorLoader connectorLoader)
+        ConnectorLoader connectorLoader,
+        JobService jobService)
     {
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
+        _actionRepository = actionRepository;
         _connectorLoader = connectorLoader;
         _mappingRepository = mappingRepository;
         _actionRepository = actionRepository;
+        _jobService = jobService;
     }
 
     [Route("/Preparing/{id:guid}")]
-    public async Task<IActionResult> Index(Guid id)
+    public async Task<IActionResult> Index(Guid id, Guid? jobId)
     {
         // Get all payload content files for request
         var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdWithMessagesPayloadContents(id));
         if (request == null)
         {
             return NotFound();
+        }
+
+        if (request.RequestStatus.NotIn(RequestStatus.Imported))
+        {
+            ViewBag.JobId = jobId;
         }
 
         var viewModel = new RequestManifestListViewModel
@@ -161,5 +174,25 @@ public class PreparingController : AuthenticatedController<RequestsController>
         }
         
         return RedirectToAction(nameof(Index), new { id = id });
+    }
+
+    [HttpPut]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ImportRequest(Guid id)
+    {
+        var incomingRequest = await _requestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));
+
+        Guard.Against.Null(incomingRequest);
+
+        // Create job
+        var createdJob = await _jobService.CreateJobAsync(typeof(ImportRequestMappingsJob), typeof(Request), id);
+
+        incomingRequest.RequestStatus = RequestStatus.WaitingToImport;
+
+        await _requestRepository.UpdateAsync(incomingRequest);
+
+        TempData[VoiceTone.Positive] = $"Request waiting to import ({incomingRequest.Id}).";
+        return RedirectToAction(nameof(Index), new { id = id, jobId = createdJob.Id });
     }
 }
