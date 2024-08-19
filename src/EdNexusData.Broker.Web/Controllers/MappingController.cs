@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Text.Json;
 using Ardalis.GuardClauses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,14 +7,12 @@ using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
-using EdNexusData.Broker.Web.Extensions.Genders;
-using EdNexusData.Broker.Web.Extensions.States;
 using EdNexusData.Broker.Web.ViewModels.Mappings;
-using EdNexusData.Broker.Web.ViewModels.Requests;
 using EdNexusData.Broker.Service.Lookup;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 using EdNexusData.Broker.Service;
 using EdNexusData.Broker.Service.Jobs;
+using EdNexusData.Broker.Web;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -72,14 +69,22 @@ public class MappingController : AuthenticatedController<MappingController>
         // Prepare mapping
         var createdJob = await _jobService.CreateJobAsync(typeof(PrepareMappingJob), typeof(PayloadContentAction), action.Id);
 
+        action.PayloadContentActionStatus = PayloadContentActionStatus.WaitingToPrepare;
+        await _actionRepository.UpdateAsync(action);
+
         TempData[VoiceTone.Positive] = $"Preparing mapping for {action.PayloadContent!.FileName} ({action.PayloadContent!.Id}).";
         return RedirectToAction(nameof(Index), new { id = id, jobId = createdJob.Id });
     }
 
-    public async Task<IActionResult> Edit(Guid id)
+    public async Task<IActionResult> Edit(Guid id, Guid? jobId)
     {
         var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(id));
         if (mapping is null) return NotFound();
+
+        if (mapping.PayloadContentAction!.PayloadContentActionStatus.NotIn(PayloadContentActionStatus.Prepared, PayloadContentActionStatus.Imported))
+        {
+            ViewBag.JobId = jobId;
+        }
 
         Type mappingType = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(s => s.GetTypes())
@@ -174,35 +179,40 @@ public class MappingController : AuthenticatedController<MappingController>
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Import(Guid id)
+    public async Task<IActionResult> ImportRequest(Guid id)
     {
         var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));
 
         Guard.Against.Null(incomingRequest);
+
+        // Create job
+        var createdJob = await _jobService.CreateJobAsync(typeof(ImportRequestMappingsJob), typeof(Request), id);
 
         incomingRequest.RequestStatus = RequestStatus.WaitingToImport;
 
         await _incomingRequestRepository.UpdateAsync(incomingRequest);
 
         TempData[VoiceTone.Positive] = $"Request waiting to import ({incomingRequest.Id}).";
-        return RedirectToAction(nameof(Index), new { id = id });
+        return RedirectToAction(nameof(Index), new { id = id, jobId = createdJob.Id });
     }
 
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ImportDetail(Guid id)
+    public async Task<IActionResult> Import(Guid id)
     {
-        var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));
+        var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(id));
+        Guard.Against.Null(mapping);
+        Guard.Against.Null(mapping.PayloadContentAction);
 
-        Guard.Against.Null(incomingRequest);
+        // Create job
+        var createdJob = await _jobService.CreateJobAsync(typeof(ImportMappingJob), typeof(Mapping), mapping.Id);
 
-        incomingRequest.RequestStatus = RequestStatus.WaitingToImport;
+        mapping.PayloadContentAction.PayloadContentActionStatus = PayloadContentActionStatus.WaitingToImport;
+        await _mappingRepository.UpdateAsync(mapping);
 
-        await _incomingRequestRepository.UpdateAsync(incomingRequest);
-
-        TempData[VoiceTone.Positive] = $"Request waiting to import ({incomingRequest.Id}).";
-        return RedirectToAction(nameof(Index), new { id = id });
+        TempData[VoiceTone.Positive] = $"Mapping waiting to import ({mapping.Id}).";
+        return RedirectToAction(nameof(Edit), new { id = id, jobId = createdJob.Id });
     }
 
     public async Task<IActionResult> Detail(Guid id, Guid mappingBrokerId, int propertyCounter)

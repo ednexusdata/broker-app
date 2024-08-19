@@ -178,7 +178,7 @@ public class PrepareMappingJob : IJob
         action.ActiveMappingId = newMapping.Id;
         await _actionRepository.UpdateAsync(action);
 
-        await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContent.Request, RequestStatus.Prepared, "Prepared");
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, action, PayloadContentActionStatus.Prepared, "Prepared");
 
         await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Complete, "Finished preparing mapping.");
     }

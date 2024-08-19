@@ -4,6 +4,7 @@ using System.Text.Json;
 using EdNexusData.Broker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 {
     [DbContext(typeof(PostgresDbContext))]
-    partial class PostgresDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240819024037_AddPayloadContentActionStatus")]
+    partial class AddPayloadContentActionStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -329,9 +332,6 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
                     b.Property<bool>("Process")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("ProcessState")
-                        .HasColumnType("text");
 
                     b.Property<string>("Settings")
                         .HasColumnType("jsonb");

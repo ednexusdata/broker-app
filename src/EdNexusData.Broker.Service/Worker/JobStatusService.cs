@@ -11,15 +11,18 @@ public class JobStatusService<T>
 {
     private readonly IRepository<Job> _jobRepo;
     private readonly IRepository<Request> _requestRepo;
+    private readonly IRepository<PayloadContentAction> _payloadContentActionRepo;
     private readonly ILogger<T> _logger;
 
     public JobStatusService(ILogger<T> logger, 
            IRepository<Job> jobRepo,
-           IRepository<Request> requestRepo)
+           IRepository<Request> requestRepo,
+           IRepository<PayloadContentAction> payloadContentActionRepo)
     {
         _logger = logger;
         _jobRepo = jobRepo;
         _requestRepo = requestRepo;
+        _payloadContentActionRepo = payloadContentActionRepo;
     }
 
     public async Task<Job?> Get(Guid? jobId)
@@ -55,6 +58,16 @@ public class JobStatusService<T>
         await UpdateJobStatus(jobRecord, JobStatus.Running, message, messagePlaceholders);
 
         _logger.LogInformation($"{jobRecord.Id} / {request.Id}: {message}", messagePlaceholders);
+    }
+
+    public async Task UpdatePayloadContentActionStatus(Job jobRecord, PayloadContentAction payloadContentAction, PayloadContentActionStatus? newPayloadContentActionStatus, string? message, params object?[] messagePlaceholders)
+    {
+        if (newPayloadContentActionStatus is not null) { payloadContentAction.PayloadContentActionStatus = newPayloadContentActionStatus.Value; }
+        payloadContentAction.ProcessState = message;
+        await _payloadContentActionRepo.UpdateAsync(payloadContentAction);
+        await UpdateJobStatus(jobRecord, JobStatus.Running, message, messagePlaceholders);
+
+        _logger.LogInformation($"{jobRecord.Id} / {payloadContentAction.Id}: {message}", messagePlaceholders);
     }
 
 }

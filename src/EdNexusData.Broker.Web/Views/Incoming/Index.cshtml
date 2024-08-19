@@ -181,7 +181,9 @@
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-sm font-medium sm:pr-3">
                                         <div class="flex justify-end gap-2">
                                             @if (@incomingRequest.Status == EdNexusData.Broker.Domain.RequestStatus.Received.GetDescription() 
-                                                || @incomingRequest.Status == EdNexusData.Broker.Domain.RequestStatus.Prepared.GetDescription())
+                                                || @incomingRequest.Status == EdNexusData.Broker.Domain.RequestStatus.Prepared.GetDescription()
+                                                || @incomingRequest.Status == EdNexusData.Broker.Domain.RequestStatus.Importing.GetDescription()
+                                                || @incomingRequest.Status == EdNexusData.Broker.Domain.RequestStatus.Imported.GetDescription())
                                             {
                                                 <a
                                                     asp-controller="Preparing"
