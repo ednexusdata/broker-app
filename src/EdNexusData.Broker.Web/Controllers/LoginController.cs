@@ -15,6 +15,7 @@ using System.Security.Claims;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
+using System.Collections.Immutable;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -28,6 +29,10 @@ public class LoginController : AuthenticatedController<LoginController>
     private readonly IRepository<User> _userRepo;
     private readonly FocusHelper _focusHelper;
     private readonly AuthenticationProviderResolver _authenticationProviderResolver;
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _hostingEnvironment;
+
+    private ImmutableList<string> _allowedAnonymousEnvironments => new List<string> { "Demo", "Development", "Test" }.ToImmutableList();
 
     public LoginController(
         ILogger<LoginController> logger,
@@ -36,7 +41,9 @@ public class LoginController : AuthenticatedController<LoginController>
         SignInManager<IdentityUser<Guid>> signInManager,
         IRepository<User> userRepo,
         FocusHelper focusHelper,
-        AuthenticationProviderResolver authenticationProviderResolver)
+        AuthenticationProviderResolver authenticationProviderResolver,
+        IConfiguration configuration,
+        IWebHostEnvironment hostingEnvironment)
     {
         _logger = logger;
         _db = db;
@@ -45,6 +52,8 @@ public class LoginController : AuthenticatedController<LoginController>
         _userRepo = userRepo;
         _focusHelper = focusHelper;
         _authenticationProviderResolver = authenticationProviderResolver;
+        _configuration = configuration;
+        _hostingEnvironment = hostingEnvironment;
     }
 
     [HttpGet]
@@ -58,6 +67,13 @@ public class LoginController : AuthenticatedController<LoginController>
     [Route("login/anonymous")]
     public async Task<IActionResult> AnonymousLogin(string email)
     {
+        if (_configuration["Authentication:Anonymous"] is null
+           || _configuration["Authentication:Anonymous"] != "Yes"
+           || !_allowedAnonymousEnvironments.Contains(_hostingEnvironment.EnvironmentName))
+        {
+            return NotFound();
+        }
+        
         Guard.Against.Null(email, "email", $"Missing email in force login");
 
         var user = await _userManager.FindByEmailAsync(email);
