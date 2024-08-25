@@ -18,6 +18,8 @@ internal class MappingSharedConfiguration : IEntityTypeConfiguration<Mapping>
         // Json Fields
         builder.Property(i => i.OriginalSchema).HasJsonConversion();
         builder.Property(i => i.StudentAttributes).HasJsonConversion();
+        builder.Property(i => i.JsonInitialMapping).HasJsonConversion();
+        builder.Property(i => i.JsonInitialMapping).HasJsonConversion();
         builder.Property(i => i.JsonSourceMapping).HasJsonConversion();
         builder.Property(i => i.JsonDestinationMapping).HasJsonConversion();
 
