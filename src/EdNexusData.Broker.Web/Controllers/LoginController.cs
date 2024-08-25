@@ -59,9 +59,66 @@ public class LoginController : AuthenticatedController<LoginController>
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var externalLogins = await _signInManager.GetExternalAuthenticationSchemesAsync();
-        return View(externalLogins);
+        var loginViewModel = new LogInViewModel()
+        {
+            ExternalLogins = await _signInManager.GetExternalAuthenticationSchemesAsync()
+        };
+
+        return View(loginViewModel);
     }
+
+    [HttpPost]
+    [Route("login")]
+    public async Task<IActionResult> Login(LogInViewModel loginViewModel)
+    {
+        if (ModelState.IsValid)
+        {
+            var user = await _userManager.FindByEmailAsync(loginViewModel.Email!);
+
+            if (user is null)
+            {
+                _logger.LogInformation("{Email} not found in database.", loginViewModel);
+                return RedirectToAction("Index");
+            }
+
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginViewModel.Password!, lockoutOnFailure: false);
+            if (result.Succeeded)
+            {
+                // User successfully signed in with username and password.
+                // Now verify the TOTP code.
+                if (user != null && await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, loginViewModel.TotpCode!))
+                {
+                    // TOTP code is valid.
+                    var currentUser = await _userRepo.GetByIdAsync(user.Id);
+                    
+                    var claims = new List<Claim>
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                        new Claim(ClaimTypes.Name, user.Email!),
+                        new Claim(ClaimTypes.Email, user.Email!)
+                    };
+
+                    var claimsIdentity = new ClaimsIdentity(
+                        claims, IdentityConstants.ApplicationScheme);
+
+                    await HttpContext!.SignInAsync(
+                        IdentityConstants.ApplicationScheme,
+                        new ClaimsPrincipal(claimsIdentity));
+                    
+                    HttpContext?.Session?.SetObjectAsJson(UserCurrent, currentUser!);
+                    await _focusHelper.SetInitialFocus();
+                    HttpContext?.Session?.SetString(LastAccessedKey, $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}");
+
+                    return LocalRedirect("~/");
+                }
+            }
+        }
+
+        _logger.LogInformation("{Email} not found in database.", loginViewModel);
+        TempData[VoiceTone.Critical] = $"Invalid email/password/TOTP code combination.";
+        return RedirectToAction(nameof(Index));
+    }
+
 
     [HttpGet]
     [Route("login/anonymous")]
@@ -273,9 +330,10 @@ public class LogInViewModel
         [DataType(DataType.Password)]
         public string? Password { get; set; }
 
-        [Display(Name = "Remember me")]
-        public bool RememberMe { get; set; }
+        [Required]
+        public string? TotpCode { get; set; }
+
         public string? ReturnUrl { get; set; }
 
-        public IList<AuthenticationScheme>? ExternalLogins { get; set; }
+        public IEnumerable<AuthenticationScheme>? ExternalLogins { get; set; }
     }

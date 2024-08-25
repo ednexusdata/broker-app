@@ -1,5 +1,5 @@
 @using Microsoft.AspNetCore.Authentication
-@model IEnumerable<AuthenticationScheme>
+@model EdNexusData.Broker.Web.Controllers.LogInViewModel
 @{
     // Copyright: 2023 Education Nexus Oregon
     // Author: Makoa Jacobsen, makoa@makoajacobsen.com
@@ -19,12 +19,51 @@
         <div class="border border-gray-200 px-4 py-8 sm:rounded-lg sm:px-10">
             <partial name="_Alert"></partial>
             <form id="external-account" asp-action="ExternalLogin" method="post">
-              @foreach (var provider in Model)
+              @foreach (var provider in Model.ExternalLogins!)
               {
                 <button type="submit" class="my-3 w-full justify-center rounded-md bg-white px-4 py-2 text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
                   Sign in with @provider.DisplayName
                 </button>
               }
+            </form>
+
+            @if(Model.ExternalLogins.Count() > 0)
+            {
+            <div class="relative mt-5">
+              <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="w-full border-t border-gray-200"></div>
+              </div>
+              <div class="relative flex justify-center text-sm font-medium leading-6">
+                <span class="bg-white px-6 text-gray-900">Or continue with</span>
+              </div>
+            </div>
+            }
+
+            <form class="space-y-6" asp-action="Login" method="POST">
+              <div>
+                <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email address</label>
+                <div class="mt-2">
+                  <input asp-for="@Model.Email" autocomplete="email" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                </div>
+              </div>
+
+              <div>
+                <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
+                <div class="mt-2">
+                  <input asp-for="@Model.Password" autocomplete="current-password" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                </div>
+              </div>
+
+              <div>
+                <label for="email" class="block text-sm font-medium leading-6 text-gray-900">TOTP Code</label>
+                <div class="mt-2">
+                  <input asp-for="@Model.TotpCode" autocomplete="auth-code" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                </div>
+              </div>
+
+              <div>
+                <button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
+              </div>
             </form>
           </div>
         </div>

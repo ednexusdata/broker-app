@@ -36,17 +36,17 @@ public class BrokerDbContextInitializationService : IHostedService
             
             if (count == 0)
             {
-                _logger.LogDebug("Finding first user in configuration.");
+                _logger.LogInformation("Finding first user in configuration.");
                 var config = _configuration.GetSection("FirstUser");
                 Guard.Against.Null(config, "config", "FirstUser not defined in configuration");
 
-                _logger.LogDebug("Finding first user properties");
+                _logger.LogInformation("Finding first user properties");
 
                 var firstUserEmail = config.GetValue<string>("EmailAddress");
                 Guard.Against.NullOrEmpty(firstUserEmail, "First User Email is null or empty");
 
-                var firstUserPassword = config.GetValue<string>("Password");
-                Guard.Against.Null(firstUserPassword, "First User Password is not defined");
+                var firstUserPassword = config.GetValue<string>("WithPassword");
+                Guard.Against.Null(firstUserPassword, "First User WithPassword is not defined");
 
                 var firstUserFirstName = config.GetValue<string>("FirstName");
                 Guard.Against.NullOrEmpty(firstUserFirstName, "First User First Name is null or empty");
@@ -54,19 +54,28 @@ public class BrokerDbContextInitializationService : IHostedService
                 var firstUserLastName = config.GetValue<string>("LastName");
                 Guard.Against.NullOrEmpty(firstUserLastName, "First User Last Name is null or empty");
 
-                _logger.LogDebug("Creating first user in AspNet users");
+                _logger.LogInformation("Creating first user in AspNet users");
 
                 var identityUser = new IdentityUser<Guid> { UserName = firstUserEmail, Email = firstUserEmail }; 
-                if (firstUserPassword != "")
+                if (firstUserPassword == "Yes")
                 {
-                    await _userManager.CreateAsync(identityUser, firstUserPassword);
+                    var generatedPassword = BrokerIdentityUser.GenerateRandomPassword();
+                    
+                    await _userManager.CreateAsync(identityUser, generatedPassword);
+                    await _userManager.ResetAuthenticatorKeyAsync(identityUser);
+                    var secretKey = await _userManager.GetAuthenticatorKeyAsync(identityUser);
+                    await _userManager.SetTwoFactorEnabledAsync(identityUser, true);
+
+                    var url = $"otpauth://totp/broker:{firstUserEmail}?secret={secretKey}&issuer=broker";
+                    _logger.LogInformation($"Set password for user: {generatedPassword}");
+                    _logger.LogInformation($"Set totp on user: {url}");
                 }
                 else
                 {
                     await _userManager.CreateAsync(identityUser);
                 }
                 
-                _logger.LogDebug("Creating first user in Broker users");
+                _logger.LogInformation("Creating first user in Broker users");
 
                 var user = new User()
                 {

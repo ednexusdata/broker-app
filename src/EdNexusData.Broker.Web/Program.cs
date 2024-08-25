@@ -64,7 +64,8 @@ builder.Services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
     options.User.RequireUniqueEmail = false;
 })
 .AddEntityFrameworkStores<BrokerDbContext>()
-.AddTokenProvider<DataProtectorTokenProvider<IdentityUser<Guid>>>(TokenOptions.DefaultProvider);
+.AddDefaultTokenProviders();
+//.AddTokenProvider<DataProtectorTokenProvider<IdentityUser<Guid>>>(TokenOptions.DefaultProvider);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPayloadContentService, PayloadContentService>();
