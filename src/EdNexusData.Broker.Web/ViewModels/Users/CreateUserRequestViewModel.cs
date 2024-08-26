@@ -30,5 +30,7 @@ namespace EdNexusData.Broker.Web.ViewModels.Users;
     [Required]
     [Display(Name = "All Organizations")]
     public PermissionType AllEducationOrganizations { get; set; } = PermissionType.None;
+
+    public bool PasswordSet { get; set; } = false;
 }
 

@@ -66,7 +66,7 @@ public class BrokerDbContextInitializationService : IHostedService
                     var secretKey = await _userManager.GetAuthenticatorKeyAsync(identityUser);
                     await _userManager.SetTwoFactorEnabledAsync(identityUser, true);
 
-                    var url = $"otpauth://totp/broker:{firstUserEmail}?secret={secretKey}&issuer=broker";
+                    var url = $"otpauth://totp/broker:{firstUserEmail}?secret={secretKey}&issuer=ednexusdata";
                     _logger.LogInformation($"Set password for user: {generatedPassword}");
                     _logger.LogInformation($"Set totp on user: {url}");
                 }

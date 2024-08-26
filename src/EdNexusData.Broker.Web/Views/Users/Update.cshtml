@@ -11,6 +11,34 @@
         <input type="hidden" name="_METHOD" value="PATCH" />
         <partial name="_form" for="@Model" />
     </form>
+    <form id="user-form" method="post" asp-action="TogglePassword" asp-route-id="@Model.UserId">
+        
+        <div class="px-4 sm:px-0">
+            <div class="bg-white shadow sm:rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    @if(Model.PasswordSet == true) {
+                        <h3 class="text-base font-semibold leading-6 text-gray-900">Remove Password and TOTP</h3>
+                        <div class="mt-2 max-w-xl text-sm text-gray-600">
+                            <p>Remove the current password and secret key.</p>
+                        </div>
+                        <div class="mt-5">
+                            <input type="hidden" name="_METHOD" value="PATCH" />
+                            <button type="submit" class="inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold bg-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700">Remove Password &amp; TOTP</button>
+                        </div>
+                    } else {
+                        <h3 class="text-base font-semibold leading-6 text-gray-900">Set Password and TOTP</h3>
+                        <div class="mt-2 max-w-xl text-sm text-gray-600">
+                            <p>Set a generated password and secret key that will show after submission.</p>
+                        </div>
+                        <div class="mt-5">
+                            <input type="hidden" name="_METHOD" value="PATCH" />
+                            <button type="submit" class="inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold bg-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700">Generate Password &amp; TOTP</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </form>
     <form method="post" asp-action="Delete" asp-route-id="@Model.UserId">
         <div class="px-4 sm:px-0">
             <div class="bg-white shadow sm:rounded-lg">

@@ -125,7 +125,8 @@ public class UsersController : AuthenticatedController<UsersController>
                 LastName = applicationUser.LastName,
                 IsSuperAdmin = applicationUser.IsSuperAdmin,
                 AllEducationOrganizations = applicationUser.AllEducationOrganizations,
-                Email = identityUser.Email!
+                Email = identityUser.Email!,
+                PasswordSet = await _userManager.HasPasswordAsync(identityUser)
             };
         }
 
@@ -168,6 +169,39 @@ public class UsersController : AuthenticatedController<UsersController>
         await _userRepository.UpdateAsync(appUser);
 
         TempData[VoiceTone.Positive] = $"Updated user {data.Email} ({user.Id}).";
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [ValidateAntiForgeryToken]
+    [HttpPatch]
+    public async Task<IActionResult> TogglePassword(Guid id)
+    {
+        var identityUser = await _userManager.FindByIdAsync(id.ToString());
+
+        if (identityUser is null) { throw new ArgumentNullException("Could not find user for id." ); }
+
+        if (await _userManager.HasPasswordAsync(identityUser) == false)
+        {
+            var generatedPassword = BrokerIdentityUser.GenerateRandomPassword();
+
+            await _userManager.AddPasswordAsync(identityUser, generatedPassword);
+            await _userManager.ResetAuthenticatorKeyAsync(identityUser);
+            var secretKey = await _userManager.GetAuthenticatorKeyAsync(identityUser);
+            await _userManager.SetTwoFactorEnabledAsync(identityUser, true);
+
+            var url = $"otpauth://totp/broker:{identityUser.Email}?secret={secretKey}&issuer=ednexusdata";
+            
+            TempData[VoiceTone.Positive] = $"Set password to {generatedPassword} and TOTP auth key url to {url} for user {identityUser.Email} ({identityUser.Id}).";
+        }
+        else
+        {
+            await _userManager.RemovePasswordAsync(identityUser);
+            await _userManager.SetTwoFactorEnabledAsync(identityUser, false);
+            await _userManager.ResetAuthenticatorKeyAsync(identityUser);
+
+            TempData[VoiceTone.Positive] = $"Removed password and TOTP from {identityUser.Email} ({identityUser.Id}).";
+        }
 
         return RedirectToAction(nameof(Index));
     }
