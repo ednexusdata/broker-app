@@ -68,9 +68,26 @@ public class PayloadLoaderJob : IJob
             var jobToExecute = _payloadJobResolver.Resolve(outgoingPayloadContent.PayloadContentType);
             await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
 
-            // Execute the job
-            var result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!, JsonSerializer.SerializeToDocument(outgoingPayloadContent.Settings));
-            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Received result: {0}", result?.GetType().FullName);
+            object? result = null;
+
+            if (jobToExecute is DelayedPayloadJob)
+            {
+                DelayedPayloadJob delayedJobToExecute = (jobToExecute as DelayedPayloadJob)!;
+                
+                var startResult = await delayedJobToExecute.StartAsync(request.Student?.Student?.StudentNumber!, JsonSerializer.SerializeToDocument(outgoingPayloadContent.Settings));
+                
+                if (startResult == DelayedPayloadJob.Status.Finish)
+                {
+                    result = await delayedJobToExecute.FinishAsync();
+                }
+            }
+            else
+            {
+                // Execute the job
+                result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!, JsonSerializer.SerializeToDocument(outgoingPayloadContent.Settings));
+            }
+
+            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Received result: {0}", result!.GetType().FullName);
             
             // check if there is a result and if it is of type DataPayloadContent
             if (result is not null && result.GetType().IsAssignableTo(typeof(DataPayloadContent)))

@@ -61,7 +61,7 @@ public class MappingController : AuthenticatedController<MappingController>
     [HttpPost]
     public async Task<IActionResult> Prepare(Guid id)
     {
-        var action = await _actionRepository.FirstOrDefaultAsync(new ActionWithPayloadContent(id));
+        var action = await _actionRepository.FirstOrDefaultAsync(new PayloadContentActionWithPayloadContent(id));
 
         Guard.Against.Null(action, "action", "Invalid action");
         Guard.Against.Null(action.PayloadContent, "action.PayloadContent", "Invalid payload content to action");
@@ -179,20 +179,19 @@ public class MappingController : AuthenticatedController<MappingController>
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Import(Guid id)
+    public async Task<IActionResult> Import(Guid id, Guid MappingId)
     {
-        var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(id));
-        Guard.Against.Null(mapping);
-        Guard.Against.Null(mapping.PayloadContentAction);
+        var payloadContentAction = await _actionRepository.GetByIdAsync(id);
+        Guard.Against.Null(payloadContentAction, "payloadContentAction", "Unable to find payload content action.");
 
         // Create job
-        var createdJob = await _jobService.CreateJobAsync(typeof(ImportMappingJob), typeof(Mapping), mapping.Id);
+        var createdJob = await _jobService.CreateJobAsync(typeof(PayloadContentActionJob), typeof(PayloadContentAction), payloadContentAction.Id);
 
-        mapping.PayloadContentAction.PayloadContentActionStatus = PayloadContentActionStatus.WaitingToImport;
-        await _mappingRepository.UpdateAsync(mapping);
+        payloadContentAction.PayloadContentActionStatus = PayloadContentActionStatus.WaitingToImport;
+        await _actionRepository.UpdateAsync(payloadContentAction);
 
-        TempData[VoiceTone.Positive] = $"Mapping waiting to import ({mapping.Id}).";
-        return RedirectToAction(nameof(Edit), new { id = id, jobId = createdJob.Id });
+        TempData[VoiceTone.Positive] = $"Mapping waiting to execute payload content action {payloadContentAction.PayloadContentActionType} ({payloadContentAction.Id}).";
+        return RedirectToAction(nameof(Edit), new { id = MappingId, jobId = createdJob.Id });
     }
 
     public async Task<IActionResult> Detail(Guid id, Guid mappingBrokerId, int propertyCounter)
