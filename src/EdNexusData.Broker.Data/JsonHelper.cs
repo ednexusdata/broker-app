@@ -13,7 +13,7 @@ public static class JsonHelper
         var options = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true,
+            WriteIndented = false,
             AllowTrailingCommas = true,
             PropertyNameCaseInsensitive = true
         };
