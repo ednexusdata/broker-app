@@ -101,6 +101,8 @@ public class HomeController : AuthenticatedController<HomeController>
         model.LatestIncomingRequests = incomingRequestViewModels;
         model.LatestOutgoingRequests = outgoingRequestViewModels;
         model.StartDate = model.StartDate;  
+        model.UsersCount = usersCount;
+        model.EducationOrganizationsCount = -3;
 
         return View(model);
     }

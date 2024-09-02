@@ -242,6 +242,8 @@
         waitingApprovalCount: @Model.WaitingApprovalCount,
         approvedCount: @Model.ApprovedCount,
         declinedCount: @Model.DeclinedCount,
+        educationOrganizationsCount: @Model.EducationOrganizationsCount,
+        usersCount: @Model.UsersCount,
 
         get formattedInitialRequestsCount() {
           return this.formatCounter(this.initialRequestsCount)
@@ -269,7 +271,7 @@
         },
 
         formatCounter(value) {
-          return value.toLocaleString('en-US', { notation: 'compact' })
+          return Number(value).toLocaleString('en-US', { notation: 'compact' })
         },
     }))
   })

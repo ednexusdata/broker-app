@@ -25,6 +25,12 @@ public class DashboardViewModel
     [Display(Name = "Declined Requests Count")]
     public int DeclinedCount { get; set; }
 
+    [Display(Name = "Organizations Count")]
+    public int EducationOrganizationsCount { get; set; }
+
+    [Display(Name = "Users Count")]
+    public int UsersCount { get; set; }
+
     [Display(Name = "Start date")]
     public DateTime? StartDate { get; set; }
 
@@ -33,7 +39,4 @@ public class DashboardViewModel
 
     [Display(Name = "Latest Outgoing Requests")]
     public IEnumerable<OutgoingRequestViewModel> LatestOutgoingRequests { get; set; } = Enumerable.Empty<OutgoingRequestViewModel>();
-
-    [Display(Name = "Education Organizations")]
-    public IEnumerable<EducationOrganizationRequestViewModel> EducationOrganizations { get; set; } = Enumerable.Empty<EducationOrganizationRequestViewModel>();
 }
