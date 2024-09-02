@@ -79,39 +79,48 @@ public class PayloadLoaderJob : IJob
 
             object? result = null;
 
-            if (jobToExecute is DelayedPayloadJob)
+            try
             {
-                DelayedPayloadJob delayedJobToExecute = (jobToExecute as DelayedPayloadJob)!;
-                
-                var startResult = await delayedJobToExecute.StartAsync(request.Student?.Student?.StudentNumber!, (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null);
-                
-                if (startResult == DelayedPayloadJob.Status.Finish)
+                if (jobToExecute is DelayedPayloadJob)
                 {
-                    result = await delayedJobToExecute.FinishAsync();
-                }
-                else
-                {
-                    var continueLooping = true;
-                    DelayedPayloadJob.Status? continueResult = null;
-                    while (continueLooping)
-                    {
-                        await Task.Delay(2000);
-                        continueResult = await delayedJobToExecute.ContinueAsync();
-                        if (continueResult != DelayedPayloadJob.Status.Continue)
-                            continueLooping = false;
-                    }
-
-                    if (continueResult is not null && continueResult == DelayedPayloadJob.Status.Finish)
+                    DelayedPayloadJob delayedJobToExecute = (jobToExecute as DelayedPayloadJob)!;
+                    
+                    var startResult = await delayedJobToExecute.StartAsync(request.Student?.Student?.StudentNumber!, (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null);
+                    
+                    if (startResult == DelayedPayloadJob.Status.Finish)
                     {
                         result = await delayedJobToExecute.FinishAsync();
                     }
+                    else
+                    {
+                        var continueLooping = true;
+                        DelayedPayloadJob.Status? continueResult = null;
+                        while (continueLooping)
+                        {
+                            await Task.Delay(2000);
+                            continueResult = await delayedJobToExecute.ContinueAsync();
+                            if (continueResult != DelayedPayloadJob.Status.Continue)
+                                continueLooping = false;
+                        }
+
+                        if (continueResult is not null && continueResult == DelayedPayloadJob.Status.Finish)
+                        {
+                            result = await delayedJobToExecute.FinishAsync();
+                        }
+                    }
+                }
+                else
+                {
+                    // Execute the job
+                    result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!, (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null);
                 }
             }
-            else
+            catch (Exception e)
             {
-                // Execute the job
-                result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!, (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null);
+                await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Errored with: {0}.", e.Message);
+                throw;
             }
+            
 
             await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Received result: {0}", result!.GetType().FullName);
             
