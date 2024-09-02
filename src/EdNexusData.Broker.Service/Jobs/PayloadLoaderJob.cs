@@ -97,7 +97,7 @@ public class PayloadLoaderJob : IJob
                         DelayedPayloadJob.Status? continueResult = null;
                         while (continueLooping)
                         {
-                            await Task.Delay(2000);
+                            await Task.Delay(5000);
                             continueResult = await delayedJobToExecute.ContinueAsync();
                             if (continueResult != DelayedPayloadJob.Status.Continue)
                                 continueLooping = false;
