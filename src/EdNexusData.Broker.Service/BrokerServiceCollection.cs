@@ -7,6 +7,7 @@ using EdNexusData.Broker.Service.Jobs;
 using DnsClient;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Cache;
+using EdNexusData.Broker.Service.Services;
 
 namespace EdNexusData.Broker.Service;
 
@@ -63,6 +64,7 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         services.AddScoped<DirectoryLookupService>();
         services.AddScoped<MessageService>();
         services.AddScoped<JobService>();
+        services.AddScoped<JobStatusService>();
         
         // Resolvers
         services.AddScoped<IConfigurationResolver, ConfigurationResolver>();

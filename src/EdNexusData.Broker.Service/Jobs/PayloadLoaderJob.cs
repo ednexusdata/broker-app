@@ -7,6 +7,7 @@ using Ardalis.GuardClauses;
 using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Service.Services;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
@@ -18,6 +19,7 @@ public class PayloadLoaderJob : IJob
     private readonly IRepository<Request> _requestRepository;
     private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
+    private readonly JobStatusService _jobStatusServiceForLoader;
 
     public PayloadLoaderJob(
             PayloadResolver payloadResolver,
@@ -25,7 +27,8 @@ public class PayloadLoaderJob : IJob
             JobStatusService<PayloadLoaderJob> jobStatusService,
             IRepository<Request> requestRepository,
             IRepository<Domain.PayloadContent> payloadContentRepository,
-            FocusEducationOrganizationResolver focusEducationOrganizationResolver)
+            FocusEducationOrganizationResolver focusEducationOrganizationResolver,
+            JobStatusService jobStatusServiceForLoader)
     {
         _payloadResolver = payloadResolver;
         _payloadJobResolver = payloadJobResolver;
@@ -33,6 +36,7 @@ public class PayloadLoaderJob : IJob
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
         _focusEducationOrganizationResolver = focusEducationOrganizationResolver;
+        _jobStatusServiceForLoader = jobStatusServiceForLoader;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -68,23 +72,45 @@ public class PayloadLoaderJob : IJob
             var jobToExecute = _payloadJobResolver.Resolve(outgoingPayloadContent.PayloadContentType);
             await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
 
+            // Attach job status info
+            jobToExecute.JobStatusService = _jobStatusServiceForLoader;
+            _jobStatusServiceForLoader.JobRecord = jobInstance;
+            _jobStatusServiceForLoader.RequestRecord = request;
+
             object? result = null;
 
             if (jobToExecute is DelayedPayloadJob)
             {
                 DelayedPayloadJob delayedJobToExecute = (jobToExecute as DelayedPayloadJob)!;
                 
-                var startResult = await delayedJobToExecute.StartAsync(request.Student?.Student?.StudentNumber!, JsonSerializer.SerializeToDocument(outgoingPayloadContent.Settings));
+                var startResult = await delayedJobToExecute.StartAsync(request.Student?.Student?.StudentNumber!, (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null);
                 
                 if (startResult == DelayedPayloadJob.Status.Finish)
                 {
                     result = await delayedJobToExecute.FinishAsync();
                 }
+                else
+                {
+                    var continueLooping = true;
+                    DelayedPayloadJob.Status? continueResult = null;
+                    while (continueLooping)
+                    {
+                        await Task.Delay(2000);
+                        continueResult = await delayedJobToExecute.ContinueAsync();
+                        if (continueResult != DelayedPayloadJob.Status.Continue)
+                            continueLooping = false;
+                    }
+
+                    if (continueResult is not null && continueResult == DelayedPayloadJob.Status.Finish)
+                    {
+                        result = await delayedJobToExecute.FinishAsync();
+                    }
+                }
             }
             else
             {
                 // Execute the job
-                result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!, JsonSerializer.SerializeToDocument(outgoingPayloadContent.Settings));
+                result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!, (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null);
             }
 
             await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Received result: {0}", result!.GetType().FullName);

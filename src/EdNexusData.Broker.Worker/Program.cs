@@ -9,6 +9,10 @@ var builder = Host.CreateDefaultBuilder(args);
 
 builder.ConfigureServices((hostContext, services) =>
 {
+    var serviceProvider = services.BuildServiceProvider();
+    var logger = serviceProvider.GetService<ILogger<ApplicationLogger>>();
+    services.AddSingleton(typeof(ILogger), logger!);
+    
     switch (hostContext.Configuration["DatabaseProvider"])
     {
         case DbProviderType.MsSql:
