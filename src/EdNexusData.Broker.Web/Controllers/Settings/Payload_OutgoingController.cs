@@ -73,9 +73,19 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         var currentPayload = await _educationOrganizationPayloadSettings
             .FirstOrDefaultAsync(new PayloadSettingsByNameAndEdOrgIdSpec(payload, _focusedDistrictEdOrg!.Value));
 
-        if (currentPayload is not null && currentPayload.OutgoingPayloadSettings is not null)
+        if (currentPayload is not null)
         {
-            currentPayload.OutgoingPayloadSettings.StudentLookupConnector = input.StudentLookupConnector;
+            if (currentPayload.OutgoingPayloadSettings is not null)
+            {
+                currentPayload.OutgoingPayloadSettings.StudentLookupConnector = input.StudentLookupConnector;
+            }
+            else
+            {
+                currentPayload.OutgoingPayloadSettings = new OutgoingPayloadSettings()
+                {
+                    StudentLookupConnector = input.StudentLookupConnector
+                };
+            }
             await _educationOrganizationPayloadSettings.UpdateAsync(currentPayload);
         }
         else
