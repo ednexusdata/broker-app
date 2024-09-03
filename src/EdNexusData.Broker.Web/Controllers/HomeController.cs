@@ -11,6 +11,7 @@ using EdNexusData.Broker.Web.ViewModels.OutgoingRequests;
 using EdNexusData.Broker.Web.ViewModels.IncomingRequests;
 using EdNexusData.Broker.Web.ViewModels.EducationOrganizations;
 using EdNexusData.Broker.Web.Helpers;
+using EdNexusData.Broker.Domain.Specifications;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -51,20 +52,10 @@ public class HomeController : AuthenticatedController<HomeController>
         // Currently displaying last 7 days, last 30 days, and All-time.
         // To support All-time, the end date should be nullable.
         // For example, Outgoing Processor does not need to see incoming record request data.
-        var educationOrganizationId = GetFocusOrganizationId();
 
-        if (educationOrganizationId == Guid.Empty)
-        {
-            var focusableOrganizations = await _focusHelper.GetFocusableEducationOrganizationsSelectList();
-            educationOrganizationId = focusableOrganizations.FirstOrDefault()?.Value is string valueStr && Guid.TryParse(valueStr, out var result)
-                ? result
-                : Guid.Empty;
-        }
+        var focusedSchools = await _focusHelper.GetFocusedSchools();
 
-        var requests = (await _requestRepository.ListAsync(cancellationToken))
-            .OrderByDescending(incomingRequest => incomingRequest.CreatedAt)
-            .Where(request => model.StartDate is null || request.CreatedAt >= model.StartDate)
-            .ToList();
+        var requests = await _requestRepository.ListAsync(new RequestsStartedForSchoolsSpec(focusedSchools, model.StartDate));
 
         // Only take 5, displaying latest incoming requests
         // Need the total count as well
@@ -102,7 +93,7 @@ public class HomeController : AuthenticatedController<HomeController>
         model.LatestOutgoingRequests = outgoingRequestViewModels;
         model.StartDate = model.StartDate;  
         model.UsersCount = usersCount;
-        model.EducationOrganizationsCount = -3;
+        model.EducationOrganizationsCount = focusedSchools.Count;
 
         return View(model);
     }
