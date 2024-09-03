@@ -36,7 +36,7 @@
         },
         fetchSearch() {
             if (this.filter != null && this.filter != undefined && this.filter != '') {
-                fetch(`/api/v1/students/search?search=${encodeURIComponent(this.filter)}`)
+                fetch(`/api/v1/students/search?search=${encodeURIComponent(this.filter)}&payloadDirection=@Model.PayloadDirection`)
                     .then(response => response.json())
                     .then(data => this.options = data);
             }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Web.TagHelpers;
 
@@ -32,6 +33,9 @@ public class SearchSelectTagHelper : TagHelper
 
     public string? Template { get; set; }
 
+    [HtmlAttributeName("payload-direction")]
+    public PayloadDirection? PayloadDirection { get; set; }
+
     [HtmlAttributeName(ForAttributeName)]
     public ModelExpression? For { get; set; }
 
@@ -47,7 +51,7 @@ public class SearchSelectTagHelper : TagHelper
 
         if (Template == "student")
         {
-            var content = await _html.PartialAsync("~/Views/Shared/TagHelpers/StudentSearchSelect.cshtml", new { Placeholder = Placeholder });
+            var content = await _html.PartialAsync("~/Views/Shared/TagHelpers/StudentSearchSelect.cshtml", new { Placeholder = Placeholder, PayloadDirection = PayloadDirection });
             output.Content.SetHtmlContent(content);
         }
         

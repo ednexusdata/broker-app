@@ -27,11 +27,11 @@ public class StudentsSearchController : AuthenticatedController<StudentsSearchCo
 
     [HttpGet]
     [Route("search")]
-    public async Task<IActionResult> Search([FromQuery] string search)
+    public async Task<IActionResult> Search([FromQuery] string search, [FromQuery] PayloadDirection payloadDirection)
     {
         try
         {
-            var results = await _studentLookupService.SearchAsync(PayloadDirection.Incoming, search);
+            var results = await _studentLookupService.SearchAsync(payloadDirection, search);
 
             return Ok(results);
         }

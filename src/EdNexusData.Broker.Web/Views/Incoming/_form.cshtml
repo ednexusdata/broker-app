@@ -1,6 +1,7 @@
 @model EdNexusData.Broker.Web.ViewModels.IncomingRequests.CreateIncomingRequestViewModel
 @using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 @using System.Text.Json;
+@using EdNexusData.Broker.Domain;
 @{
   var domain = (Model.ToDistrict != null) ? Model.ToDistrict.Domain : "";
 }
@@ -18,7 +19,7 @@
               <div class="sm:col-span-2">
                 <label class="block text-sm font-medium leading-6 text-gray-900">Student</label>
                 <div class="mt-2">
-                  <Search-Select asp-for="StudentUniqueId" placeholder="@Model.FirstName @Model.LastSurname" template="student">
+                  <Search-Select asp-for="StudentUniqueId" placeholder="@Model.FirstName @Model.LastSurname" template="student" payload-direction="@PayloadDirection.Incoming">
                 </div>
               </div>
               <div class="sm:col-span-2">
