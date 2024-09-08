@@ -22,8 +22,7 @@ jobs:
       - name: Checkout broker-core
         uses: actions/checkout@v4
         with:
-          name: ednexusdata/broker-core
-          ref: refs/heads/release
+          repository: ednexusdata/broker-core
 
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
