@@ -25,7 +25,7 @@
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">
         @if(MappingDetailViewModel.GetPropertyLookupType(property) != null)
         {
-          var optionValues = await Model.MappingLookupService!.SelectAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @Model.MappedValueForProperty(property).ToString()!);
+          var optionValues = await Model.MappingLookupService!.SelectAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @Model.MappedValueForProperty(property)?.ToString());
           <select name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, Model.PropertyCounter, property)" class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm">
             <option value=""></option>
             @if (optionValues is not null && optionValues.Count > 0)

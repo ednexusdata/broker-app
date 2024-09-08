@@ -78,17 +78,17 @@ public class MappingDetailViewModel
         }
     }
 
-    public object OriginalValueForProperty(PropertyInfo property)
+    public object? OriginalValueForProperty(PropertyInfo property)
     {
         return property.GetValue(Source);
     }
 
-    public object InitialValueForProperty(PropertyInfo property)
+    public object? InitialValueForProperty(PropertyInfo property)
     {
         return property.GetValue(Initial);
     }
 
-    public object MappedValueForProperty(PropertyInfo property)
+    public object? MappedValueForProperty(PropertyInfo property)
     {
         return property.GetValue(Destination);
     }
