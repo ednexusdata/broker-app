@@ -18,11 +18,15 @@ jobs:
     steps:
       - name: Checkout broker-app
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Checkout broker-core
         uses: actions/checkout@v4
         with:
           repository: ednexusdata/broker-core
+          fetch-depth: 0
 
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
