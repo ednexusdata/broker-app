@@ -16,8 +16,14 @@ jobs:
             target: linux-x64
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout
+      - name: Checkout broker-app
         uses: actions/checkout@v4
+
+      - name: Checkout broker-core
+        uses: actions/checkout@v4
+        with:
+          name: ednexusdata/broker-core
+          ref: refs/heads/release
 
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
