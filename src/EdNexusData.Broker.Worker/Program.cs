@@ -56,6 +56,10 @@ builder.ConfigureServices((hostContext, services) =>
             return httpClientHandler;
         });
     }
+    else
+    {
+        services.AddHttpClient();
+    }
 
     services.AddBrokerServicesForWorker();
 
