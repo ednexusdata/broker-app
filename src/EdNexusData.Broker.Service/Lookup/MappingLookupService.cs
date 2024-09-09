@@ -21,7 +21,7 @@ public class MappingLookupService
         _mappingLookupCache = mappingLookupCache;
     }
 
-    public async Task<List<SelectListItem>> SelectAsync(LookupAttribute lookupAttribute, string value)
+    public async Task<List<SelectListItem>> SelectAsync(LookupAttribute lookupAttribute, string? value)
     {
         var selectList = _mappingLookupCache.Get(lookupAttribute.LookupType.Name);
         
@@ -38,12 +38,15 @@ public class MappingLookupService
         }
         
         // Set the selected value
-        var selected = selectList.FindIndex(x => x.Value == value);
-        if (selected > -1)
+        if (value is not null)
         {
-            selectList[selected].Selected = true;
+            var selected = selectList.FindIndex(x => x.Value == value);
+            if (selected > -1)
+            {
+                selectList[selected].Selected = true;
+            }
         }
-        
+
         return selectList;
     }
 
