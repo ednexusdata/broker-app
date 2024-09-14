@@ -164,6 +164,10 @@ if (builder.Environment.IsDevelopment())
         return httpClientHandler;
     });
 }
+else
+{
+    builder.Services.AddHttpClient();
+}
 
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
