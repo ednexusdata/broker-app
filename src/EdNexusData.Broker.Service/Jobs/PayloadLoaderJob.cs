@@ -122,7 +122,7 @@ public class PayloadLoaderJob : IJob
             }
             
 
-            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Received result: {0}", result?.GetType().FullName);
+            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Received result: {0}", (result is null) ? "No data" : result.GetType().FullName);
             
             // check if there is a result and if it is of type DataPayloadContent
             if (result is not null && result.GetType().IsAssignableTo(typeof(DataPayloadContent)))
