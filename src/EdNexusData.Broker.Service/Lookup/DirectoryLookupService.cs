@@ -21,7 +21,7 @@ public class DirectoryLookupService
     {
         _logger = logger;
         _lookupClient = lookupClient;
-        _httpClient = httpClientFactory.CreateClient("IgnoreSSL");
+        _httpClient = httpClientFactory.CreateClient("default");
     }
 
     public async Task<District> SearchAsync(string searchDomain)

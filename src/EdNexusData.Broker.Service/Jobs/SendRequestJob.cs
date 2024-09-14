@@ -47,7 +47,7 @@ public class SendRequestJob : IJob
         _jobStatusService = jobStatusService;
         _directoryLookupService = directoryLookupService;
         _messageService = messageService;
-        _httpClient = httpClientFactory.CreateClient("IgnoreSSL");
+        _httpClient = httpClientFactory.CreateClient("default");
     }
     
     public async Task ProcessAsync(Job jobInstance)

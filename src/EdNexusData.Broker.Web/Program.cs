@@ -153,7 +153,7 @@ builder.Services.AddControllersWithViews();
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddHttpClient("IgnoreSSL").ConfigurePrimaryHttpMessageHandler(() => {
+    builder.Services.AddHttpClient("default").ConfigurePrimaryHttpMessageHandler(() => {
         var httpClientHandler = new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
@@ -166,7 +166,7 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-    builder.Services.AddHttpClient();
+    builder.Services.AddHttpClient("default");
 }
 
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();

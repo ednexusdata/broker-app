@@ -45,7 +45,7 @@ builder.ConfigureServices((hostContext, services) =>
     
     if (hostContext.HostingEnvironment.IsDevelopment())
     {
-        services.AddHttpClient("IgnoreSSL").ConfigurePrimaryHttpMessageHandler(() => {
+        services.AddHttpClient("default").ConfigurePrimaryHttpMessageHandler(() => {
             var httpClientHandler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
@@ -58,7 +58,7 @@ builder.ConfigureServices((hostContext, services) =>
     }
     else
     {
-        services.AddHttpClient();
+        services.AddHttpClient("default");
     }
 
     services.AddBrokerServicesForWorker();
