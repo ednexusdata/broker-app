@@ -32,8 +32,13 @@ dotnet ef database update [Migration]
 ```
 dotnet ef database update 0
 ```
-
-
+### Write Out Schema File (cwd EdNexusData.Broker.Data project)
+```
+dotnet ef migrations script --startup-project ../EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.PostgresDbContext --idempotent -o SchemaDump/PostgreSql/$(date -u +"%Y%m%d%H%M%S")_pgsql_dbschema.sql
+```
+```
+dotnet ef migrations script --startup-project ../EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.MsSqlDbContext --idempotent -o SchemaDump/MsSql/$(date -u +"%Y%m%d%H%M%S")_mssql_dbschema.sql
+```
 ### Install Dev Certificate
 ```
 dotnet dev-certs https
