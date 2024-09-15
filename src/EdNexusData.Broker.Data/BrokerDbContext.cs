@@ -7,10 +7,11 @@ using Microsoft.EntityFrameworkCore;
 using EdNexusData.Broker.Domain;
 using Microsoft.Extensions.Configuration;
 using EdNexusData.Broker.Domain.Worker;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace EdNexusData.Broker.Data;
 
-public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRole<Guid>, Guid>
+public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRole<Guid>, Guid>, IDataProtectionKeyContext
 {
     //private readonly IMediator _mediator;
     protected readonly IConfiguration Configuration;
@@ -25,6 +26,7 @@ public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRol
     public DbSet<User>? ApplicationUsers { get; set; }
     public DbSet<Request>? Requests { get; set; }
     public DbSet<Job>? WorkerJobs { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
     public DbSet<Seed>? Seeds { get; set; }
 
