@@ -20,12 +20,14 @@ using src.Services.Tokens;
 using src.Services.Shared;
 using Microsoft.Extensions.Caching.Memory;
 using EdNexusData.Broker.Web.Exceptions;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Autofac
 //builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
+builder.Services.AddDistributedMemoryCache();
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
 //builder.Services.AddScoped<ScopedHttpContext>();
@@ -41,6 +43,8 @@ switch (builder.Configuration["DatabaseProvider"])
         builder.Services.AddDbContext<BrokerDbContext, PostgresDbContext>();
         break;
 }
+
+builder.Services.AddDataProtection().PersistKeysToDbContext<BrokerDbContext>();
 
 builder.Services.AddScoped(typeof(EfRepository<>));
 builder.Services.AddScoped(typeof(CachedRepository<>));
@@ -73,24 +77,27 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 //builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 
+builder.Services.AddTransient<CustomCookieAuthenticationEvents>();
+
 builder.Services.ConfigureApplicationCookie(options => 
 {
     options.AccessDeniedPath = "/AccessDenied";
     options.Cookie.Name = "EdNexusData.Broker.Identity";
-    // options.Cookie.HttpOnly = true;
+    options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
     //options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-    options.ExpireTimeSpan = TimeSpan.FromHours(4);
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.LoginPath = "/Login";
     options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
     options.SlidingExpiration = true;
+    options.EventsType = typeof(CustomCookieAuthenticationEvents);
 });
 
 
 builder.Services.AddSession(options =>
 {
     options.Cookie.Name = "EdNexusData.Broker.Session";
-    options.IdleTimeout = TimeSpan.FromHours(4);
+    options.IdleTimeout = TimeSpan.FromHours(8);
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
     //options.Cookie.SecurePolicy = CookieSecurePolicy.None;
