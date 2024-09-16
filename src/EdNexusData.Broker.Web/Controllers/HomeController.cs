@@ -85,10 +85,6 @@ public class HomeController : AuthenticatedController<HomeController>
 
         model.InitialRequestsCount = incomingRequests.Count();
         model.OutgoingRequestsCount = outgoingRequests.Count();
-        model.DraftCount = requests.Count(request => request.RequestStatus == RequestStatus.Draft);
-        model.WaitingApprovalCount = requests.Count(request => request.RequestStatus == RequestStatus.WaitingApproval);
-        model.ApprovedCount = requests.Count(request => request.RequestStatus == RequestStatus.Approved);
-        model.DeclinedCount = requests.Count(request => request.RequestStatus == RequestStatus.Declined);
         model.LatestIncomingRequests = incomingRequestViewModels;
         model.LatestOutgoingRequests = outgoingRequestViewModels;
         model.StartDate = model.StartDate;  
