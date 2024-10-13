@@ -8,11 +8,11 @@ namespace EdNexusData.Broker.Controllers.Api;
 [Authorize]
 [ApiController]
 [Route("api/v1/jobs")]
-public class JobsController : Controller
+public class ApiJobsController : Controller
 {
-    private readonly JobStatusService<JobsController> _jobStatusService;
+    private readonly JobStatusService<ApiJobsController> _jobStatusService;
 
-    public JobsController(JobStatusService<JobsController> jobStatusService)
+    public ApiJobsController(JobStatusService<ApiJobsController> jobStatusService)
     {
         _jobStatusService = jobStatusService;
     }
