@@ -4,13 +4,15 @@ using System.Text.Json;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.Connector;
 using Microsoft.Extensions.DependencyInjection;
 using EdNexusData.Broker.Domain.Worker;
+using System.ComponentModel;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
+[Description("Prepare Mapping")]
 public class PrepareMappingJob : IJob
 {
     private readonly ConnectorLoader _connectorLoader;

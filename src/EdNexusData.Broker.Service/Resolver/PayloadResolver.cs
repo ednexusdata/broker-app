@@ -1,6 +1,6 @@
 using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Connector.Resolvers;
 using Ardalis.GuardClauses;

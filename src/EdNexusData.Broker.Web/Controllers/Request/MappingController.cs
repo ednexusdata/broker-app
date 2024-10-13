@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.ViewModels.Mappings;

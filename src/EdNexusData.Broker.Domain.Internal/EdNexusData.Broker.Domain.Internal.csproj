@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\broker-core\src\EdNexusData.Broker.Domain\EdNexusData.Broker.Domain.csproj" />
+    <ProjectReference Include="..\..\..\broker-core\src\EdNexusData.Broker.Connector\EdNexusData.Broker.Connector.csproj" />
+  </ItemGroup>
+
+</Project>

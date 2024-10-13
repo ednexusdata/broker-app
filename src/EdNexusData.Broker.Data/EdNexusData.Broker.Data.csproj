@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\broker-core\src\EdNexusData.Broker.Domain\EdNexusData.Broker.Domain.csproj" />
+    <ProjectReference Include="..\EdNexusData.Broker.Domain.Internal\EdNexusData.Broker.Domain.Internal.csproj" />
   </ItemGroup>
 
   <ItemGroup>

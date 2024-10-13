@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 using Ardalis.Specification;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Exceptions;
 using EdNexusData.Broker.Web.Specifications;

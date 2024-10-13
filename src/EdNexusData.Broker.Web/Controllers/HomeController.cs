@@ -11,7 +11,7 @@ using EdNexusData.Broker.Web.ViewModels.OutgoingRequests;
 using EdNexusData.Broker.Web.ViewModels.IncomingRequests;
 using EdNexusData.Broker.Web.ViewModels.EducationOrganizations;
 using EdNexusData.Broker.Web.Helpers;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 
 namespace EdNexusData.Broker.Web.Controllers;
 

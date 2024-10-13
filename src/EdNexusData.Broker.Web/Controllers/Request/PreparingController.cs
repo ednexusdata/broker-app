@@ -3,7 +3,7 @@ using Ardalis.GuardClauses;
 using Ardalis.Specification;
 using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Service;
 using EdNexusData.Broker.Service.Jobs;

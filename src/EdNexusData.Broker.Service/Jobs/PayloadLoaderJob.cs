@@ -6,11 +6,13 @@ using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Domain.Worker;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.Service.Services;
+using System.ComponentModel;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
+[Description("Load Payload")]
 public class PayloadLoaderJob : IJob
 {
     private readonly PayloadResolver _payloadResolver;

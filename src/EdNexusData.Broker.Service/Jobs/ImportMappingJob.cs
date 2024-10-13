@@ -3,14 +3,16 @@ using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.Connector;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using EdNexusData.Broker.Domain.Worker;
+using System.ComponentModel;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
+[Description("Import Mapping")]
 public class ImportMappingJob : IJob
 {
     private readonly ConnectorLoader _connectorLoader;

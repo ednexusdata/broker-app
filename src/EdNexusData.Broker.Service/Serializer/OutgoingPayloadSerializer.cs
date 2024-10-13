@@ -1,6 +1,6 @@
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using System.Dynamic;

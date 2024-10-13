@@ -3,15 +3,17 @@ using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.Connector;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Connector.Student;
+using System.ComponentModel;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
+[Description("Process Payload Content Actions")]
 public class PayloadContentActionJob : IJob
 {
     private readonly ConnectorLoader _connectorLoader;

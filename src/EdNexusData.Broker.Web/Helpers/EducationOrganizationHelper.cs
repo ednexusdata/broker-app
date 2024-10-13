@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.SharedKernel;
 
 namespace EdNexusData.Broker.Web.Helpers;

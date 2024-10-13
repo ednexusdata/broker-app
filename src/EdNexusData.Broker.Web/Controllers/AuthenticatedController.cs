@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using EdNexusData.Broker.Data;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.SharedKernel;
 using static EdNexusData.Broker.Web.Constants.Sessions.SessionKey;
 

@@ -2,7 +2,7 @@ using System.Text.Json;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Data;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.SharedKernel;

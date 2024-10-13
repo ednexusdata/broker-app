@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using EdNexusData.Broker.Data;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.SharedKernel;
 using DnsClient;
 using EdNexusData.Broker.Service.Lookup;
@@ -11,9 +11,11 @@ using System.Net.Http.Json;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Connector;
+using System.ComponentModel;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
+[Description("Send Request")]
 public class SendRequestJob : IJob
 {
     private readonly ILogger<SendRequestJob> _logger;
