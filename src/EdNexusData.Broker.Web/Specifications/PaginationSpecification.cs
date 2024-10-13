@@ -96,7 +96,7 @@ public class SearchableWithPaginationSpecification<T> : Specification<T>
 
         public Builder WithAscending(bool ascending)
         {
-            _ascending = ascending ? ascending : true;
+            _ascending = ascending ? true : false;
             return this;
         }
 
