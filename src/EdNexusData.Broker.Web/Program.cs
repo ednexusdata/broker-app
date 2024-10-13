@@ -56,6 +56,7 @@ builder.Services.AddSingleton(typeof(IMemoryCache), typeof(MemoryCache));
 builder.Services.AddScoped(typeof(IMediator), typeof(Mediator));
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 foreach (var assembly in Assembly.GetExecutingAssembly().GetExportedTypes().Where(t => String.Equals(t.Namespace, "EdNexusData.Broker.Web.Helpers", StringComparison.Ordinal)).ToArray())
 {
     builder.Services.AddScoped(assembly, assembly);
@@ -234,7 +235,9 @@ app.UseSession();
 app.MapControllerRoutes("organizations", "EducationOrganizations");
 app.MapControllerRoutes("incoming-requests", "Incoming");
 app.MapControllerRoutes("outgoing-requests", "Outgoing");
+app.MapControllerRoutes("requests", "Requests");
 app.MapControllerRoutes("users", "Users");
+app.MapControllerRoutes("jobs", "Jobs");
 app.MapControllerRoutes("roles", "UserRoles");
 app.MapControllerRoutes("settings", "Settings");
 app.MapControllerRoutes("login", "Login");
