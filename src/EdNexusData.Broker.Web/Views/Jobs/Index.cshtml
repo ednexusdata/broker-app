@@ -1,5 +1,6 @@
 @using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 @using EdNexusData.Broker.Domain.Extensions;
+@using EdNexusData.Broker.Service.Extensions;
 @model EdNexusData.Broker.Web.Models.Paginations.PaginatedViewModel<EdNexusData.Broker.Web.Models.JobViewModel>;
 @{
     // Copyright: 2023 Education Nexus Oregon
@@ -184,7 +185,7 @@
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@incomingRequest.QueuedDateTime</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@incomingRequest.StartDateTime</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@incomingRequest.FinishDateTime</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@incomingRequest.JobType</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@Description.ResolveFind(incomingRequest.JobType)</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@incomingRequest.WorkerInstance</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@incomingRequest.JobStatus</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@incomingRequest.WorkerState</td>
