@@ -34,8 +34,8 @@ public class IncomingRequestModel : SearchableModelWithPagination
         var sortBy = SortBy.ToLower();
         sortExpression = sortBy switch
         {
-            "district" => request => request.EducationOrganization.ParentOrganization.Name,
-            "school" => request => request.EducationOrganization.Name,
+            "district" => request => request.EducationOrganization.ParentOrganization.Name + " / " + request.EducationOrganization.Name,
+            "school" => request => request.EducationOrganization.ParentOrganization.Name + " / " + request.EducationOrganization.Name,
             "student" => request => request.Student,
             "date" => request => request.InitialRequestSentDate,
             "status" => request => request.RequestStatus,
