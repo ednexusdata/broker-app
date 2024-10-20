@@ -20,7 +20,7 @@ public class JobModel : SearchableModelWithPagination
     public Expression<Func<Job, object>> BuildSortExpression()
     {
         Expression<Func<Job, object>> sortExpression = null;
-        var sortBy = SortBy.ToLower();
+        var sortBy = SortBy?.ToLower();
         sortExpression = sortBy switch
         {
             // "district" => request => request.EducationOrganization.ParentOrganization.Name,

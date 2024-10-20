@@ -47,7 +47,7 @@ public class JobsController : AuthenticatedController<JobsController>
         var sortExpression = model.BuildSortExpression();
 
         var specification = new SearchableWithPaginationSpecification<Job>.Builder(model.Page, model.Size)
-            .WithAscending(model.IsAscending)
+            .WithAscending((model.SortDir != null) ? model.IsAscending : false)
             .WithSortExpression(sortExpression)
             .WithSearchExpressions(searchExpressions)
             .Build();
