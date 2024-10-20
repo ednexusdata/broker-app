@@ -232,11 +232,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
 
-app.MapControllerRoutes("organizations", "EducationOrganizations");
+app.MapControllerRoutes("system/organizations", "EducationOrganizations");
 app.MapControllerRoutes("incoming-requests", "Incoming");
 app.MapControllerRoutes("outgoing-requests", "Outgoing");
 app.MapControllerRoutes("requests", "Requests");
-app.MapControllerRoutes("users", "Users");
+app.MapControllerRoutes("system/users", "Users");
 app.MapControllerRoutes("jobs", "Jobs");
 app.MapControllerRoutes("roles", "UserRoles");
 app.MapControllerRoutes("settings", "Settings");

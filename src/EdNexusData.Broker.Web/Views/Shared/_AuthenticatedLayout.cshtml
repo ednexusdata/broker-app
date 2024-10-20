@@ -1,4 +1,6 @@
 @using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 
 @{
     Layout = "_Layout";
@@ -18,11 +20,52 @@
               
               <a asp-controller="Outgoing" asp-action="Index" asp-authorize asp-policy="@TransferOutgoingRecords" class="@Html.ActiveClass("Outgoing", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Outgoing</a>
 
-              <a asp-controller="EducationOrganizations" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="@Html.ActiveClass("EducationOrganizations", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Organizations</a>
-              
-              <a asp-controller="Users" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="@Html.ActiveClass("Users", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Users</a>
-              
               <a asp-controller="Settings" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="@Html.ActiveClass("Settings", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Settings</a>
+
+              @if ((await AuthorizationService.AuthorizeAsync(User, null, "SuperAdmin")).Succeeded)
+              {
+              <div class="relative border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium" x-data="{
+            open: false,
+            toggle() {
+                if (this.open) {
+                    return this.close()
+                }
+ 
+                this.$refs.button.focus()
+ 
+                this.open = true
+            },
+            close(focusAfter) {
+                if (! this.open) return
+ 
+                this.open = false
+ 
+                focusAfter && focusAfter.focus()
+            }
+        }" x-on:keydown.escape.prevent.stop="close($refs.button)"
+        x-on:focusin.window="! $refs.panel.contains($event.target) && close()"
+        x-id="['dropdown-button']">
+                <button type="button" class="h-full flex block items-center gap-x-1" x-ref="button"
+            x-on:click="toggle()"
+            :aria-expanded="open"
+            :aria-controls="$id('dropdown-button')">
+                  <div>System</div>
+                  <svg class="h-5 w-5 flex-none text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
+                    <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <div class="absolute -left-8 top-full z-10 mt-3 w-56 rounded-xl bg-white p-2 shadow-lg ring-1 ring-gray-900/5"
+            x-ref="panel"
+            x-show="open"
+            x-transition.origin.top.left
+            x-on:click.outside="close($refs.button)"
+            :id="$id('dropdown-button')"
+            style="display: none;">
+                  <a asp-controller="EducationOrganizations" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="block px-4 py-2 text-sm text-gray-700">Organizations</a>
+                  <a asp-controller="Users" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="block px-4 py-2 text-sm text-gray-700">Users</a>
+                </div>
+              </div>
+              }
             </div>
         </div>
         <div class="block">
@@ -33,7 +76,7 @@
       </div>
     </div>
   </nav>
-  @if (ViewData["FocusBar"] is not null && bool.Parse(ViewData["FocusBar"].ToString()) == true)
+  @if (ViewData["FocusBar"] is not null && bool.Parse(ViewData["FocusBar"]!.ToString()!) == true)
   {
     var focusVM = new FocusViewModel();
     <partial name="_FocusPartial" model="focusVM"></partial>
