@@ -26,14 +26,14 @@ public class JobViewModel
         JobId = job.Id;
 
         var pacific = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
-        QueuedDateTime = TimeZoneInfo.ConvertTimeFromUtc(job.QueueDateTime.DateTime, pacific).ToString("M/dd/yyyy h:mm tt");
+        QueuedDateTime = TimeZoneInfo.ConvertTimeFromUtc(job.QueueDateTime.DateTime, pacific).ToString("M/dd/yyyy h:mm:ss tt");
 
         StartDateTime = (job.StartDateTime is not null) 
-            ? TimeZoneInfo.ConvertTimeFromUtc(job.StartDateTime.Value.DateTime, pacific).ToString("M/dd/yyyy h:mm tt") 
+            ? TimeZoneInfo.ConvertTimeFromUtc(job.StartDateTime.Value.DateTime, pacific).ToString("M/dd/yyyy h:mm:ss tt") 
             : null;
         
         FinishDateTime = (job.FinishDateTime is not null) 
-            ? TimeZoneInfo.ConvertTimeFromUtc(job.FinishDateTime.Value.DateTime, pacific).ToString("M/dd/yyyy h:mm tt") 
+            ? TimeZoneInfo.ConvertTimeFromUtc(job.FinishDateTime.Value.DateTime, pacific).ToString("M/dd/yyyy h:mm:ss tt") 
             : null;
 
         JobStatus = job.JobStatus;
