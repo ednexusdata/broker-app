@@ -81,7 +81,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
         var organizationName = GetFocusOrganizationDistrict();
 
         var specification = new SearchableWithPaginationSpecification<Request>.Builder(model.Page, model.Size)
-            .WithAscending(model.IsAscending)
+            .WithAscending((model.SortDir != null) ? model.IsAscending : false)
             .WithSortExpression(sortExpression)
             .WithSearchExpressions(searchExpressions)
             .WithIncludeEntities(builder => builder

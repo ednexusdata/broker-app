@@ -18,7 +18,7 @@ public class EducationOrganizationRequestModel : SearchableModelWithPagination
     public List<Expression<Func<EducationOrganization, object>>> BuildSortExpressions()
     {
         var sortExpressions = new List<Expression<Func<EducationOrganization, object>>>();
-        var sortBy = SortBy.ToLower();
+        var sortBy = SortBy?.ToLower();
         Expression<Func<EducationOrganization, object>> ValueToAdd = sortBy switch
         {
             "district" => educationOrganization => educationOrganization.ParentOrganization.Name,

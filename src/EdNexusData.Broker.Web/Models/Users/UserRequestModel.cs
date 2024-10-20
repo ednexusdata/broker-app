@@ -14,7 +14,7 @@ public class UserRequestModel : SearchableModelWithPagination
     public Expression<Func<User, object>> BuildSortExpression()
     {
         Expression<Func<User, object>>? sortExpression = null;
-        var sortBy = SortBy.ToLower();
+        var sortBy = SortBy?.ToLower();
         sortExpression = sortBy switch
         {
             "firstname" => request => request.FirstName,

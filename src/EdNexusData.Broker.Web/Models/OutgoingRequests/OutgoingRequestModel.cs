@@ -31,7 +31,7 @@ public class OutgoingRequestModel : SearchableModelWithPagination
     public Expression<Func<Request, object>> BuildSortExpression()
     {
         Expression<Func<Request, object>> sortExpression = null;
-        var sortBy = SortBy.ToLower();
+        var sortBy = SortBy?.ToLower();
         sortExpression = sortBy switch
         {
             "district" => request => request.EducationOrganization.ParentOrganization.Name,
