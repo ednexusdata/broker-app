@@ -189,10 +189,10 @@
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@incomingRequest.WorkerInstance</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@incomingRequest.JobStatus</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@incomingRequest.WorkerState</td>
-                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-sm font-medium sm:pr-3">
-                                        <div class="flex justify-end gap-2">
-                                            
-                                        </div>
+                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
+                                        <form asp-controller="Jobs" asp-action="Restart" asp-route-id="@incomingRequest.JobId">
+                                            <button type="submit" role="menuitem" tabindex="-1" id="user-menu-item-2" class="text-tertiary-700 hover:text-tertiary-900 cursor-pointer">Restart Job</button>
+                                        </form>
                                     </td>
                                 </tr>
                                 even = !even;
