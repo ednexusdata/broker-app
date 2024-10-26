@@ -4,6 +4,7 @@ using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Domain.Worker;
 using Ardalis.GuardClauses;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EdNexusData.Broker.Service.Worker;
 
@@ -12,17 +13,20 @@ public class JobStatusService<T>
     private readonly IRepository<Job> _jobRepo;
     private readonly IRepository<Request> _requestRepo;
     private readonly IRepository<PayloadContentAction> _payloadContentActionRepo;
+    private readonly IServiceProvider serviceProvider;
     private readonly ILogger<T> _logger;
 
     public JobStatusService(ILogger<T> logger, 
            IRepository<Job> jobRepo,
            IRepository<Request> requestRepo,
-           IRepository<PayloadContentAction> payloadContentActionRepo)
+           IRepository<PayloadContentAction> payloadContentActionRepo,
+           IServiceProvider serviceProvider)
     {
         _logger = logger;
         _jobRepo = jobRepo;
         _requestRepo = requestRepo;
         _payloadContentActionRepo = payloadContentActionRepo;
+        this.serviceProvider = serviceProvider;
     }
 
     public async Task<Job?> Get(Guid? jobId)

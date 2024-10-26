@@ -70,8 +70,20 @@ public class Worker : BackgroundService
 
                     } catch (Exception e)
                     {
-                        await _jobStatusService.UpdateJobStatus(jobRecord, JobStatus.Failed, e.Message + "\n\n" + e.StackTrace?.ToString());
-                        _logger.LogInformation("{jobRecordId} failed.", jobRecord.Id);
+                        using (var exScope = _serviceProvider.CreateScope())
+                        {
+                            var exJobStatusService = (JobStatusService<Worker>)exScope.ServiceProvider.GetService(typeof(JobStatusService<Worker>))!;
+
+                            var messageToSave = e.Message + "\n\n" + e.StackTrace?.ToString();
+                            
+                            if (e.InnerException is not null)
+                            {
+                                messageToSave += "\n\n=========================\n\n" + e.InnerException.Message + "\n\n" + e.InnerException.StackTrace?.ToString();
+                            }
+                            
+                            await exJobStatusService.UpdateJobStatus(jobRecord, JobStatus.Failed, messageToSave);
+                            _logger.LogInformation("{jobRecordId} failed.", jobRecord.Id);
+                        }
                     }
                 }
             }
