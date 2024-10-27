@@ -21,6 +21,7 @@ using src.Services.Shared;
 using Microsoft.Extensions.Caching.Memory;
 using EdNexusData.Broker.Web.Exceptions;
 using Microsoft.AspNetCore.DataProtection;
+using EdNexusData.Broker.Service.Worker;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +55,8 @@ builder.Services.AddScoped(typeof(IReadRepository<>), typeof(CachedRepository<>)
 
 builder.Services.AddSingleton(typeof(IMemoryCache), typeof(MemoryCache));
 builder.Services.AddScoped(typeof(IMediator), typeof(Mediator));
+
+builder.Services.AddSingleton(typeof(JobStatusStore));
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 

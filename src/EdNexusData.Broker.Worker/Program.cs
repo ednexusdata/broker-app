@@ -4,6 +4,7 @@ using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Worker;
 using EdNexusData.Broker.Worker.Services;
 using EdNexusData.Broker.Service;
+using EdNexusData.Broker.Service.Worker;
 
 var builder = Host.CreateDefaultBuilder(args);
 
@@ -31,6 +32,7 @@ builder.ConfigureServices((hostContext, services) =>
     services.AddScoped(typeof(IReadRepository<>), typeof(CachedRepository<>));
 
     services.AddSingleton(typeof(IMemoryCache), typeof(MemoryCache));
+    services.AddSingleton(typeof(JobStatusStore));
 
     if (hostContext.Configuration["WorkerUserStamp"] is not null)
     {

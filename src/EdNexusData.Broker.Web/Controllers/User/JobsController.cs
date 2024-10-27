@@ -12,6 +12,9 @@ using Ardalis.Specification;
 using EdNexusData.Broker.Web.Models.Jobs;
 using EdNexusData.Broker.Web.Models;
 using EdNexusData.Broker.Web.Models.Paginations;
+using Ardalis.GuardClauses;
+using EdNexusData.Broker.Service;
+using EdNexusData.Broker.Web.Constants.DesignSystems;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -21,21 +24,30 @@ public class JobsController : AuthenticatedController<JobsController>
     private readonly ILogger<JobsController> logger;
     private readonly IRepository<Job> jobsRepository;
     private readonly CurrentUserHelper currentUserHelper;
+    private readonly JobService jobService;
 
     public JobsController(
         ILogger<JobsController> logger,
         IRepository<Job> jobsRepository,
-        CurrentUserHelper currentUserHelper)
+        CurrentUserHelper currentUserHelper,
+        JobService jobService)
     {
         this.logger = logger;
         this.jobsRepository = jobsRepository;
         this.currentUserHelper = currentUserHelper;
+        this.jobService = jobService;
     }
 
     public async Task<IActionResult> Index(
         JobModel model,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Guid? jobId)
     {
+        if (jobId is not null)
+        {
+            ViewBag.JobId = jobId;
+        }
+
         var searchExpressions = new List<Expression<Func<Job, bool>>>
         {
             // Must restrict to currently logged in user
@@ -81,5 +93,39 @@ public class JobsController : AuthenticatedController<JobsController>
             model.SearchBy);
 
         return View(result);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Restart(Guid id)
+    {
+        var job = await jobsRepository.GetByIdAsync(id);
+
+        Guard.Against.Null(job, "job", "Unable to find job for Id");
+
+        var jobType = AppDomain.CurrentDomain.GetAssemblies()
+                            .SelectMany(s => s.GetExportedTypes())
+                            .Where(p => p.FullName == job.JobType!).FirstOrDefault();
+
+        Type? referenceType = null; 
+        if (job.ReferenceType is not null)
+        {
+            referenceType = AppDomain.CurrentDomain.GetAssemblies()
+                            .SelectMany(s => s.GetExportedTypes())
+                            .Where(p => p.FullName == job.ReferenceType!).FirstOrDefault();
+        }
+        
+        // Create job
+        var createdJob = await jobService.CreateJobAsync(jobType!, referenceType, job.ReferenceGuid);
+
+        TempData[VoiceTone.Positive] = $"Restarting job ({job.Id}).";
+        return RedirectToAction(nameof(Index), new { JobId = createdJob.Id });
+    }
+
+    public async Task<IActionResult> View(Guid id)
+    {
+        var job = await jobsRepository.GetByIdAsync(id);
+
+        return View(job);
     }
 }

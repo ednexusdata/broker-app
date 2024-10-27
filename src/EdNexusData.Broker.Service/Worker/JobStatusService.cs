@@ -1,10 +1,8 @@
 using Microsoft.Extensions.Logging;
-using System.Linq;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Domain.Worker;
 using Ardalis.GuardClauses;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace EdNexusData.Broker.Service.Worker;
 
@@ -13,20 +11,20 @@ public class JobStatusService<T>
     private readonly IRepository<Job> _jobRepo;
     private readonly IRepository<Request> _requestRepo;
     private readonly IRepository<PayloadContentAction> _payloadContentActionRepo;
-    private readonly IServiceProvider serviceProvider;
+    private readonly JobStatusStore jobStatusStore;
     private readonly ILogger<T> _logger;
 
     public JobStatusService(ILogger<T> logger, 
            IRepository<Job> jobRepo,
            IRepository<Request> requestRepo,
            IRepository<PayloadContentAction> payloadContentActionRepo,
-           IServiceProvider serviceProvider)
+           JobStatusStore jobStatusStore)
     {
         _logger = logger;
         _jobRepo = jobRepo;
         _requestRepo = requestRepo;
         _payloadContentActionRepo = payloadContentActionRepo;
-        this.serviceProvider = serviceProvider;
+        this.jobStatusStore = jobStatusStore;
     }
 
     public async Task<Job?> Get(Guid? jobId)
@@ -47,6 +45,14 @@ public class JobStatusService<T>
         {
             jobRecord.WorkerState = message;
         }
+
+        if (!jobStatusStore.Logs.ContainsKey(jobRecord.Id))
+        {
+            jobStatusStore.Logs[jobRecord.Id] = "";
+        }
+
+        jobStatusStore.Logs[jobRecord.Id] += string.Format("{0}\t{1}\t{2}\r\n", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"), Thread.CurrentThread.ManagedThreadId, jobRecord.WorkerState);
+
         jobRecord.JobStatus = newJobStatus!.Value;
 
         var endStatuses = new List<JobStatus> { JobStatus.Interrupted, JobStatus.Complete, JobStatus.Aborted, JobStatus.Failed };
@@ -54,11 +60,13 @@ public class JobStatusService<T>
         if (endStatuses.Contains(newJobStatus!.Value))
         {
             jobRecord.FinishDateTime = DateTime.UtcNow;
+            jobRecord.WorkerLog = jobStatusStore.Logs[jobRecord.Id];
+            jobStatusStore.Logs.Remove(jobRecord.Id);
         }
         
         await _jobRepo.UpdateAsync(jobRecord);
 
-        _logger.LogInformation($"{jobRecord.Id}: {message}", messagePlaceholders);
+        _logger.LogInformation($"{jobRecord.Id}: {message}", messagePlaceholders!);
     }
 
     public async Task UpdateRequestStatus(Job jobRecord, Request request, RequestStatus? newRequestStatus, string? message, params object?[] messagePlaceholders)

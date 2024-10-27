@@ -1,0 +1,89 @@
+@model EdNexusData.Broker.Domain.Worker.Job
+@using EdNexusData.Broker.Domain.Extensions
+@using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+@using System.Text.Json;
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    ViewData["Title"] = "Job Detail";
+    Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = false;
+    ViewData["FocusBarReadOnly"] = false;
+}
+<div class="space-y-10 divide-y divide-gray-900/10">
+    <div class="px-4 sm:px-0">
+        <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+            <div class="px-4 py-6 sm:p-8 grid gap-8">
+                <div class="grid gap-6 border-b border-gray-900/10 pb-8">
+                    <div>
+                        <h2 class="text-base font-semibold leading-7 text-gray-900">Job Information</h2>
+                        <p class="mt-1 text-sm leading-6 text-gray-600">Details of the job ran by the worker listed.</p>
+                    </div>
+                    <div class="grid grid-cols-1 gap-8 sm:grid-cols-8">
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium leading-6 text-gray-900">Queued</label>
+                            <div class="mt-2 text-gray-700">
+                                @Model.QueueDateTime
+                            </div>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium leading-6 text-gray-900">Started</label>
+                            <div class="mt-2 text-gray-700">
+                                @Model.StartDateTime
+                            </div>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium leading-6 text-gray-900">Finished</label>
+                            <div class="mt-2 text-gray-700">
+                                @Model.FinishDateTime
+                            </div>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium leading-6 text-gray-900">Status</label>
+                            <div class="mt-2 text-gray-700">
+                                @Model.JobStatus.GetDescription()
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 gap-8 sm:grid-cols-8">
+                        <div class="sm:col-span-4">
+                            <label class="block text-sm font-medium leading-6 text-gray-900">Reference Type</label>
+                            <div class="mt-2 text-gray-700">
+                                @Model.ReferenceType
+                            </div>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium leading-6 text-gray-900">Reference Guid</label>
+                            <div class="mt-2 text-gray-700">
+                                @Model.ReferenceGuid
+                            </div>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium leading-6 text-gray-900">Worker</label>
+                            <div class="mt-2 text-gray-700">
+                                @Model.WorkerInstance
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid gap-6 pb-8">
+                    <div>
+                        <h2 class="text-base font-semibold leading-7 text-gray-900">Log</h2>
+                    </div>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-6">
+                        <div class="sm:col-span-6">
+                            <pre class="font-mono text-sm whitespace-pre-wrap">@Model.WorkerLog</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section HeaderAction
+{
+<form asp-controller="Jobs" asp-action="Restart" asp-route-id="@Model.Id" class="inline">
+    <button type="submit" role="menuitem" tabindex="-1" id="user-menu-item-2" class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10">Restart</button>
+</form>
+}
