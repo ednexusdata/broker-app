@@ -39,7 +39,7 @@ public class OutgoingRequestViewModel
 
     public OutgoingRequestViewModel() { }
 
-    public OutgoingRequestViewModel(Request outgoingRequest)
+    public OutgoingRequestViewModel(Request outgoingRequest, TimeZoneInfo timeZoneInfo)
     {
         Id = outgoingRequest.Id;
         ReceivingDistrict = outgoingRequest.RequestManifest?.From?.District?.Name ?? string.Empty;
@@ -47,10 +47,7 @@ public class OutgoingRequestViewModel
         ReleasingDistrict = outgoingRequest.EducationOrganization?.ParentOrganization?.Name ?? string.Empty;
         ReleasingSchool = outgoingRequest.EducationOrganization?.Name ?? string.Empty;
         Student = $"{outgoingRequest.RequestManifest?.Student?.LastName}, {outgoingRequest.RequestManifest?.Student?.FirstName}";
-
-        var pacific = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
-        Date = TimeZoneInfo.ConvertTimeFromUtc(outgoingRequest.CreatedAt.DateTime, pacific).ToString("M/dd/yyyy h:mm tt");
-        
+        Date = TimeZoneInfo.ConvertTimeFromUtc(outgoingRequest.CreatedAt.DateTime, timeZoneInfo).ToString("M/dd/yyyy h:mm tt");
         Status = outgoingRequest.RequestStatus.GetDescription();
     }
 

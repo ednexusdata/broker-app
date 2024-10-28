@@ -19,10 +19,10 @@ public class RequestManifestListViewModel
 
 public class RequestManifestViewModel
 {
+    public TimeZoneInfo timeZoneInfo = TimeZoneInfo.Local;
     public DateTimeOffset ReceivedDate { get; set; } = default!;
     public string? ReceivedDateDisplay { get {
-        var pacific = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
-        return TimeZoneInfo.ConvertTimeFromUtc(this.ReceivedDate.DateTime, pacific).ToString("M/dd/yyyy h:mm tt");
+        return TimeZoneInfo.ConvertTimeFromUtc(this.ReceivedDate.DateTime, timeZoneInfo).ToString("M/dd/yyyy h:mm tt");
     } }
     public string FileName { get; set; } = default!;
     public string ContentCategory { get; set; } = default!;

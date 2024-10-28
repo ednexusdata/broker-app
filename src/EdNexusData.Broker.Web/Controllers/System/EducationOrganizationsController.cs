@@ -145,6 +145,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
                 StateAbbreviation = data.StateAbbreviation
             },
             Domain = data.Domain,
+            TimeZone = data.TimeZone!,
             Contacts = new List<EducationOrganizationContact>()
             {
                 new EducationOrganizationContact {
@@ -192,6 +193,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
                 PostalCode = organization.Address?.PostalCode,
                 States = States.GetSelectList(),
                 Domain = organization.Domain,
+                TimeZone = organization.TimeZone ?? ((TimeZoneInfo.Local.Id == "Etc/UTC") ? TimeZoneInfo.Utc.Id : TimeZoneInfo.Local.Id),
                 ContactName = organization.Contacts?.First().Name,
                 ContactJobTitle = organization.Contacts?.First().JobTitle,
                 ContacEmail = organization.Contacts?.First().Email,
@@ -246,6 +248,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
             StateAbbreviation = data.StateAbbreviation
         };
         organization.Domain = data.Domain;
+        organization.TimeZone = data.TimeZone!;
 
         organization.Contacts = new List<EducationOrganizationContact>()
             {

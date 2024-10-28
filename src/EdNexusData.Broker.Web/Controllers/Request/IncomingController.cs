@@ -41,6 +41,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
     private readonly ICurrentUser _currentUser;
     private readonly ManifestService _manifestService;
     private readonly JobService _jobService;
+    private readonly CurrentUserHelper currentUserHelper;
 
     public IncomingController(
         IReadRepository<EducationOrganization> educationOrganizationRepository,
@@ -50,7 +51,8 @@ public class IncomingController : AuthenticatedController<IncomingController>
         FocusHelper focusHelper,
         ICurrentUser currentUser,
         ManifestService manifestService,
-        JobService jobService)
+        JobService jobService,
+        CurrentUserHelper currentUserHelper)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -60,6 +62,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
         _currentUser = currentUser;
         _manifestService = manifestService;
         _jobService = jobService;
+        this.currentUserHelper = currentUserHelper;
     }
 
     public async Task<IActionResult> Index(
@@ -99,7 +102,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
             cancellationToken);
 
         var incomingRequestViewModels = incomingRequests
-            .Select(incomingRequest => new IncomingRequestViewModel(incomingRequest));
+            .Select(incomingRequest => new IncomingRequestViewModel(incomingRequest, currentUserHelper.CurrentUserTimeZone()!));
         
         if (!string.IsNullOrWhiteSpace(model.SearchBy))
         {

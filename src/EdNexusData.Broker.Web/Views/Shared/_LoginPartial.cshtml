@@ -66,9 +66,8 @@
             x-on:click.outside="close($refs.button)"
             :id="$id('dropdown-button')">
         <!-- Active: "bg-gray-100", Not Active: "" -->
-        <a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-0">Your Profile</a>
+        <a asp-controller="Profile" asp-action="Index" title="Profile" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-0">Profile</a>
         <a asp-controller="Jobs" asp-action="Index" title="Jobs" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-1">Jobs</a>
-
         <form class="form-inline" asp-controller="Login" asp-action="Logout">
             <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-2">Logout</button>
         </form>

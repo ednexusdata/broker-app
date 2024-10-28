@@ -27,4 +27,9 @@ public class CurrentUserHelper
         var currentUser = CurrentUser();
         return currentUser?.Id;
     }
+
+    public TimeZoneInfo? CurrentUserTimeZone()
+    {
+        return TimeZoneInfo.FindSystemTimeZoneById(CurrentUser()!.TimeZone!);
+    }
 }

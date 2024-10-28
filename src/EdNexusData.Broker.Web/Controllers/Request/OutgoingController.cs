@@ -37,6 +37,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     private readonly ICurrentUser _currentUser;
     private readonly ManifestService _manifestService;
     private readonly JobService _jobService;
+    private readonly CurrentUserHelper currentUserHelper;
 
     public OutgoingController(
         IHttpContextAccessor httpContextAccessor,
@@ -47,7 +48,8 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         FocusHelper focusHelper,
         ICurrentUser currentUser,
         ManifestService manifestService,
-        JobService jobService)
+        JobService jobService,
+        CurrentUserHelper currentUserHelper)
     {
         _outgoingRequestRepository = outgoingRequestRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -57,6 +59,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         _currentUser = currentUser;
         _manifestService = manifestService;
         _jobService = jobService;
+        this.currentUserHelper = currentUserHelper;
     }
 
     public async Task<IActionResult> Index(
@@ -93,7 +96,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
             cancellationToken);
 
         var outgoingRequestViewModels = outgoingRequests
-            .Select(outgoingRequest => new OutgoingRequestViewModel(outgoingRequest));
+            .Select(outgoingRequest => new OutgoingRequestViewModel(outgoingRequest, currentUserHelper.CurrentUserTimeZone()!));
 
         totalItems = outgoingRequestViewModels.Count();
 

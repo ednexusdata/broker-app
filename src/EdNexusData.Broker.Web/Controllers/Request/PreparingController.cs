@@ -9,6 +9,7 @@ using EdNexusData.Broker.Service;
 using EdNexusData.Broker.Service.Jobs;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
+using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.ViewModels.Preparing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +26,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
     private readonly IRepository<PayloadContentAction> _actionRepository;
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly JobService _jobService;
+    private readonly CurrentUserHelper currentUserHelper;
     private readonly ConnectorLoader _connectorLoader;
 
     public PreparingController(
@@ -33,7 +35,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
         IRepository<PayloadContentAction> actionRepository,
         IRepository<Mapping> mappingRepository,
         ConnectorLoader connectorLoader,
-        JobService jobService)
+        JobService jobService,
+        CurrentUserHelper currentUserHelper)
     {
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -42,6 +45,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
         _mappingRepository = mappingRepository;
         _actionRepository = actionRepository;
         _jobService = jobService;
+        this.currentUserHelper = currentUserHelper;
     }
 
     [Route("/Preparing/{id:guid}")]
@@ -113,6 +117,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
                 }
 
                 var test = new RequestManifestViewModel() {
+                    timeZoneInfo = currentUserHelper.CurrentUserTimeZone()!,
                     PayloadContentId = file.Id,
                     Action = file.PayloadContentActions?.FirstOrDefault(),
                     ReceivedDate = file.CreatedAt,

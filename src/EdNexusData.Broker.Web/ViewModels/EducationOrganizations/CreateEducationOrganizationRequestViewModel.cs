@@ -38,6 +38,9 @@ public class CreateEducationOrganizationRequestViewModel
 
     [Display(Name = "Domain")]
     public string? Domain { get; set; }
+    
+    [Display(Name = "Time Zone")]
+    public string? TimeZone { get; set; } = TimeZoneInfo.Local.Id;
 
     [Display(Name = "Name")]
     public string? ContactName { get; set; }

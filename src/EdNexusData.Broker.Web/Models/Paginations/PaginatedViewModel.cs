@@ -6,8 +6,8 @@ public class PaginatedViewModel<T>
     public int Page { get; private set; }
     public int Size { get; private set; }
     public int TotalItems { get; private set; }
-    public string SortBy { get; private set; }
-    public string SortDir { get; private set; }
+    public string? SortBy { get; private set; }
+    public string? SortDir { get; private set; }
     public string SearchBy { get; private set; }
     public bool ShowNext => Page * Size < TotalItems;
     public bool ShowPrevious => Page > 1;
@@ -19,8 +19,8 @@ public class PaginatedViewModel<T>
         int totalItems,
         int page,
         int size,
-        string sortBy,
-        string sortDir,
+        string? sortBy,
+        string? sortDir,
         string searchBy
         )
     {

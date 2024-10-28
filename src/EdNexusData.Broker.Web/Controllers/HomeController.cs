@@ -23,6 +23,7 @@ public class HomeController : AuthenticatedController<HomeController>
     private readonly IRepository<EducationOrganization> _educationOrganizationRepository;
     private readonly IRepository<Request> _requestRepository;
     private readonly FocusHelper _focusHelper;
+    private readonly CurrentUserHelper currentUserHelper;
 
     public HomeController(
         IHttpContextAccessor httpContextAccessor,
@@ -30,13 +31,15 @@ public class HomeController : AuthenticatedController<HomeController>
         IRepository<EducationOrganization> educationOrganizationRepository,
         IRepository<Request> requestRepository,
         ILogger<HomeController> logger,
-        FocusHelper focusHelper)
+        FocusHelper focusHelper,
+        CurrentUserHelper currentUserHelper)
     {
         _userRepository = userRepository;
         _educationOrganizationRepository = educationOrganizationRepository;
         _requestRepository = requestRepository;
         _logger = logger;
         _focusHelper = focusHelper;
+        this.currentUserHelper = currentUserHelper;
     }
 
     public async Task<IActionResult> Index(
@@ -73,13 +76,13 @@ public class HomeController : AuthenticatedController<HomeController>
         // Temporary, taking 5 here
         var incomingRequestViewModels = incomingRequests
             .Take(5)
-            .Select(incomingRequest =>  new IncomingRequestViewModel(incomingRequest))
+            .Select(incomingRequest =>  new IncomingRequestViewModel(incomingRequest, currentUserHelper.CurrentUserTimeZone()!))
             .ToList();
 
         // Temporary, taking 5 here
         var outgoingRequestViewModels = outgoingRequests
             .Take(5)
-            .Select(outgoingRequest => new OutgoingRequestViewModel(outgoingRequest))
+            .Select(outgoingRequest => new OutgoingRequestViewModel(outgoingRequest, currentUserHelper.CurrentUserTimeZone()!))
             .ToList();
 
 

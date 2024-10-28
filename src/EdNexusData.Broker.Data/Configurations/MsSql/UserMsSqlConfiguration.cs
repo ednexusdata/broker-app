@@ -9,14 +9,10 @@ using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Data.Configurations.MsSql;
 
-internal class EdOrgMsSqlConfiguration : IEntityTypeConfiguration<EducationOrganization>
+internal class UserMsSqlConfiguration : IEntityTypeConfiguration<User>
 {
-    public void Configure(EntityTypeBuilder<EducationOrganization> builder)
+    public void Configure(EntityTypeBuilder<User> builder)
     {   
-        // Json Fields
-        builder.Property(i => i.Address).HasColumnType("nvarchar(max)");
-        builder.Property(i => i.Contacts).HasColumnType("nvarchar(max)");
-
         builder.Property(i => i.TimeZone).HasColumnType("varchar(50)");
     }
 }

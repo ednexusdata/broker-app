@@ -19,7 +19,7 @@ public class ClientService : IClientService
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<IEnumerable<T>>();
         }
-        catch (Exception ex)
+        catch
         {
             throw;
         }
@@ -39,7 +39,7 @@ public class ClientService : IClientService
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<IEnumerable<T>>();
         }
-        catch (Exception ex)
+        catch
         {
             throw;
         }

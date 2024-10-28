@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Extensions;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
+using EdNexusData.Broker.Web.Helpers;
 
 namespace EdNexusData.Broker.Web.ViewModels.IncomingRequests;
 
@@ -38,21 +39,17 @@ public class IncomingRequestViewModel
     public string StatusTone => VoiceTone.Positive;
     public IncomingRequestViewModel() { }
 
-    public IncomingRequestViewModel(Request incomingRequest)
+    public IncomingRequestViewModel(Request incomingRequest, TimeZoneInfo timeZoneInfo)
     {
-
         Id = incomingRequest.Id;
         ReleasingDistrict = incomingRequest.RequestManifest?.To?.District?.Name ?? string.Empty;
         ReleasingSchool = incomingRequest.RequestManifest?.To?.School?.Name ?? string.Empty;
         ReceivingDistrict = incomingRequest.EducationOrganization?.ParentOrganization?.Name ?? string.Empty;
         ReceivingSchool = incomingRequest.EducationOrganization?.Name ?? string.Empty;
         Student = $"{incomingRequest.RequestManifest?.Student?.LastName}, {incomingRequest.RequestManifest?.Student?.FirstName}";
-        
-        var pacific = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
         Date = (incomingRequest.InitialRequestSentDate != null) ?
-                TimeZoneInfo.ConvertTimeFromUtc(incomingRequest.InitialRequestSentDate.Value.DateTime, pacific).ToString("M/dd/yyyy h:mm tt") 
+                TimeZoneInfo.ConvertTimeFromUtc(incomingRequest.InitialRequestSentDate.Value.DateTime, timeZoneInfo).ToString("M/dd/yyyy h:mm tt") 
                 : null;
-
         Status = incomingRequest.RequestStatus.GetDescription();
     }
     public IncomingRequestViewModel(

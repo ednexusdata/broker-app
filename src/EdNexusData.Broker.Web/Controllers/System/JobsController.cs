@@ -95,6 +95,58 @@ public class JobsController : AuthenticatedController<JobsController>
         return View(result);
     }
 
+    [Authorize(Policy = "SuperAdmin")]
+    public async Task<IActionResult> SystemIndex(
+        JobModel model,
+        CancellationToken cancellationToken,
+        Guid? jobId)
+    {
+        if (jobId is not null)
+        {
+            ViewBag.JobId = jobId;
+        }
+
+        var searchExpressions = model.BuildSearchExpressions();
+
+        var sortExpression = model.BuildSortExpression();
+
+        var specification = new SearchableWithPaginationSpecification<Job>.Builder(model.Page, model.Size)
+            .WithAscending((model.SortDir != null) ? model.IsAscending : false)
+            .WithSortExpression(sortExpression)
+            .WithSearchExpressions(searchExpressions)
+            .Build();
+
+        var totalItems = await jobsRepository.CountAsync(
+            specification,
+            cancellationToken);
+
+        var jobs = await jobsRepository.ListAsync(
+            specification,
+            cancellationToken);
+
+        var jobsViewModels = jobs
+            .Select(jobs => new JobViewModel(jobs));
+        
+        if (!string.IsNullOrWhiteSpace(model.SearchBy))
+        {
+            // jobsViewModels = jobsViewModels
+            //     .Where(request => request.Student?.ToLower().Contains(model.SearchBy) is true || request.ReleasingDistrict.ToLower().Contains(model.SearchBy)
+            //      || request.ReleasingSchool.ToLower().Contains(model.SearchBy));
+            totalItems = jobsViewModels.Count();
+        }
+
+        var result = new PaginatedViewModel<JobViewModel>(
+            jobsViewModels,
+            totalItems,
+            model.Page,
+            model.Size,
+            model.SortBy,
+            model.SortDir,
+            model.SearchBy);
+
+        return View("Index", result);
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Restart(Guid id)

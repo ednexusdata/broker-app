@@ -61,6 +61,7 @@
             x-on:click.outside="close($refs.button)"
             :id="$id('dropdown-button')"
             style="display: none;">
+                  <a asp-controller="Jobs" asp-action="SystemIndex" asp-authorize asp-policy="SuperAdmin" class="block px-4 py-2 text-sm text-gray-700">Jobs</a>
                   <a asp-controller="EducationOrganizations" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="block px-4 py-2 text-sm text-gray-700">Organizations</a>
                   <a asp-controller="Users" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="block px-4 py-2 text-sm text-gray-700">Users</a>
                 </div>
