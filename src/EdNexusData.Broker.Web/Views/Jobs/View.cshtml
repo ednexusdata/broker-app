@@ -45,8 +45,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 gap-8 sm:grid-cols-8">
-                        <div class="sm:col-span-4">
+                    <div class="grid grid-cols-1 gap-8 sm:grid-cols-6">
+                        <div class="sm:col-span-2">
                             <label class="block text-sm font-medium leading-6 text-gray-900">Reference Type</label>
                             <div class="mt-2 text-gray-700">
                                 @Model.ReferenceType
@@ -70,6 +70,16 @@
                             <div class="mt-2 text-gray-700">
                                 @Model.WorkerInstance
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid gap-6 pb-8 border-b border-gray-900/10 ">
+                    <div>
+                        <h2 class="text-base font-semibold leading-7 text-gray-900">State</h2>
+                    </div>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-6">
+                        <div class="sm:col-span-6">
+                            <pre class="font-mono text-sm whitespace-pre-wrap">@Model.WorkerState</pre>
                         </div>
                     </div>
                 </div>
