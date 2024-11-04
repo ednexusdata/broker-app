@@ -21,20 +21,20 @@ public class JobViewModel
 
     public string? JobType { get; set; }
 
-    public TimeZoneInfo timeZoneInfo = TimeZoneInfo.Local;
+    public string? User { get; set; }
 
-    public JobViewModel(Job job)
+    public JobViewModel(Job job, TimeZoneInfo timezone)
     {
         JobId = job.Id;
 
-        QueuedDateTime = TimeZoneInfo.ConvertTimeFromUtc(job.QueueDateTime.DateTime, timeZoneInfo).ToString("M/dd/yyyy h:mm:ss tt");
+        QueuedDateTime = TimeZoneInfo.ConvertTimeFromUtc(job.QueueDateTime.DateTime, timezone).ToString("M/dd/yyyy h:mm:ss tt");
 
         StartDateTime = (job.StartDateTime is not null) 
-            ? TimeZoneInfo.ConvertTimeFromUtc(job.StartDateTime.Value.DateTime, timeZoneInfo).ToString("M/dd/yyyy h:mm:ss tt") 
+            ? TimeZoneInfo.ConvertTimeFromUtc(job.StartDateTime.Value.DateTime, timezone).ToString("M/dd/yyyy h:mm:ss tt") 
             : null;
         
         FinishDateTime = (job.FinishDateTime is not null) 
-            ? TimeZoneInfo.ConvertTimeFromUtc(job.FinishDateTime.Value.DateTime, timeZoneInfo).ToString("M/dd/yyyy h:mm:ss tt") 
+            ? TimeZoneInfo.ConvertTimeFromUtc(job.FinishDateTime.Value.DateTime, timezone).ToString("M/dd/yyyy h:mm:ss tt") 
             : null;
 
         JobStatus = job.JobStatus;
@@ -49,5 +49,7 @@ public class JobViewModel
         }
         
         JobType = job.JobType;
+
+        User = job.CreatedByUser?.LastFirstName;
     }
 }

@@ -62,6 +62,9 @@ public class JobsController : AuthenticatedController<JobsController>
             .WithAscending((model.SortDir != null) ? model.IsAscending : false)
             .WithSortExpression(sortExpression)
             .WithSearchExpressions(searchExpressions)
+            .WithIncludeEntities(builder => builder
+                .Include(job => job.CreatedByUser)
+            )
             .Build();
 
         var totalItems = await jobsRepository.CountAsync(
@@ -73,7 +76,7 @@ public class JobsController : AuthenticatedController<JobsController>
             cancellationToken);
 
         var jobsViewModels = jobs
-            .Select(jobs => new JobViewModel(jobs));
+            .Select(jobs => new JobViewModel(jobs, currentUserHelper.CurrentUserTimeZone()!));
         
         if (!string.IsNullOrWhiteSpace(model.SearchBy))
         {
@@ -114,6 +117,9 @@ public class JobsController : AuthenticatedController<JobsController>
             .WithAscending((model.SortDir != null) ? model.IsAscending : false)
             .WithSortExpression(sortExpression)
             .WithSearchExpressions(searchExpressions)
+            .WithIncludeEntities(builder => builder
+                .Include(job => job.CreatedByUser)
+            )
             .Build();
 
         var totalItems = await jobsRepository.CountAsync(
@@ -125,7 +131,7 @@ public class JobsController : AuthenticatedController<JobsController>
             cancellationToken);
 
         var jobsViewModels = jobs
-            .Select(jobs => new JobViewModel(jobs));
+            .Select(jobs => new JobViewModel(jobs, currentUserHelper.CurrentUserTimeZone()!));
         
         if (!string.IsNullOrWhiteSpace(model.SearchBy))
         {
