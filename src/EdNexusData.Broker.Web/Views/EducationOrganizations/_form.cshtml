@@ -53,7 +53,14 @@
                 </div>
                 <p class="mt-2 text-sm text-red-600" asp-validation-for="Name">@Html.ValidationMessageFor(m => m.Name)</p>
               </div>
-              <div class="sm:col-span-2">
+              <div class="sm:col-span-1">
+                @Html.LabelFor(it => it.ShortName, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
+                <div class="mt-2">
+                  <input asp-for="ShortName" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                </div>
+                <p class="mt-2 text-sm text-red-600" asp-validation-for="ShortName">@Html.ValidationMessageFor(m => m.ShortName)</p>
+              </div>
+              <div class="sm:col-span-1">
                 @Html.LabelFor(it => it.Number, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
                 <div class="mt-2">
                   <input asp-for="Number" type="text" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">

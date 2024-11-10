@@ -12,6 +12,11 @@ public class EducationOrganizationRequestViewModel
     public string Name { get; set; } = default!;
 
     [Required]
+    [Display(Name = "Short Name")]
+    public string ShortName { get; set; } = default!;
+
+
+    [Required]
     [Display(Name = "Number")]
     public string Number { get; set; } = default!;
 
@@ -55,6 +60,7 @@ public class EducationOrganizationRequestViewModel
     {
         Id = educationOrganization.Id;
         Name = educationOrganization.Name;
+        ShortName = educationOrganization.ShortName;
         Number = educationOrganization.Number ?? string.Empty;
         EducationOrganizationType = educationOrganization.EducationOrganizationType;
         ParentOrganizationId = educationOrganization.ParentOrganizationId;
@@ -72,12 +78,14 @@ public class EducationOrganizationRequestViewModel
     public EducationOrganizationRequestViewModel(
         Guid? id,
         string name,
+        string shortName,
         string number,
         EducationOrganizationType educationOrganizationType,
         Guid? parentOrganizationId)
     {
         Id = id;
         Name = name;
+        ShortName = shortName;
         Number = number;
         EducationOrganizationType = educationOrganizationType;
         ParentOrganizationId = parentOrganizationId;

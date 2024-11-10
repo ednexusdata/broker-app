@@ -94,6 +94,18 @@
                                         </span>
                                     </a>
                                 </th>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                                    <a asp-route-sortBy="shortname"
+                                       asp-route-sortDir="@(Model.SortBy == "shortname" && Model.SortDir == "asc" ? "desc" : "asc")"
+                                       class="group inline-flex">
+                                        Short Name
+                                        <span class="ml-2 flex-none rounded @(Model.SortBy == "shortname" ? "bg-gray-200 text-gray-900 group-hover:bg-gray-300" : "invisible text-gray-400 group-hover:visible group-focus:visible") @(Model.SortBy == "shortname" && Model.SortDir == "desc" ? "transform rotate-180" : "")">
+                                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                            </svg>
+                                        </span>
+                                    </a>
+                                </th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                                     <a asp-route-sortBy="number"
                                        asp-route-sortDir="@(Model.SortBy == "number" && Model.SortDir == "asc" ? "desc" : "asc")"
@@ -130,6 +142,7 @@
                                 <tr class="@(even ? "bg-gray-50": "")">
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">@organization.ParentOrganization?.Name</td>
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">@organization.Name</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@organization.ShortName</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@organization.Number</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
                                         <span

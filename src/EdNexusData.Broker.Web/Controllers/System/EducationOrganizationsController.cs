@@ -135,6 +135,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
             Id = Guid.NewGuid(),
             ParentOrganizationId = data.EducationOrganizationType == EducationOrganizationType.School ? data.ParentOrganizationId : null,
             Name = data.Name,
+            ShortName = data.ShortName,
             Number = data.Number,
             EducationOrganizationType = data.EducationOrganizationType,
             Address = new Address()
@@ -185,6 +186,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
                 EducationOrganizationId = organization.Id,
                 ParentOrganizationId = organization.ParentOrganizationId,
                 Name = organization.Name!,
+                ShortName = organization.ShortName,
                 EducationOrganizationType = organization.EducationOrganizationType,
                 Number = organization.Number!,
                 StreetNumberName = organization.Address?.StreetNumberName!,
@@ -230,6 +232,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
         // Prepare organization object
         organization.Name = data.Name;
+        organization.ShortName = data.ShortName;
         if (data.EducationOrganizationType == EducationOrganizationType.School)
         {
             organization.ParentOrganizationId = data.ParentOrganizationId;

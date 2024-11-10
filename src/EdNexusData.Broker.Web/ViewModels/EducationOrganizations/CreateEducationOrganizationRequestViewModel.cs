@@ -14,6 +14,10 @@ public class CreateEducationOrganizationRequestViewModel
     public string Name { get; set; } = default!;
 
     [Required]
+    [Display(Name = "Short Name")]
+    public string ShortName { get; set; } = default!;
+
+    [Required]
     [Display(Name = "Number")]
     public string Number { get; set; } = default!;
 
