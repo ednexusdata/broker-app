@@ -5,7 +5,7 @@ using EdNexusData.Broker.SharedKernel;
 
 namespace EdNexusData.Broker.Data;
 
-public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAggregateRoot
+public class CachedRepository<T> : IReadRepository<T> where T : Domain.BaseEntity, IAggregateRoot
 {
     private readonly IMemoryCache _cache;
     private readonly ILogger<CachedRepository<T>> _logger;
