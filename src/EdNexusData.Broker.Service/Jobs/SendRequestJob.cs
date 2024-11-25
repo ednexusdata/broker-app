@@ -12,6 +12,9 @@ using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Connector;
 using System.ComponentModel;
+using Microsoft.AspNetCore.Http;
+using EdNexusData.Broker.Domain.Internal;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
@@ -104,6 +107,9 @@ public class SendRequestJob : IJob
 
         await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sending, "Sent request result: {0} / {1}", result.StatusCode, content);
 
+        // Update message with http transmission info
+        message.TransmissionDetails = JsonSerializer.SerializeToDocument(FormatTransmissionMessage(result));
+
         // mark message as sent
         await _messageService.MarkSent(message);
 
@@ -113,5 +119,25 @@ public class SendRequestJob : IJob
         await _requestRepository.UpdateAsync(dbRequest);
 
         await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sent, "Finished updating request.");
+    }
+
+    private TransmissionMessage FormatTransmissionMessage(HttpResponseMessage http)
+    {
+        var requestContent = new TransmissionContent()
+        {
+            Headers = http.RequestMessage!.Headers.ToDictionary(x => x.Key, y => y.Value)
+        };
+
+        var responseContent = new TransmissionContent()
+        {
+            StatusCode = http.StatusCode,
+            Headers = http.Headers.ToDictionary(x => x.Key, y => y.Value)
+        };
+
+        return new TransmissionMessage()
+        {
+            Request = requestContent,
+            Response = responseContent
+        };
     }
 }
