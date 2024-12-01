@@ -17,7 +17,7 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -70,6 +70,13 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
                     b.Property<Guid?>("ParentOrganizationId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ShortName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TimeZone")
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
@@ -240,6 +247,9 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.Property<int>("RequestResponse")
                         .HasColumnType("int");
 
+                    b.Property<int?>("RequestStatus")
+                        .HasColumnType("int");
+
                     b.Property<string>("TransmissionDetails")
                         .HasColumnType("nvarchar(max)");
 
@@ -380,11 +390,14 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.Property<DateTimeOffset?>("InitialRequestSentDate")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int?>("MatchDisposition")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Open")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Payload")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProcessState")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestManifest")
@@ -411,12 +424,13 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("WorkerInstance")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("EducationOrganizationId");
+
+                    b.HasIndex("RequestProcessUserId");
+
+                    b.HasIndex("ResponseProcessUserId");
 
                     b.ToTable("Requests");
                 });
@@ -450,6 +464,9 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TimeZone")
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
@@ -547,10 +564,15 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.Property<string>("WorkerInstance")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("WorkerLog")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("WorkerState")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
 
                     b.ToTable("Worker_Jobs", (string)null);
                 });
@@ -956,7 +978,19 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("EdNexusData.Broker.Domain.User", "RequestProcessUser")
+                        .WithMany()
+                        .HasForeignKey("RequestProcessUserId");
+
+                    b.HasOne("EdNexusData.Broker.Domain.User", "ResponseProcessUser")
+                        .WithMany()
+                        .HasForeignKey("ResponseProcessUserId");
+
                     b.Navigation("EducationOrganization");
+
+                    b.Navigation("RequestProcessUser");
+
+                    b.Navigation("ResponseProcessUser");
                 });
 
             modelBuilder.Entity("EdNexusData.Broker.Domain.User", b =>
@@ -981,6 +1015,15 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.Navigation("EducationOrganization");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EdNexusData.Broker.Domain.Worker.Job", b =>
+                {
+                    b.HasOne("EdNexusData.Broker.Domain.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy");
+
+                    b.Navigation("CreatedByUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

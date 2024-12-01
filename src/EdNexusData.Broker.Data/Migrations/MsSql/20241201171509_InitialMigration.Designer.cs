@@ -3,73 +3,95 @@ using System;
 using EdNexusData.Broker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EdNexusData.Broker.Data.Migrations.PostgreSql
+namespace EdNexusData.Broker.Data.Migrations.MsSql
 {
-    [DbContext(typeof(PostgresDbContext))]
-    [Migration("20240623214538_AddWorkerJobs")]
-    partial class AddWorkerJobs
+    [DbContext(typeof(MsSqlDbContext))]
+    [Migration("20241201171509_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("EdNexusData.Broker.Data.Seed", b =>
+                {
+                    b.Property<string>("SeedId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SeedName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("SeedId");
+
+                    b.ToTable("__BrokerSeedsHistory", (string)null);
+                });
 
             modelBuilder.Entity("EdNexusData.Broker.Domain.EducationOrganization", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("EducationOrganizationId");
 
                     b.Property<string>("Address")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Contacts")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Domain")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("EducationOrganizationType")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Number")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("ParentOrganizationId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ShortName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TimeZone")
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Domain")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Domain] IS NOT NULL");
 
                     b.HasIndex("ParentOrganizationId");
 
@@ -80,35 +102,36 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("EducationOrganizationConnectorSettingsId");
 
                     b.Property<string>("Connector")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("EducationOrganizationId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Settings")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EducationOrganizationId", "Connector")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[EducationOrganizationId] IS NOT NULL");
 
                     b.ToTable("EducationOrganizationConnectorSettings");
                 });
@@ -117,32 +140,33 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("EducationOrganizationPayloadSettingsId");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("EducationOrganizationId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Payload")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EducationOrganizationId", "Payload")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[EducationOrganizationId] IS NOT NULL");
 
                     b.ToTable("EducationOrganizationPayloadSettings");
                 });
@@ -151,42 +175,52 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("MappingId");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("DestinationMapping")
-                        .HasColumnType("jsonb");
+                    b.Property<string>("JsonDestinationMapping")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("JsonInitialMapping")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("JsonSourceMapping")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MappingType")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OriginalSchema")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("RequestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SourceMapping")
-                        .HasColumnType("jsonb");
+                    b.Property<Guid?>("PayloadContentActionId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("StudentAttributes")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte>("Version")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)1);
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RequestId");
+                    b.HasIndex("PayloadContentActionId", "Version")
+                        .IsUnique()
+                        .HasFilter("[PayloadContentActionId] IS NOT NULL");
 
                     b.ToTable("Mappings", (string)null);
                 });
@@ -195,35 +229,38 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("MessageId");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("MessageContents")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("MessageTimestamp")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("RequestId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("RequestResponse")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RequestStatus")
+                        .HasColumnType("int");
 
                     b.Property<string>("TransmissionDetails")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -236,41 +273,38 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("PayloadContentId");
 
-                    b.Property<string>("Actions")
-                        .HasColumnType("jsonb");
-
                     b.Property<byte[]>("BlobContent")
-                        .HasColumnType("bytea");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("ContentType")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FileName")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("JsonContent")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("MessageId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("RequestId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("XmlContent")
                         .HasColumnType("xml");
@@ -284,65 +318,122 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("PayloadContents", (string)null);
                 });
 
+            modelBuilder.Entity("EdNexusData.Broker.Domain.PayloadContentAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("PayloadContentActionId");
+
+                    b.Property<Guid?>("ActiveMappingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("PayloadContentActionStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PayloadContentActionType")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid?>("PayloadContentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Process")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ProcessState")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Settings")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActiveMappingId")
+                        .IsUnique()
+                        .HasFilter("[ActiveMappingId] IS NOT NULL");
+
+                    b.HasIndex("PayloadContentId", "PayloadContentActionType")
+                        .IsUnique()
+                        .HasFilter("[PayloadContentId] IS NOT NULL AND [PayloadContentActionType] IS NOT NULL");
+
+                    b.ToTable("PayloadContentActions", (string)null);
+                });
+
             modelBuilder.Entity("EdNexusData.Broker.Domain.Request", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("RequestId");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("EducationOrganizationId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("IncomingOutgoing")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("InitialRequestSentDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("MatchDisposition")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Open")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Payload")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProcessState")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestManifest")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("RequestProcessUserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("RequestStatus")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("ResponseManifest")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("ResponseProcessUserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Student")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("WorkerInstance")
-                        .HasColumnType("text");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EducationOrganizationId");
+
+                    b.HasIndex("RequestProcessUserId");
+
+                    b.HasIndex("ResponseProcessUserId");
 
                     b.ToTable("Requests");
                 });
@@ -350,38 +441,41 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
             modelBuilder.Entity("EdNexusData.Broker.Domain.User", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("UserId");
 
                     b.Property<int>("AllEducationOrganizations")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnUpdate()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetimeoffset")
                         .HasAnnotation("Relational:IsStored", true);
 
                     b.Property<Guid?>("CreatedBy")
                         .ValueGeneratedOnUpdate()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasAnnotation("Relational:IsStored", true);
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsSuperAdmin")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TimeZone")
+                        .HasColumnType("varchar(50)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -392,36 +486,37 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("UserRoleId");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("EducationOrganizationId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Role")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
                     b.HasIndex("EducationOrganizationId", "UserId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[EducationOrganizationId] IS NOT NULL AND [UserId] IS NOT NULL");
 
                     b.ToTable("UserRoles", (string)null);
                 });
@@ -430,79 +525,104 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("uniqueidentifier")
                         .HasColumnName("JobId");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset?>("FinishDateTime")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("JobParameters")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("JobStatus")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("JobType")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset>("QueueDateTime")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("ReferenceGuid")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ReferenceType")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("StartDateTime")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("WorkerInstance")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WorkerLog")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WorkerState")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedBy");
+
                     b.ToTable("Worker_Jobs", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
                 });
@@ -511,18 +631,18 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -535,54 +655,54 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
@@ -591,7 +711,8 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -600,18 +721,18 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -623,16 +744,16 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -644,10 +765,10 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -659,16 +780,16 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
@@ -702,10 +823,10 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.OwnsOne("EdNexusData.Broker.Domain.IncomingPayloadSettings", "IncomingPayloadSettings", b1 =>
                         {
                             b1.Property<Guid>("EducationOrganizationPayloadSettingsId")
-                                .HasColumnType("uuid");
+                                .HasColumnType("uniqueidentifier");
 
                             b1.Property<string>("StudentInformationSystem")
-                                .HasColumnType("text");
+                                .HasColumnType("nvarchar(max)");
 
                             b1.HasKey("EducationOrganizationPayloadSettingsId");
 
@@ -719,21 +840,21 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                             b1.OwnsMany("EdNexusData.Broker.Domain.PayloadSettingsContentType", "PayloadContents", b2 =>
                                 {
                                     b2.Property<Guid>("IncomingPayloadSettingsEducationOrganizationPayloadSettingsId")
-                                        .HasColumnType("uuid");
+                                        .HasColumnType("uniqueidentifier");
 
                                     b2.Property<int>("Id")
                                         .ValueGeneratedOnAdd()
-                                        .HasColumnType("integer");
+                                        .HasColumnType("int");
 
                                     b2.Property<Guid>("JobId")
-                                        .HasColumnType("uuid");
+                                        .HasColumnType("uniqueidentifier");
 
                                     b2.Property<string>("PayloadContentType")
                                         .IsRequired()
-                                        .HasColumnType("text");
+                                        .HasColumnType("nvarchar(max)");
 
                                     b2.Property<string>("Settings")
-                                        .HasColumnType("text");
+                                        .HasColumnType("nvarchar(max)");
 
                                     b2.HasKey("IncomingPayloadSettingsEducationOrganizationPayloadSettingsId", "Id");
 
@@ -749,10 +870,10 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.OwnsOne("EdNexusData.Broker.Domain.OutgoingPayloadSettings", "OutgoingPayloadSettings", b1 =>
                         {
                             b1.Property<Guid>("EducationOrganizationPayloadSettingsId")
-                                .HasColumnType("uuid");
+                                .HasColumnType("uniqueidentifier");
 
                             b1.Property<string>("StudentLookupConnector")
-                                .HasColumnType("text");
+                                .HasColumnType("nvarchar(max)");
 
                             b1.HasKey("EducationOrganizationPayloadSettingsId");
 
@@ -766,21 +887,21 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                             b1.OwnsMany("EdNexusData.Broker.Domain.PayloadSettingsContentType", "PayloadContents", b2 =>
                                 {
                                     b2.Property<Guid>("OutgoingPayloadSettingsEducationOrganizationPayloadSettingsId")
-                                        .HasColumnType("uuid");
+                                        .HasColumnType("uniqueidentifier");
 
                                     b2.Property<int>("Id")
                                         .ValueGeneratedOnAdd()
-                                        .HasColumnType("integer");
+                                        .HasColumnType("int");
 
                                     b2.Property<Guid>("JobId")
-                                        .HasColumnType("uuid");
+                                        .HasColumnType("uniqueidentifier");
 
                                     b2.Property<string>("PayloadContentType")
                                         .IsRequired()
-                                        .HasColumnType("text");
+                                        .HasColumnType("nvarchar(max)");
 
                                     b2.Property<string>("Settings")
-                                        .HasColumnType("text");
+                                        .HasColumnType("nvarchar(max)");
 
                                     b2.HasKey("OutgoingPayloadSettingsEducationOrganizationPayloadSettingsId", "Id");
 
@@ -802,11 +923,11 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
             modelBuilder.Entity("EdNexusData.Broker.Domain.Mapping", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.Request", "Request")
-                        .WithMany()
-                        .HasForeignKey("RequestId");
+                    b.HasOne("EdNexusData.Broker.Domain.PayloadContentAction", "PayloadContentAction")
+                        .WithMany("Mappings")
+                        .HasForeignKey("PayloadContentActionId");
 
-                    b.Navigation("Request");
+                    b.Navigation("PayloadContentAction");
                 });
 
             modelBuilder.Entity("EdNexusData.Broker.Domain.Message", b =>
@@ -837,6 +958,21 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Navigation("Request");
                 });
 
+            modelBuilder.Entity("EdNexusData.Broker.Domain.PayloadContentAction", b =>
+                {
+                    b.HasOne("EdNexusData.Broker.Domain.Mapping", "ActiveMapping")
+                        .WithOne("PrimaryPayloadContentAction")
+                        .HasForeignKey("EdNexusData.Broker.Domain.PayloadContentAction", "ActiveMappingId");
+
+                    b.HasOne("EdNexusData.Broker.Domain.PayloadContent", "PayloadContent")
+                        .WithMany("PayloadContentActions")
+                        .HasForeignKey("PayloadContentId");
+
+                    b.Navigation("ActiveMapping");
+
+                    b.Navigation("PayloadContent");
+                });
+
             modelBuilder.Entity("EdNexusData.Broker.Domain.Request", b =>
                 {
                     b.HasOne("EdNexusData.Broker.Domain.EducationOrganization", "EducationOrganization")
@@ -845,7 +981,19 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("EdNexusData.Broker.Domain.User", "RequestProcessUser")
+                        .WithMany()
+                        .HasForeignKey("RequestProcessUserId");
+
+                    b.HasOne("EdNexusData.Broker.Domain.User", "ResponseProcessUser")
+                        .WithMany()
+                        .HasForeignKey("ResponseProcessUserId");
+
                     b.Navigation("EducationOrganization");
+
+                    b.Navigation("RequestProcessUser");
+
+                    b.Navigation("ResponseProcessUser");
                 });
 
             modelBuilder.Entity("EdNexusData.Broker.Domain.User", b =>
@@ -870,6 +1018,15 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Navigation("EducationOrganization");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EdNexusData.Broker.Domain.Worker.Job", b =>
+                {
+                    b.HasOne("EdNexusData.Broker.Domain.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy");
+
+                    b.Navigation("CreatedByUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -928,9 +1085,24 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Navigation("EducationOrganizations");
                 });
 
+            modelBuilder.Entity("EdNexusData.Broker.Domain.Mapping", b =>
+                {
+                    b.Navigation("PrimaryPayloadContentAction");
+                });
+
             modelBuilder.Entity("EdNexusData.Broker.Domain.Message", b =>
                 {
                     b.Navigation("PayloadContents");
+                });
+
+            modelBuilder.Entity("EdNexusData.Broker.Domain.PayloadContent", b =>
+                {
+                    b.Navigation("PayloadContentActions");
+                });
+
+            modelBuilder.Entity("EdNexusData.Broker.Domain.PayloadContentAction", b =>
+                {
+                    b.Navigation("Mappings");
                 });
 
             modelBuilder.Entity("EdNexusData.Broker.Domain.Request", b =>

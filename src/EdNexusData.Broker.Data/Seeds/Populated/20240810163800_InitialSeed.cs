@@ -31,6 +31,7 @@ public class InitialSeed
         var edOrg_district = new Domain.EducationOrganization {
             Number = "1000",
             Name = "Oregon School District",
+            ShortName = "Oregon SD",
             Domain = "or.makoa.dev",
             EducationOrganizationType = Domain.EducationOrganizationType.District,
             Address = new Domain.Address()
@@ -48,6 +49,7 @@ public class InitialSeed
         var edOrg_school1 = new Domain.EducationOrganization {
             Number = "1001",
             Name = "Clackamas Elementary School",
+            ShortName = "Clackamas ES",
             ParentOrganization = edOrg_district,
             EducationOrganizationType = Domain.EducationOrganizationType.School,
             Address = new Domain.Address()
@@ -74,6 +76,7 @@ public class InitialSeed
         var edOrg_school2 = new Domain.EducationOrganization {
             Number = "1002",
             Name = "Multnomah Middle School",
+            ShortName = "Multnomah MS",
             ParentOrganization = edOrg_district,
             EducationOrganizationType = Domain.EducationOrganizationType.School,
             Address = new Domain.Address()
@@ -100,6 +103,7 @@ public class InitialSeed
         var edOrg_school3 = new Domain.EducationOrganization {
             Number = "1003",
             Name = "Yamhill High School",
+            ShortName = "Yamhill HS",
             ParentOrganization = edOrg_district,
             EducationOrganizationType = Domain.EducationOrganizationType.School,
             Address = new Domain.Address()
@@ -129,6 +133,7 @@ public class InitialSeed
         var edOrg_district = new Domain.EducationOrganization {
             Number = "2000",
             Name = "Washington School District",
+            ShortName = "Washington SD",
             Domain = "wa.makoa.dev",
             EducationOrganizationType = Domain.EducationOrganizationType.District,
             Address = new Domain.Address()
@@ -146,6 +151,7 @@ public class InitialSeed
         var edOrg_school1 = new Domain.EducationOrganization {
             Number = "2001",
             Name = "Cowlitz Elementary School",
+            ShortName = "Cowlitz ES",
             ParentOrganization = edOrg_district,
             EducationOrganizationType = Domain.EducationOrganizationType.School,
             Address = new Domain.Address()
@@ -172,6 +178,7 @@ public class InitialSeed
         var edOrg_school2 = new Domain.EducationOrganization {
             Number = "2002",
             Name = "Pacific Middle School",
+            ShortName = "Pacific MS",
             ParentOrganization = edOrg_district,
             EducationOrganizationType = Domain.EducationOrganizationType.School,
             Address = new Domain.Address()
@@ -198,6 +205,7 @@ public class InitialSeed
         var edOrg_school3 = new Domain.EducationOrganization {
             Number = "2003",
             Name = "Skamania High School",
+            ShortName = "Skamania HS",
             ParentOrganization = edOrg_district,
             EducationOrganizationType = Domain.EducationOrganizationType.School,
             Address = new Domain.Address()
