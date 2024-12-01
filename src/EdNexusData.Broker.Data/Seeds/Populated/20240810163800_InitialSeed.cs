@@ -41,6 +41,7 @@ public class InitialSeed
                 StateAbbreviation = "OR",
                 PostalCode = "97310"
             },
+            TimeZone = "America/Los_Angeles",
             CreatedAt = DateTimeOffset.UtcNow
         };
         _dbContext.EducationOrganizations?.Add(edOrg_district);
@@ -143,6 +144,7 @@ public class InitialSeed
                 StateAbbreviation = "WA",
                 PostalCode = "98504"
             },
+            TimeZone = "America/Los_Angeles",
             CreatedAt = DateTimeOffset.UtcNow
         };
         _dbContext.EducationOrganizations?.Add(edOrg_district);
