@@ -84,7 +84,8 @@ public class BrokerDbContextInitializationService : IHostedService
                     LastName = firstUserLastName,
                     IsSuperAdmin = true,
                     CreatedAt = DateTime.UtcNow,
-                    AllEducationOrganizations = PermissionType.Write
+                    AllEducationOrganizations = PermissionType.Write,
+                    TimeZone = TimeZoneInfo.Local.Id
                 };
                 _db.Add(user);
 

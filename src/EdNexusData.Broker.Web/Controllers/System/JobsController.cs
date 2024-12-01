@@ -76,7 +76,7 @@ public class JobsController : AuthenticatedController<JobsController>
             cancellationToken);
 
         var jobsViewModels = jobs
-            .Select(jobs => new JobViewModel(jobs, currentUserHelper.CurrentUserTimeZone()!));
+            .Select(jobs => new JobViewModel(jobs, currentUserHelper.ResolvedCurrentUserTimeZone()));
         
         if (!string.IsNullOrWhiteSpace(model.SearchBy))
         {
@@ -131,7 +131,7 @@ public class JobsController : AuthenticatedController<JobsController>
             cancellationToken);
 
         var jobsViewModels = jobs
-            .Select(jobs => new JobViewModel(jobs, currentUserHelper.CurrentUserTimeZone()!));
+            .Select(jobs => new JobViewModel(jobs, currentUserHelper.ResolvedCurrentUserTimeZone()));
         
         if (!string.IsNullOrWhiteSpace(model.SearchBy))
         {

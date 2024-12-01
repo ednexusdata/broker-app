@@ -30,6 +30,20 @@ public class CurrentUserHelper
 
     public TimeZoneInfo? CurrentUserTimeZone()
     {
-        return TimeZoneInfo.FindSystemTimeZoneById(CurrentUser()!.TimeZone!);
+        if (CurrentUser()?.TimeZone is not null)
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(CurrentUser()?.TimeZone!);
+        }
+        return null;
+    }
+
+    public TimeZoneInfo ResolvedCurrentUserTimeZone()
+    {
+        if (CurrentUserTimeZone() is not null)
+        {
+            return CurrentUserTimeZone()!;
+        }
+        
+        return TimeZoneInfo.Local;
     }
 }

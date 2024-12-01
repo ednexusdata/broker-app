@@ -96,7 +96,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
             cancellationToken);
 
         var outgoingRequestViewModels = outgoingRequests
-            .Select(outgoingRequest => new OutgoingRequestViewModel(outgoingRequest, currentUserHelper.CurrentUserTimeZone()!));
+            .Select(outgoingRequest => new OutgoingRequestViewModel(outgoingRequest, currentUserHelper.ResolvedCurrentUserTimeZone()));
 
         totalItems = outgoingRequestViewModels.Count();
 

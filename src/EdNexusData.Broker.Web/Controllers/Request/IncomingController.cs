@@ -102,7 +102,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
             cancellationToken);
 
         var incomingRequestViewModels = incomingRequests
-            .Select(incomingRequest => new IncomingRequestViewModel(incomingRequest, currentUserHelper.CurrentUserTimeZone()!));
+            .Select(incomingRequest => new IncomingRequestViewModel(incomingRequest, currentUserHelper.ResolvedCurrentUserTimeZone()));
         
         if (!string.IsNullOrWhiteSpace(model.SearchBy))
         {
