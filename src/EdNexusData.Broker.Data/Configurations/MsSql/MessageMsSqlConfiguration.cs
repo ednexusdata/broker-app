@@ -14,6 +14,7 @@ internal class MessageMsSqlConfiguration : IEntityTypeConfiguration<Message>
     {   
         // Json Fields
         builder.Property(i => i.MessageContents).HasColumnType("nvarchar(max)");
+        builder.Property(i => i.Sender).HasColumnType("nvarchar(max)");
         builder.Property(i => i.TransmissionDetails).HasColumnType("nvarchar(max)");
     }
 }

@@ -18,6 +18,7 @@ internal class MessageSharedConfiguration : IEntityTypeConfiguration<Message>
 
         // Json Fields
         builder.Property(i => i.MessageContents).HasJsonConversion();
+        builder.Property(i => i.Sender).HasJsonConversion();
         builder.Property(i => i.TransmissionDetails).HasJsonConversion();
     }
 }
