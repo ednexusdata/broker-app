@@ -5,6 +5,7 @@ using EdNexusData.Broker.Worker;
 using EdNexusData.Broker.Worker.Services;
 using EdNexusData.Broker.Service;
 using EdNexusData.Broker.Service.Worker;
+using Microsoft.AspNetCore.Identity;
 
 var builder = Host.CreateDefaultBuilder(args);
 
@@ -44,6 +45,12 @@ builder.ConfigureServices((hostContext, services) =>
         services.AddSingleton<ICurrentUser, CurrentUserService>();
     }
     
+    services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
+    {
+        options.User.RequireUniqueEmail = false;
+    })
+    .AddEntityFrameworkStores<BrokerDbContext>()
+    .AddDefaultTokenProviders();
     
     if (hostContext.HostingEnvironment.IsDevelopment())
     {

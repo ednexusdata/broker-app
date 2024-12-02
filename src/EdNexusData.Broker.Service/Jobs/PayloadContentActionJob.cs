@@ -65,7 +65,7 @@ public class PayloadContentActionJob : IJob
         Guard.Against.Null(payloadContentAction.ActiveMapping, "mapping", $"Unable to find mapping Id {jobInstance.ReferenceGuid}");
 
         await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Importing, "Fetched payload content action.");
-        await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.Importing, "Importing.");
+        await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.InProgress, "Importing.");
         
         var mapping = payloadContentAction.ActiveMapping;
  
@@ -153,7 +153,7 @@ public class PayloadContentActionJob : IJob
             });
 
             await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Imported, result.ToString());
-            await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.Imported, "Imported.");
+            await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.InProgress, "Imported.");
         }
 
     }

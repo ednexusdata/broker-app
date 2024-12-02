@@ -7,11 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using EdNexusData.Broker.Web.Models;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.SharedKernel;
-using EdNexusData.Broker.Web.ViewModels.OutgoingRequests;
-using EdNexusData.Broker.Web.ViewModels.IncomingRequests;
-using EdNexusData.Broker.Web.ViewModels.EducationOrganizations;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Domain.Internal.Specifications;
+using EdNexusData.Broker.Web.ViewModels;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -56,43 +54,49 @@ public class HomeController : AuthenticatedController<HomeController>
         // To support All-time, the end date should be nullable.
         // For example, Outgoing Processor does not need to see incoming record request data.
 
-        var focusedSchools = await _focusHelper.GetFocusedSchools();
-
-        var requests = await _requestRepository.ListAsync(new RequestsStartedForSchoolsSpec(focusedSchools, model.StartDate));
+        var requests = await _requestRepository.ListAsync(new RequestsStartedForSchoolsSpec(await _focusHelper.GetFocusedSchools(), model.StartDate));
 
         // Only take 5, displaying latest incoming requests
         // Need the total count as well
-        var incomingRequests = requests
+        var readyIncomingRequests = requests
             .Where(request => request.IncomingOutgoing == IncomingOutgoing.Incoming
-             && request.RequestStatus != RequestStatus.Draft);
+             && request.RequestStatus == RequestStatus.Received);
+
+        var sentIncomingRequests = requests
+            .Where(request => request.IncomingOutgoing == IncomingOutgoing.Incoming
+            && request.RequestStatus == RequestStatus.Requested);
 
         // Only take 5, displaying latest outgoing requests
         // Need the total count as well
-        var outgoingRequests = requests
-            .Where(request => request.IncomingOutgoing == IncomingOutgoing.Outgoing);
+        var inProgressOutgoingRequests = requests
+            .Where(request => request.IncomingOutgoing == IncomingOutgoing.Outgoing
+            && request.RequestStatus == RequestStatus.Loaded);
 
-        var usersCount = await _userRepository.CountAsync(cancellationToken);
+        // Only take 5, displaying latest outgoing requests
+        // Need the total count as well
+        var receivedOutgoingRequests = requests
+            .Where(request => request.IncomingOutgoing == IncomingOutgoing.Outgoing
+            && request.RequestStatus == RequestStatus.Received);
 
-        // Temporary, taking 5 here
-        var incomingRequestViewModels = incomingRequests
-            .Take(5)
-            .Select(incomingRequest =>  new IncomingRequestViewModel(incomingRequest, currentUserHelper.CurrentUserTimeZone()!))
+        // Temporary, taking 10 here
+        var incomingRequestViewModels = readyIncomingRequests
+            .Take(10)
+            .Select(incomingRequest =>  new RequestCardViewModel(incomingRequest, currentUserHelper.ResolvedCurrentUserTimeZone()))
             .ToList();
 
-        // Temporary, taking 5 here
-        var outgoingRequestViewModels = outgoingRequests
-            .Take(5)
-            .Select(outgoingRequest => new OutgoingRequestViewModel(outgoingRequest, currentUserHelper.CurrentUserTimeZone()!))
+        // Temporary, taking 10 here
+        var outgoingRequestViewModels = receivedOutgoingRequests
+            .Take(10)
+            .Select(outgoingRequest => new RequestCardViewModel(outgoingRequest, currentUserHelper.ResolvedCurrentUserTimeZone()))
             .ToList();
 
-
-        model.InitialRequestsCount = incomingRequests.Count();
-        model.OutgoingRequestsCount = outgoingRequests.Count();
+        model.ReadyIncomingRequests = readyIncomingRequests.Count();
+        model.SentIncomingRequests = sentIncomingRequests.Count();
+        model.ReceivedOutgoingRequestsCount = receivedOutgoingRequests.Count();
+        model.InProgressOutgoingRequestsCount = inProgressOutgoingRequests.Count();
         model.LatestIncomingRequests = incomingRequestViewModels;
         model.LatestOutgoingRequests = outgoingRequestViewModels;
         model.StartDate = model.StartDate;  
-        model.UsersCount = usersCount;
-        model.EducationOrganizationsCount = focusedSchools.Count;
 
         return View(model);
     }

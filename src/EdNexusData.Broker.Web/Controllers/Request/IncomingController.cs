@@ -214,7 +214,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
 
         var requestManifest = incomingRequest.RequestManifest;
 
-        if (incomingRequest.RequestStatus.NotIn(RequestStatus.Sent, RequestStatus.Received))
+        if (incomingRequest.RequestStatus.NotIn(RequestStatus.Requested, RequestStatus.Received, RequestStatus.Transmitted))
         {
             ViewBag.JobId = jobId;
         }
@@ -402,7 +402,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
 
         Guard.Against.Null(incomingRequest);
 
-        incomingRequest.RequestStatus = RequestStatus.WaitingToSend;
+        incomingRequest.RequestStatus = RequestStatus.WaitingToRequest;
         incomingRequest.RequestProcessUserId = _currentUser.AuthenticatedUserId();
 
         var manifestWithFrom = await _manifestService.AddFrom(incomingRequest, _currentUser.AuthenticatedUserId()!.Value);
@@ -411,7 +411,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
 
         await _incomingRequestRepository.UpdateAsync(incomingRequest);
 
-        var job = await _jobService.CreateJobAsync(typeof(SendRequestJob), typeof(Request), incomingRequest.Id);
+        var job = await _jobService.CreateJobAsync(typeof(RequestingJob), typeof(Request), incomingRequest.Id);
 
         TempData[VoiceTone.Positive] = $"Request marked to send ({incomingRequest.Id}).";
         return RedirectToAction(nameof(View), "Requests", new { id = id, jobId = job.Id });

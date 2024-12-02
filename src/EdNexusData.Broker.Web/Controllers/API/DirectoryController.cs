@@ -43,6 +43,7 @@ public class DirectoryController : Controller
             {
                 Id = districtEdOrg.Id,
                 Name = districtEdOrg.Name,
+                ShortName = districtEdOrg.ShortName,
                 Number = districtEdOrg.Number,
                 Domain = districtEdOrg.Domain,
                 Address = (districtEdOrg.Address != null) ? districtEdOrg.Address : new Address(),
@@ -57,6 +58,7 @@ public class DirectoryController : Controller
                     {
                         Id = schoolEdOrg.Id,
                         Name = schoolEdOrg.Name,
+                        ShortName = schoolEdOrg.ShortName,
                         Number = schoolEdOrg.Number,
                         Address = (schoolEdOrg.Address != null) ? schoolEdOrg.Address : new Address(),
                         Contacts = (schoolEdOrg.Contacts != null) ? schoolEdOrg.Contacts : new List<EducationOrganizationContact>()

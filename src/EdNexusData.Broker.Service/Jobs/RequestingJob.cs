@@ -18,27 +18,27 @@ using Org.BouncyCastle.Math.EC.Rfc7748;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
-[Description("Send Request")]
-public class SendRequestJob : IJob
+[Description("Requesting Job")]
+public class RequestingJob : IJob
 {
-    private readonly ILogger<SendRequestJob> _logger;
+    private readonly ILogger<RequestingJob> _logger;
     private readonly BrokerDbContext _brokerDbContext;
     private readonly IRepository<Request> _requestRepository;
     private readonly IRepository<Message> _messageRepository;
     private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
     private readonly ILookupClient _lookupClient;
-    private readonly JobStatusService<SendRequestJob> _jobStatusService;
+    private readonly JobStatusService<RequestingJob> _jobStatusService;
     private readonly DirectoryLookupService _directoryLookupService;
     private readonly MessageService _messageService;
     private readonly HttpClient _httpClient;
 
-    public SendRequestJob( ILogger<SendRequestJob> logger, 
+    public RequestingJob( ILogger<RequestingJob> logger, 
                         BrokerDbContext brokerDbContext,
                         IRepository<Request> requestRepository, 
                         IRepository<Message> messageRepository,
                         IRepository<Domain.PayloadContent> payloadContentRepository,
                         ILookupClient lookupClient,
-                        JobStatusService<SendRequestJob> jobStatusService,
+                        JobStatusService<RequestingJob> jobStatusService,
                         DirectoryLookupService directoryLookupService, 
                         IHttpClientFactory httpClientFactory,
                         MessageService messageService)
@@ -65,21 +65,22 @@ public class SendRequestJob : IJob
         
         var message = await _messageService.Create(jobInstance, request);
         var messageContent = JsonSerializer.Deserialize<Manifest>(message.MessageContents.ToJsonString()!);
+        var messageToTransmit = await _messageService.PrepareTransmission(message, request.RequestProcessUserId!.Value);
 
         Guard.Against.Null(messageContent, "Message did not convert to type Manifest");
         Guard.Against.Null(messageContent?.To?.District?.Domain, "Domain is missing");
 
         // Determine where to send the information
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sending, "Resolving domain {0}", messageContent.To.District.Domain);
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, "Resolving domain {0}", messageContent.To.District.Domain);
         var brokerAddress = await _directoryLookupService.ResolveBrokerUrl(messageContent.To.District.Domain);
         var url = $"https://{brokerAddress.Host}";
         var path = "/" + _directoryLookupService.StripPathSlashes(brokerAddress.Path);
 
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sending, "Resolved domain {0}: url {1} | path {2}", messageContent.To.District.Domain, url, path);
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, "Resolved domain {0}: url {1} | path {2}", messageContent.To.District.Domain, url, path);
 
         // Prepare request
         using MultipartFormDataContent multipartContent = new();
-        var jsonContent = JsonContent.Create(messageContent);
+        var jsonContent = JsonContent.Create(messageToTransmit);
         multipartContent.Add(jsonContent, "manifest");
 
         // Add on attachments
@@ -105,20 +106,21 @@ public class SendRequestJob : IJob
 
         var content = await result.Content.ReadAsStringAsync();
 
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sending, "Sent request result: {0} / {1}", result.StatusCode, content);
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, "Sent request result: {0} / {1}", result.StatusCode, content);
 
         // Update message with http transmission info
         message.TransmissionDetails = JsonSerializer.SerializeToDocument(FormatTransmissionMessage(result));
 
         // mark message as sent
         await _messageService.MarkSent(message);
+        await _jobStatusService.UpdateMessageStatus(jobInstance, message, RequestStatus.Requested, "Message marked as requested.");
 
         // Update request to sent
         var dbRequest = await _requestRepository.GetByIdAsync(request.Id);
         dbRequest!.InitialRequestSentDate = DateTime.UtcNow;
         await _requestRepository.UpdateAsync(dbRequest);
 
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sent, "Finished updating request.");
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requested, "Finished updating request.");
     }
 
     private TransmissionMessage FormatTransmissionMessage(HttpResponseMessage http)

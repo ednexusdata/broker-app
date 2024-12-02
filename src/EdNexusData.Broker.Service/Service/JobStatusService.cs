@@ -65,7 +65,6 @@ public class JobStatusService : IJobStatusService
     public async Task UpdateRequestStatus(RequestStatus? newRequestStatus, string? message, params object?[] messagePlaceholders)
     {
         if (newRequestStatus is not null) { RequestRecord.RequestStatus = newRequestStatus.Value; }
-        RequestRecord.ProcessState = message;
         await _requestRepo.UpdateAsync(RequestRecord);
         await UpdateJobStatus(JobStatus.Running, message, messagePlaceholders);
 

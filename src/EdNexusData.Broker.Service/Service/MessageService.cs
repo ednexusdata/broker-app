@@ -6,6 +6,7 @@ using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.SharedKernel;
+using Microsoft.AspNetCore.Identity;
 
 namespace EdNexusData.Broker.Service;
 
@@ -14,6 +15,8 @@ public class MessageService
     private readonly IRepository<Message> _messageRepo;
     private readonly IRepository<PayloadContent> _payloadContentRepository;
     private readonly IRepository<Request> _requestRepo;
+    private readonly IReadRepository<User> _user;
+    private readonly UserManager<IdentityUser<Guid>> _userManager;
     private readonly JobStatusService<MessageService> _jobStatusService;
     private readonly BrokerDbContext _brokerDbContext;
 
@@ -21,18 +24,22 @@ public class MessageService
                         IRepository<PayloadContent> payloadContentRepository,
                         IRepository<Request> requestRepo,
                         JobStatusService<MessageService> jobStatusService,
-                        BrokerDbContext brokerDbContext)
+                        BrokerDbContext brokerDbContext,
+                        IReadRepository<User> user,
+                        UserManager<IdentityUser<Guid>> userManager)
     {
         _messageRepo = messageRepo;
         _payloadContentRepository = payloadContentRepository;
         _requestRepo = requestRepo;
         _jobStatusService = jobStatusService;
         _brokerDbContext = brokerDbContext;
+        _user = user;
+        _userManager = userManager;
     }
 
     public async Task<Message> Create(Job jobInstance, Request request)
     {
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Sending, "Create message and move attachments");
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, "Create message and move attachments");
 
         Guard.Against.Null(request);
 
@@ -94,11 +101,35 @@ public class MessageService
         {
             message.MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.ResponseManifest));
         }
+
+        // Set sender
+        message.Sender = request.RequestManifest?.From?.Sender;
+
         await _messageRepo.UpdateAsync(message);
     
         transaction.Commit();
 
         return message;
+    }
+
+    public async Task<MessageTransmission> PrepareTransmission(Message message, Guid fromUserId)
+    {
+        // Find user
+        var user = await _user.GetByIdAsync(fromUserId);
+        var userIdentity = await _userManager.FindByIdAsync(fromUserId.ToString());
+
+        Guard.Against.Null(user, "User not found.");
+    
+        return new MessageTransmission()
+        {
+            Sender = new EducationOrganizationContact()
+            {
+                Name = user.Name,
+                Email = userIdentity?.Email?.ToLower()
+            },
+            SentTimestamp = DateTimeOffset.UtcNow,
+            Contents = message.MessageContents
+        };
     }
 
     public async Task<Message> MarkSent(Message message)
@@ -107,6 +138,7 @@ public class MessageService
         var latestMessage = await _messageRepo.GetByIdAsync(message.Id);
         
         latestMessage!.MessageTimestamp = DateTime.UtcNow;
+        latestMessage!.SenderSentTimestamp = DateTime.UtcNow;
         await _messageRepo.UpdateAsync(latestMessage);
 
         return latestMessage;

@@ -55,7 +55,7 @@ public class ImportRequestMappingsJob : IJob
         
         Guard.Against.Null(request, "request", $"Unable to find request id {jobInstance.ReferenceGuid}");
         
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Importing, "Begin import mapping for: {0}", request.Payload);
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.InProgress, "Begin import mapping for: {0}", request.Payload);
         
         // Set the ed org
         _focusEducationOrganizationResolver.EducationOrganizationId = request.EducationOrganization!.ParentOrganizationId!.Value;
@@ -71,7 +71,7 @@ public class ImportRequestMappingsJob : IJob
         // Get mappings
         var mappings = await _mappingRepository.ListAsync(new MappingByActionId(request.Id));
 
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Importing, "Found {0} mappings for job.", mappings.Count);
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.InProgress, "Found {0} mappings for job.", mappings.Count);
 
         var importers = new Dictionary<Type, dynamic>();
 
@@ -121,7 +121,7 @@ public class ImportRequestMappingsJob : IJob
         {
             var methodInfo = importerType.GetMethod("ImportAsync");
             var result = await methodInfo!.Invoke(importer, new object[] { });
-            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Importing, "Called import on {0} and it returned {1}.", importerType.FullName, result);
+            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.InProgress, "Called import on {0} and it returned {1}.", importerType.FullName, result);
         }
 
         foreach(var mapping in mappings.Where(x => x.PayloadContentAction?.Process == true).ToList())
@@ -129,6 +129,6 @@ public class ImportRequestMappingsJob : IJob
             await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction!, PayloadContentActionStatus.Imported, "Finished importing {0}.", mapping.MappingType);
         }
 
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Imported, "Finished importing all mappings for request.");
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.InProgress, "Finished importing all mappings for request.");
     }
 }

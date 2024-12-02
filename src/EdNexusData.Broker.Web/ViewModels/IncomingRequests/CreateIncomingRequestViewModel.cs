@@ -77,9 +77,9 @@ public class CreateIncomingRequestViewModel
     public RequestStatus RequestStatus { get; set; }
 
     public List<RequestStatus> RequestStatuses => 
-        RequestStatus != RequestStatus.Imported 
-            ? new List<RequestStatus> { RequestStatus.Draft, RequestStatus.Sent } 
-            : new List<RequestStatus> { RequestStatus.Received, RequestStatus.Declined };
+        RequestStatus != RequestStatus.InProgress 
+            ? new List<RequestStatus> { RequestStatus.Draft, RequestStatus.Requested } 
+            : new List<RequestStatus> { RequestStatus.Received };
 
     [Display(Name = "Files")]
     public IFormFileCollection Files { get; set; } = new FormFileCollection();

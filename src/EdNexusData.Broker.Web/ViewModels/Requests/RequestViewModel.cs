@@ -7,4 +7,5 @@ public class RequestViewModel
     public Request? Request { get; set; }
     public List<PayloadContent>? RequestingPayloadContents { get; set; }
     public List<PayloadContent>? ReleasingPayloadContents { get; set; }
+    public Dictionary<RequestStatus, StatusGridViewModel> StatusGrid { get; set; } = new();
 }

@@ -7,6 +7,7 @@ using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Controllers;
 using EdNexusData.Broker.Web.Utilities;
+using EdNexusData.Broker.Domain.Internal;
 
 namespace EdNexusData.Broker.Controllers.Api;
 
@@ -42,7 +43,12 @@ public class RequestsController : Controller
     {
         try
         {
-            var mainfestJson = JsonSerializer.Deserialize<Manifest>(manifest, new JsonSerializerOptions
+            var messageTransmission = JsonSerializer.Deserialize<MessageTransmission>(manifest, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true 
+            });
+            
+            var mainfestJson = JsonSerializer.Deserialize<Manifest>(messageTransmission!.Contents!, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true 
             });
@@ -80,7 +86,11 @@ public class RequestsController : Controller
                         RequestId = request.Id,
                         RequestResponse = RequestResponse.Response,
                         MessageTimestamp = DateTime.UtcNow,
-                        MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.ResponseManifest))
+                        Sender = messageTransmission.Sender,
+                        SenderSentTimestamp = messageTransmission.SentTimestamp,
+                        MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.ResponseManifest)),
+                        TransmissionDetails = JsonSerializer.SerializeToDocument(FormatTransmissionMessage(HttpContext)),
+                        RequestStatus = RequestStatus.Received
                     };
                     await _messageRepository.AddAsync(message);
 
@@ -107,7 +117,11 @@ public class RequestsController : Controller
                         RequestId = request.Id,
                         RequestResponse = RequestResponse.Response,
                         MessageTimestamp = DateTime.UtcNow,
-                        MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.RequestManifest))
+                        Sender = messageTransmission.Sender,
+                        SenderSentTimestamp = messageTransmission.SentTimestamp,
+                        MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.RequestManifest)),
+                        TransmissionDetails = JsonSerializer.SerializeToDocument(FormatTransmissionMessage(HttpContext)),
+                        RequestStatus = RequestStatus.Received
                     };
                     await _messageRepository.AddAsync(message);
                 }
@@ -130,7 +144,11 @@ public class RequestsController : Controller
                 {
                     RequestId = request.Id,
                     RequestResponse = RequestResponse.Response,
-                    MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.RequestManifest))
+                    Sender = messageTransmission.Sender,
+                    SenderSentTimestamp = messageTransmission.SentTimestamp,
+                    MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.RequestManifest)),
+                    TransmissionDetails = JsonSerializer.SerializeToDocument(FormatTransmissionMessage(HttpContext)),
+                    RequestStatus = RequestStatus.Received
                 };
                 await _messageRepository.AddAsync(message);
             }
@@ -191,6 +209,26 @@ public class RequestsController : Controller
         {
             return StatusCode((int)HttpStatusCode.InternalServerError, $"{ex.Message}\n\n{ex.StackTrace}");
         }
+    }
+
+    private TransmissionMessage FormatTransmissionMessage(HttpContext http)
+    {
+        var requestContent = new TransmissionContent()
+        {
+            Headers = http.Request.Headers.ToDictionary(x => x.Key, y => y.Value.AsEnumerable() )!
+        };
+
+        var responseContent = new TransmissionContent()
+        {
+            StatusCode = Enum.Parse<HttpStatusCode>(http.Response.StatusCode.ToString()),
+            Headers = http.Response.Headers.ToDictionary(x => x.Key, y => y.Value.AsEnumerable() )!
+        };
+
+        return new TransmissionMessage()
+        {
+            Request = requestContent,
+            Response = responseContent
+        };
     }
 
 }

@@ -10,6 +10,7 @@ public class JobStatusService<T>
 {
     private readonly IRepository<Job> _jobRepo;
     private readonly IRepository<Request> _requestRepo;
+    private readonly IRepository<Message> _messageRepo;
     private readonly IRepository<PayloadContentAction> _payloadContentActionRepo;
     private readonly JobStatusStore jobStatusStore;
     private readonly ILogger<T> _logger;
@@ -17,6 +18,7 @@ public class JobStatusService<T>
     public JobStatusService(ILogger<T> logger, 
            IRepository<Job> jobRepo,
            IRepository<Request> requestRepo,
+           IRepository<Message> messageRepo,
            IRepository<PayloadContentAction> payloadContentActionRepo,
            JobStatusStore jobStatusStore)
     {
@@ -24,6 +26,7 @@ public class JobStatusService<T>
         _jobRepo = jobRepo;
         _requestRepo = requestRepo;
         _payloadContentActionRepo = payloadContentActionRepo;
+        _messageRepo = messageRepo;
         this.jobStatusStore = jobStatusStore;
     }
 
@@ -72,11 +75,19 @@ public class JobStatusService<T>
     public async Task UpdateRequestStatus(Job jobRecord, Request request, RequestStatus? newRequestStatus, string? message, params object?[] messagePlaceholders)
     {
         if (newRequestStatus is not null) { request.RequestStatus = newRequestStatus.Value; }
-        request.ProcessState = message;
         await _requestRepo.UpdateAsync(request);
         await UpdateJobStatus(jobRecord, JobStatus.Running, message, messagePlaceholders);
 
         _logger.LogInformation($"{jobRecord.Id} / {request.Id}: {message}", messagePlaceholders);
+    }
+
+    public async Task UpdateMessageStatus(Job jobRecord, Message message, RequestStatus? newRequestStatus, string? messageText, params object?[] messagePlaceholders)
+    {
+        if (newRequestStatus is not null) { message.RequestStatus = newRequestStatus.Value; }
+        await _messageRepo.UpdateAsync(message);
+        await UpdateJobStatus(jobRecord, JobStatus.Running, messageText, messagePlaceholders);
+
+        _logger.LogInformation($"{jobRecord.Id} / {message.Id}: {message}", messagePlaceholders);
     }
 
     public async Task UpdatePayloadContentActionStatus(Job jobRecord, PayloadContentAction payloadContentAction, PayloadContentActionStatus? newPayloadContentActionStatus, string? message, params object?[] messagePlaceholders)

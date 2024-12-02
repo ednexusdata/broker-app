@@ -331,7 +331,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
 
         Guard.Against.Null(outgoingRequest);
 
-        outgoingRequest.RequestStatus = RequestStatus.WaitingToSend;
+        outgoingRequest.RequestStatus = RequestStatus.WaitingToTransmit;
         outgoingRequest.ResponseProcessUserId = _currentUser.AuthenticatedUserId();
 
         var manifestWithFrom = await _manifestService.AddFrom(outgoingRequest, _currentUser.AuthenticatedUserId()!.Value);
@@ -343,7 +343,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
 
         await _outgoingRequestRepository.UpdateAsync(outgoingRequest);
 
-        var job = await _jobService.CreateJobAsync(typeof(SendRequestJob), typeof(Request), outgoingRequest.Id);
+        var job = await _jobService.CreateJobAsync(typeof(TransmittingJob), typeof(Request), outgoingRequest.Id);
 
         TempData[VoiceTone.Positive] = $"Request marked to send ({outgoingRequest.Id}).";
         return RedirectToAction(nameof(View), "Requests", new { id = id, jobId = job.Id });

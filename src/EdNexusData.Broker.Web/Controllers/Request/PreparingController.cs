@@ -58,7 +58,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
             return NotFound();
         }
 
-        if (request.RequestStatus.NotIn(RequestStatus.Imported))
+        if (request.RequestStatus.NotIn(RequestStatus.InProgress))
         {
             ViewBag.JobId = jobId;
         }
@@ -117,7 +117,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
                 }
 
                 var test = new RequestManifestViewModel() {
-                    timeZoneInfo = currentUserHelper.CurrentUserTimeZone()!,
+                    timeZoneInfo = currentUserHelper.ResolvedCurrentUserTimeZone(),
                     PayloadContentId = file.Id,
                     Action = file.PayloadContentActions?.FirstOrDefault(),
                     ReceivedDate = file.CreatedAt,
@@ -180,7 +180,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
         
         return RedirectToAction(nameof(Index), new { id = id });
     }
-
+    /*
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
@@ -200,4 +200,5 @@ public class PreparingController : AuthenticatedController<RequestsController>
         TempData[VoiceTone.Positive] = $"Request waiting to import ({incomingRequest.Id}).";
         return RedirectToAction(nameof(Index), new { id = id, jobId = createdJob.Id });
     }
+    */
 }

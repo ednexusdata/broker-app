@@ -9,7 +9,100 @@
     Layout = "_AuthenticatedLayout";
     ViewData["FocusBar"] = true;
     ViewData["FocusBarReadOnly"] = true;
+
+    // Tailwind CSS classes defined in comments so that the processor loads the combinations
+    var incomingBgColor = "gray"; // border-gray-400 bg-gray-500 bg-gray-700
+    var outgoingBgColor = "tertiary"; // border-tertiary-400 bg-tertiary-400 bg-tertiary-700
+    if (Model.Request?.IncomingOutgoing == EdNexusData.Broker.Domain.IncomingOutgoing.Incoming)
+    {
+        incomingBgColor = "tertiary";
+        outgoingBgColor = "gray";
+    }
 }
+<div class="space-y-10 divide-y divide-gray-900/10">
+    <div class="px-4 sm:px-0">
+        <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl px-4 py-6">
+            <h1 class="font-bold text-xl mb-3">@Model.Request?.Student?.Student?.FirstName @Model.Request?.Student?.Student?.MiddleName @Model.Request?.Student?.Student?.LastName</h1>
+            <div class="font-semibold mb-3">Student ID: @Model.Request?.Student?.Student?.StudentNumber | DOB: @Model.Request?.Student?.Student?.Birthdate | Grade: @Model.Request?.Student?.Student?.Grade | Gender: @Model.Request?.Student?.Student?.Gender</div>
+            <div class="grid grid-cols-5 bg-@incomingBgColor-700 p-1">
+                <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
+                    <div class="uppercase text-sm font-bold">⮕ Incoming</div>
+                    <div>@Model.Request?.RequestManifest?.From?.District?.Name / @Model.Request?.RequestManifest?.From?.District?.Number</div>
+                    <div>@Model.Request?.RequestManifest?.From?.School?.Name / @Model.Request?.RequestManifest?.From?.School?.Number</div>
+                </div>
+                <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
+                    <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Requested</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Requested)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Requested)?.Userstamp</div>
+                </div>
+                <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
+                    <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Transmitted</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Transmitted)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Transmitted)?.Userstamp</div>
+                </div>
+                <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
+                    <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">In-Progress</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.InProgress)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.InProgress)?.Userstamp</div>
+                </div>
+                <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
+                    <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Finished</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Finished)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Finished)?.Userstamp</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-5 bg-@outgoingBgColor-700 p-1">
+                <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
+                    <div class="uppercase text-sm font-bold">Outgoing ⮕</div>
+                    <div>@Model.Request?.RequestManifest?.To?.District?.Name / @Model.Request?.RequestManifest?.To?.District?.Number</div>
+                    <div>@Model.Request?.RequestManifest?.To?.School?.Name / @Model.Request?.RequestManifest?.To?.School?.Number</div>
+                </div>
+                <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">&nbsp;</div>
+                <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
+                    <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Received</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Received)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Received)?.Userstamp</div>
+                </div>
+                <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
+                    <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Loaded</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Loaded)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Loaded)?.Userstamp</div>
+                </div>
+                <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
+                    <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Transmitted</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Transmitted)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Transmitted)?.Userstamp</div>
+                </div>
+            </div>
+
+
+        <div class="mt-4">
+            <div class="flex flex-col w-full max-w-[80%] leading-1.5 p-4 border-gray-200 bg-gray-300 rounded-b-2xl rounded-tr-2xl dark:bg-gray-700">
+                <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Bonnie Green</span>
+                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">11:46</span>
+                </div>
+                <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">That's awesome. I think our users will really appreciate the improvements.</p>
+                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">Delivered</span>
+            </div>
+
+            <div class="flex flex-row w-full">
+                <div class="w-full h-full max-w-[20%]">&nbsp;</div>
+                <div class="w-full leading-1.5 p-4 border-tertiary-200 bg-tertiary-500 rounded-b-2xl rounded-tl-2xl mt-2">
+                    <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">Bonnie Green</span>
+                        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">11:46</span>
+                    </div>
+                    <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">That's awesome. I think our users will really appreciate the improvements.</p>
+                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">Delivered</span>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </div>
+</div>
+
 <div class="space-y-10 divide-y divide-gray-900/10">
     <div class="px-4 sm:px-0">
         <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
@@ -48,7 +141,8 @@
                     <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
                         <dt class="text-sm font-medium leading-6 text-gray-900 mr-6">School</dt>
                         <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2 mr-6">
-                            <div>@Model.Request?.RequestManifest?.From?.School?.Name @Model.Request?.RequestManifest?.From?.School?.Number
+                            <div>@Model.Request?.RequestManifest?.From?.School?.Name
+                                @Model.Request?.RequestManifest?.From?.School?.Number
                             </div>
                             <div>@Model.Request?.RequestManifest?.From?.School?.Address?.StreetNumberName</div>
                             <div>@Model.Request?.RequestManifest?.From?.School?.Address?.City,
@@ -88,9 +182,11 @@
                     <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
                         <dt class="text-sm font-medium leading-6 text-gray-900 mr-6">Student</dt>
                         <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2 mr-6">
-                            <div>@Model.Request?.RequestManifest?.Student?.LastName, @Model.Request?.RequestManifest?.Student?.FirstName
+                            <div>@Model.Request?.RequestManifest?.Student?.LastName,
+                                @Model.Request?.RequestManifest?.Student?.FirstName
                                 @Model.Request?.RequestManifest?.Student?.MiddleName</div>
-                            <div>@Model.Request?.RequestManifest?.Student?.Birthdate @Model.Request?.RequestManifest?.Student?.Gender
+                            <div>@Model.Request?.RequestManifest?.Student?.Birthdate
+                                @Model.Request?.RequestManifest?.Student?.Gender
                             </div>
                             <div>@Model.Request?.RequestManifest?.Student?.StudentNumber</div>
                         </dd>
@@ -98,25 +194,30 @@
                     <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
                         <dt class="text-sm font-medium leading-6 text-gray-900">Student</dt>
                         <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
-                            <div>@Model.Request?.ResponseManifest?.Student?.LastName, @Model.Request?.ResponseManifest?.Student?.FirstName
+                            <div>@Model.Request?.ResponseManifest?.Student?.LastName,
+                                @Model.Request?.ResponseManifest?.Student?.FirstName
                                 @Model.Request?.ResponseManifest?.Student?.MiddleName</div>
-                            <div>@Model.Request?.ResponseManifest?.Student?.Birthdate @Model.Request?.ResponseManifest?.Student?.Gender
+                            <div>@Model.Request?.ResponseManifest?.Student?.Birthdate
+                                @Model.Request?.ResponseManifest?.Student?.Gender
                             </div>
                             <div>@Model.Request?.ResponseManifest?.Student?.StudentNumber</div>
                         </dd>
                     </div>
                     <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
                         <dt class="text-sm font-medium leading-6 text-gray-900 mr-6">Note</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2 mr-6">@Model.Request?.RequestManifest?.Note</dd>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2 mr-6">
+                            @Model.Request?.RequestManifest?.Note</dd>
                     </div>
                     <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
                         <dt class="text-sm font-medium leading-6 text-gray-900">Note</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">@Model.Request?.ResponseManifest?.Note</dd>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">@Model.Request?.ResponseManifest?.Note
+                        </dd>
                     </div>
                     <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
                         <dt class="text-sm font-medium leading-6 text-gray-900 mr-6">Attachments</dt>
                         <dd class="mt-2 text-sm text-gray-900 mr-6">
-                            @if (Model.Request?.RequestManifest?.Contents is not null && Model.Request?.RequestManifest?.Contents?.Count > 0)
+                            @if (Model.Request?.RequestManifest?.Contents is not null &&
+                            Model.Request?.RequestManifest?.Contents?.Count > 0)
                             {
                                 <ul role="list" class="divide-y divide-gray-100 rounded-md border border-gray-200">
                                     @foreach (var payloadContent in Model.Request?.RequestManifest?.Contents!)
@@ -144,7 +245,8 @@
                     <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
                         <dt class="text-sm font-medium leading-6 text-gray-900">Attachments</dt>
                         <dd class="mt-2 text-sm text-gray-900">
-                            @if (Model.Request?.ResponseManifest?.Contents is not null && Model.Request?.ResponseManifest?.Contents?.Count > 0)
+                            @if (Model.Request?.ResponseManifest?.Contents is not null &&
+                            Model.Request?.ResponseManifest?.Contents?.Count > 0)
                             {
                                 <ul role="list" class="divide-y divide-gray-100 rounded-md border border-gray-200">
 
@@ -175,23 +277,30 @@
                         <dt class="text-sm font-medium leading-6 text-gray-900">Messages</dt>
                         <table class="min-w-full divide-y divide-gray-300">
                             <tr>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Timestamp</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Request/Response</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Message Contents</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Transmission Details</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    Timestamp</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    Request/Response</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    Message Contents</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    Transmission Details</th>
                             </tr>
-                            @if(Model.Request?.Messages != null && Model.Request.Messages.Count > 0)
-                            @foreach(var message in Model.Request.Messages)
-                            {
-                                <tr class="even:bg-gray-50">
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.MessageTimestamp</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestResponse</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                        <a asp-action="ViewMessage" asp-route-id="@message.Id" target="_blank">View</a>
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.TransmissionDetails</td>
-                                </tr>
-                            }
+                            @if (Model.Request?.Messages != null && Model.Request.Messages.Count > 0)
+                                @foreach (var message in Model.Request.Messages)
+                                {
+                                    <tr class="even:bg-gray-50">
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.MessageTimestamp
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestResponse
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                            <a asp-action="ViewMessage" asp-route-id="@message.Id" target="_blank">View</a>
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                            @message.TransmissionDetails</td>
+                                    </tr>
+                                }
                         </table>
                     </div>
                 </dl>
@@ -202,12 +311,12 @@
 
 @section HeaderAction
 {
-    @if(ViewBag.JobId is not null && ViewBag.JobId.ToString() != "")
+    @if (ViewBag.JobId is not null && ViewBag.JobId.ToString() != "")
     {
         <div x-data="preparingIndex">
-            <span x-text="status"></span>
-        </div>
-    } 
+    <span x-text="status"></span>
+</div>
+    }
     else
     {
         <div>@Model.Request?.RequestStatus</div>
@@ -216,50 +325,49 @@
 
 @section scripts
 {
-<script>
-  document.addEventListener('alpine:init', () => {
+    <script>
+        document.addEventListener('alpine:init', () => {
 
-    Alpine.data('preparingIndex', () => ({
-      status: "Sending...",
-      interval: null,
-      fetchData: null,
-      initFetchData: function() {
-        this.fetchData = async () => {
-          try {
-            const response = await fetch('/api/v1/jobs?jobId=@ViewBag.JobId');
-            const data = await response.json();
-            //console.log(data);
-            this.status = data.workerState;
-            //console.log("Worker State: " + data.workerState);
+            Alpine.data('preparingIndex', () => ({
+                status: "Sending...",
+                interval: null,
+                fetchData: null,
+                initFetchData: function () {
+                    this.fetchData = async () => {
+                        try {
+                            const response = await fetch('/api/v1/jobs?jobId=@ViewBag.JobId');
+                            const data = await response.json();
+                            //console.log(data);
+                            this.status = data.workerState;
+                            //console.log("Worker State: " + data.workerState);
 
-            //console.log("Job Status: " + data.jobStatus);
-            if (data.jobStatus == 2)
-            {
-              //console.log("Inside job status");
-              location.reload();
-              clearInterval(this.interval);
-            }
+                            //console.log("Job Status: " + data.jobStatus);
+                            if (data.jobStatus == 2) {
+                                //console.log("Inside job status");
+                                location.reload();
+                                clearInterval(this.interval);
+                            }
 
-          } catch (error) {
-            console.error('Error fetching status:', error);
-            clearInterval(this.interval);
-          }
-        };
-      },
-      init() {
-        this.initFetchData();
-        //console.log("Called startPolling and about to call setInterval");
-        this.interval = setInterval(this.fetchData, 2000); // Poll every 2 seconds (adjust as needed)
-        //this.status = "Called setInternal";
-        //console.log("Called setInterval");
-        
-      },
-      destroy() {
-          // Detach the handler, avoiding memory and side-effect leakage
-          clearInterval(this.interval);
-      },
-    }))
-    
-  });
-</script>
+                        } catch (error) {
+                            console.error('Error fetching status:', error);
+                            clearInterval(this.interval);
+                        }
+                    };
+                },
+                init() {
+                    this.initFetchData();
+                    //console.log("Called startPolling and about to call setInterval");
+                    this.interval = setInterval(this.fetchData, 2000); // Poll every 2 seconds (adjust as needed)
+                    //this.status = "Called setInternal";
+                    //console.log("Called setInterval");
+
+                },
+                destroy() {
+                    // Detach the handler, avoiding memory and side-effect leakage
+                    clearInterval(this.interval);
+                },
+            }))
+
+        });
+    </script>
 }

@@ -1,0 +1,11 @@
+@model EdNexusData.Broker.Web.ViewModels.RequestCardViewModel;
+
+<a class="block grid-cols-1 border" asp-controller="Requests" asp-action="View" asp-route-id="@Model.Id">
+    <div class="border-l-10 border-tertiary-700 p-2 text-sm overflow-x-auto">
+        <h4 class="text-lg font-bold">@Model.Student</h4>
+        <div class="font-semibold">@Model.StudentId</div>
+        <div class="">@Model.ReleasingSchoolDisplay → @Model.ReceivingSchoolDisplay</div>
+        <div class="">@Model.RecordType</div>
+        <div class="text-tiny">@Model.Date by @Model.User</div>
+    </div>
+</a>

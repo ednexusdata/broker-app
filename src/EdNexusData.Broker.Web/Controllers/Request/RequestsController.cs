@@ -6,6 +6,10 @@ using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.ViewModels.Requests;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using System.Text.Json;
+using Newtonsoft.Json;
+using EdNexusData.Broker.Web.Helpers;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -15,14 +19,17 @@ public class RequestsController : AuthenticatedController<RequestsController>
     private readonly IReadRepository<Request> _requestRepository;
     private readonly IReadRepository<Message> _messageRepository;
     private readonly IReadRepository<PayloadContent> _payloadContentRepository;
+    private readonly CurrentUserHelper currentUserHelper;
 
     public RequestsController(IReadRepository<Request> requestRepository,
         IReadRepository<Message> messageRepository,
-        IReadRepository<PayloadContent> payloadContentRepository)
+        IReadRepository<PayloadContent> payloadContentRepository,
+        CurrentUserHelper currentUserHelper)
     {
         _requestRepository = requestRepository;
         _messageRepository = messageRepository;
         _payloadContentRepository = payloadContentRepository;
+        this.currentUserHelper = currentUserHelper;
     }
 
     public async Task<IActionResult> View(Guid id, Guid? jobId)
@@ -30,9 +37,27 @@ public class RequestsController : AuthenticatedController<RequestsController>
         var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdWithMessagesPayloadContents(id));
         Guard.Against.Null(request);
 
-        if (request.RequestStatus.NotIn(RequestStatus.Sent, RequestStatus.Received))
+        var messages = await _messageRepository.ListAsync(new MessagesForRequest(request.Id));
+
+        if (request.RequestStatus.NotIn(RequestStatus.Requested, RequestStatus.Transmitted, RequestStatus.Received))
         {
             ViewBag.JobId = jobId;
+        }
+
+        var statusGrid = new Dictionary<RequestStatus, StatusGridViewModel>();
+        foreach(var message in messages)
+        {
+            // var messageType = message.MessageContents?.RootElement.GetProperty("MessageType").GetString();
+            // var deseralizedMessageContent = JsonConvert.DeserializeObject(message.MessageContents.ToJsonString()!, Type.GetType(messageType!)!);
+            
+            if (message.RequestStatus is not null && !statusGrid.ContainsKey(message.RequestStatus.Value))
+            {
+                statusGrid[message.RequestStatus.Value] = new StatusGridViewModel()
+                {
+                    Timestamp = TimeZoneInfo.ConvertTimeFromUtc(message.SenderSentTimestamp!.Value.DateTime, currentUserHelper.ResolvedCurrentUserTimeZone()).ToString("M/dd/yyyy h:mm tt"),
+                    Userstamp = message.Sender?.Name
+                };
+            }
         }
 
         var payloadContents = request.PayloadContents;
@@ -46,7 +71,8 @@ public class RequestsController : AuthenticatedController<RequestsController>
             new RequestViewModel() { 
                 Request = request, 
                 ReleasingPayloadContents = releasingPayloadContents, 
-                RequestingPayloadContents = requestingPayloadContents
+                RequestingPayloadContents = requestingPayloadContents,
+                StatusGrid = statusGrid
             }
         );
     }

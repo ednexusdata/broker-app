@@ -139,7 +139,7 @@
     {
         <div>@Model.RequestStatus.ToString()</div>
     }
-  @if (Model.RequestStatus == EdNexusData.Broker.Domain.RequestStatus.Prepared)
+  @if (Model.RequestStatus == EdNexusData.Broker.Domain.RequestStatus.InProgress)
   {
     <div>
     <form method="post" asp-action="ImportRequest" asp-route-id="@Model.RequestId" autocomplete="off">

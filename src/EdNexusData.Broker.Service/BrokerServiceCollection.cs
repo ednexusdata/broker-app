@@ -27,7 +27,6 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         
         // Other Services
         services.AddSingleton<ILookupClient, LookupClient>();
-        
 
         // Seralizers
         services.AddScoped<ConfigurationSerializer>();
@@ -76,7 +75,8 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         services.AddScoped<PayloadJobResolver>();
         
         // Jobs
-        services.AddScoped<SendRequestJob>();
+        services.AddScoped<RequestingJob>();
+        services.AddScoped<TransmittingJob>();
         services.AddScoped<PayloadLoaderJob>();
         services.AddScoped<PrepareMappingJob>();
         services.AddScoped<ImportMappingJob>();
