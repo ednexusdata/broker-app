@@ -85,7 +85,18 @@ public class RequestsController : AuthenticatedController<RequestsController>
 
         Guard.Against.Null(message);
 
-        return Ok(message.MessageContents?.ToJsonString());
+        return Ok(message.MessageContents?.Contents?.ToJsonString());
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> ViewTransmission(Guid id)
+    {
+        var message = await _messageRepository.GetByIdAsync(id);
+
+        Guard.Against.Null(message);
+
+        return Ok(message.TransmissionDetails?.ToJsonString());
     }
 
     [HttpGet]

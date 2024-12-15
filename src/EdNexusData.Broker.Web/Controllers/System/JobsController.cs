@@ -63,7 +63,7 @@ public class JobsController : AuthenticatedController<JobsController>
             .WithSortExpression(sortExpression)
             .WithSearchExpressions(searchExpressions)
             .WithIncludeEntities(builder => builder
-                .Include(job => job.CreatedByUser)
+                .Include(job => job.InitiatedUser)
             )
             .Build();
 
@@ -118,7 +118,7 @@ public class JobsController : AuthenticatedController<JobsController>
             .WithSortExpression(sortExpression)
             .WithSearchExpressions(searchExpressions)
             .WithIncludeEntities(builder => builder
-                .Include(job => job.CreatedByUser)
+                .Include(job => job.InitiatedUser)
             )
             .Build();
 
@@ -174,7 +174,7 @@ public class JobsController : AuthenticatedController<JobsController>
         }
         
         // Create job
-        var createdJob = await jobService.CreateJobAsync(jobType!, referenceType, job.ReferenceGuid);
+        var createdJob = await jobService.CreateJobAsync(jobType!, referenceType, job.ReferenceGuid, job.InitiatedUserId, job.JobParameters);
 
         TempData[VoiceTone.Positive] = $"Restarting job ({job.Id}).";
         return RedirectToAction(nameof(Index), new { JobId = createdJob.Id });

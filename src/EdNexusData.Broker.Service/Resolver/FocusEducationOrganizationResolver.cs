@@ -16,7 +16,7 @@ public class FocusEducationOrganizationResolver
     
     public FocusEducationOrganizationResolver(IHttpContextAccessor httpContext, IRepository<EducationOrganization> edOrgRepo,  IServiceProvider serviceProvider)
     {
-        _session = httpContext!.HttpContext!.Session;
+        _session = httpContext?.HttpContext?.Session;
         _edOrgRepo = edOrgRepo;
         _serviceProvider = serviceProvider;
     }

@@ -411,7 +411,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
 
         await _incomingRequestRepository.UpdateAsync(incomingRequest);
 
-        var job = await _jobService.CreateJobAsync(typeof(RequestingJob), typeof(Request), incomingRequest.Id);
+        var job = await _jobService.CreateJobAsync(typeof(RequestingJob), typeof(Request), incomingRequest.Id, _currentUser.AuthenticatedUserId());
 
         TempData[VoiceTone.Positive] = $"Request marked to send ({incomingRequest.Id}).";
         return RedirectToAction(nameof(View), "Requests", new { id = id, jobId = job.Id });

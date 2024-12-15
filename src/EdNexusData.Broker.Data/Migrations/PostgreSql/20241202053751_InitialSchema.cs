@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EdNexusData.Broker.Data.Migrations.MsSql
+namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,8 +16,8 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "__BrokerSeedsHistory",
                 columns: table => new
                 {
-                    SeedId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    SeedName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    SeedId = table.Column<string>(type: "text", nullable: false),
+                    SeedName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -27,10 +28,10 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -41,21 +42,21 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -66,10 +67,10 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "DataProtectionKeys",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FriendlyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Xml = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FriendlyName = table.Column<string>(type: "text", nullable: true),
+                    Xml = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -80,26 +81,26 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "EducationOrganizations",
                 columns: table => new
                 {
-                    EducationOrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ParentOrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ShortName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Number = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EducationOrganizationType = table.Column<int>(type: "int", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Domain = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    TimeZone = table.Column<string>(type: "varchar(50)", nullable: true),
-                    Contacts = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    EducationOrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ParentOrganizationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ShortName = table.Column<string>(type: "text", nullable: false),
+                    Number = table.Column<string>(type: "text", nullable: true),
+                    EducationOrganizationType = table.Column<int>(type: "integer", nullable: false),
+                    Address = table.Column<string>(type: "jsonb", nullable: true),
+                    Domain = table.Column<string>(type: "text", nullable: true),
+                    TimeZone = table.Column<string>(type: "text", nullable: true),
+                    Contacts = table.Column<string>(type: "jsonb", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EducationOrganizations", x => x.EducationOrganizationId);
                     table.ForeignKey(
-                        name: "FK_EducationOrganizations_EducationOrganizations_ParentOrganizationId",
+                        name: "FK_EducationOrganizations_EducationOrganizations_ParentOrganiz~",
                         column: x => x.ParentOrganizationId,
                         principalTable: "EducationOrganizations",
                         principalColumn: "EducationOrganizationId");
@@ -109,11 +110,11 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -130,11 +131,11 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -151,10 +152,10 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -171,8 +172,8 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -195,10 +196,10 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -215,16 +216,16 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "Users",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsSuperAdmin = table.Column<bool>(type: "bit", nullable: false),
-                    AllEducationOrganizations = table.Column<int>(type: "int", nullable: false),
-                    TimeZone = table.Column<string>(type: "varchar(50)", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FirstName = table.Column<string>(type: "text", nullable: false),
+                    LastName = table.Column<string>(type: "text", nullable: false),
+                    IsSuperAdmin = table.Column<bool>(type: "boolean", nullable: false),
+                    AllEducationOrganizations = table.Column<int>(type: "integer", nullable: false),
+                    TimeZone = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -241,20 +242,20 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "EducationOrganizationConnectorSettings",
                 columns: table => new
                 {
-                    EducationOrganizationConnectorSettingsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EducationOrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Connector = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Settings = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    EducationOrganizationConnectorSettingsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EducationOrganizationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Connector = table.Column<string>(type: "text", nullable: false),
+                    Settings = table.Column<string>(type: "jsonb", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EducationOrganizationConnectorSettings", x => x.EducationOrganizationConnectorSettingsId);
                     table.ForeignKey(
-                        name: "FK_EducationOrganizationConnectorSettings_EducationOrganizations_EducationOrganizationId",
+                        name: "FK_EducationOrganizationConnectorSettings_EducationOrganizatio~",
                         column: x => x.EducationOrganizationId,
                         principalTable: "EducationOrganizations",
                         principalColumn: "EducationOrganizationId");
@@ -264,21 +265,21 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "EducationOrganizationPayloadSettings",
                 columns: table => new
                 {
-                    EducationOrganizationPayloadSettingsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EducationOrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Payload = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IncomingPayloadSettings = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OutgoingPayloadSettings = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    EducationOrganizationPayloadSettingsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EducationOrganizationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Payload = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    IncomingPayloadSettings = table.Column<string>(type: "jsonb", nullable: true),
+                    OutgoingPayloadSettings = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_EducationOrganizationPayloadSettings", x => x.EducationOrganizationPayloadSettingsId);
                     table.ForeignKey(
-                        name: "FK_EducationOrganizationPayloadSettings_EducationOrganizations_EducationOrganizationId",
+                        name: "FK_EducationOrganizationPayloadSettings_EducationOrganizations~",
                         column: x => x.EducationOrganizationId,
                         principalTable: "EducationOrganizations",
                         principalColumn: "EducationOrganizationId");
@@ -288,23 +289,23 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "Requests",
                 columns: table => new
                 {
-                    RequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EducationOrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Student = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Payload = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RequestProcessUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    InitialRequestSentDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    RequestManifest = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ResponseManifest = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ResponseProcessUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IncomingOutgoing = table.Column<int>(type: "int", nullable: false),
-                    RequestStatus = table.Column<int>(type: "int", nullable: false),
-                    MatchDisposition = table.Column<int>(type: "int", nullable: true),
-                    Open = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    RequestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EducationOrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Student = table.Column<string>(type: "jsonb", nullable: true),
+                    Payload = table.Column<string>(type: "text", nullable: false),
+                    RequestProcessUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    InitialRequestSentDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    RequestManifest = table.Column<string>(type: "jsonb", nullable: true),
+                    ResponseManifest = table.Column<string>(type: "jsonb", nullable: true),
+                    ResponseProcessUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    IncomingOutgoing = table.Column<int>(type: "integer", nullable: false),
+                    RequestStatus = table.Column<int>(type: "integer", nullable: false),
+                    MatchDisposition = table.Column<int>(type: "integer", nullable: true),
+                    Open = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -331,14 +332,14 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "UserRoles",
                 columns: table => new
                 {
-                    UserRoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EducationOrganizationId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Role = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    UserRoleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EducationOrganizationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Role = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -359,29 +360,30 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "Worker_Jobs",
                 columns: table => new
                 {
-                    JobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    QueueDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    StartDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    FinishDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    JobType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    JobParameters = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ReferenceType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ReferenceGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    JobStatus = table.Column<int>(type: "int", nullable: false),
-                    WorkerInstance = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    WorkerState = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    WorkerLog = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    JobId = table.Column<Guid>(type: "uuid", nullable: false),
+                    QueueDateTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    StartDateTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    FinishDateTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    JobType = table.Column<string>(type: "text", nullable: true),
+                    JobParameters = table.Column<string>(type: "jsonb", nullable: true),
+                    ReferenceType = table.Column<string>(type: "text", nullable: true),
+                    ReferenceGuid = table.Column<Guid>(type: "uuid", nullable: true),
+                    JobStatus = table.Column<int>(type: "integer", nullable: false),
+                    WorkerInstance = table.Column<string>(type: "text", nullable: true),
+                    WorkerState = table.Column<string>(type: "text", nullable: true),
+                    WorkerLog = table.Column<string>(type: "text", nullable: true),
+                    InitiatedUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Worker_Jobs", x => x.JobId);
                     table.ForeignKey(
-                        name: "FK_Worker_Jobs_Users_CreatedBy",
-                        column: x => x.CreatedBy,
+                        name: "FK_Worker_Jobs_Users_InitiatedUserId",
+                        column: x => x.InitiatedUserId,
                         principalTable: "Users",
                         principalColumn: "UserId");
                 });
@@ -390,17 +392,19 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "Messages",
                 columns: table => new
                 {
-                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RequestResponse = table.Column<int>(type: "int", nullable: false),
-                    MessageTimestamp = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    MessageContents = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TransmissionDetails = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RequestStatus = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    MessageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RequestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RequestResponse = table.Column<int>(type: "integer", nullable: false),
+                    MessageTimestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Sender = table.Column<string>(type: "jsonb", nullable: true),
+                    SenderSentTimestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    MessageContents = table.Column<string>(type: "jsonb", nullable: true),
+                    TransmissionDetails = table.Column<string>(type: "jsonb", nullable: true),
+                    RequestStatus = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -417,18 +421,18 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "PayloadContents",
                 columns: table => new
                 {
-                    PayloadContentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BlobContent = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    JsonContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PayloadContentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RequestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MessageId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ContentType = table.Column<string>(type: "text", nullable: true),
+                    FileName = table.Column<string>(type: "text", nullable: true),
+                    BlobContent = table.Column<byte[]>(type: "bytea", nullable: true),
+                    JsonContent = table.Column<string>(type: "jsonb", nullable: true),
                     XmlContent = table.Column<string>(type: "xml", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -450,19 +454,19 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "Mappings",
                 columns: table => new
                 {
-                    MappingId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PayloadContentActionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    OriginalSchema = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MappingType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    StudentAttributes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    JsonSourceMapping = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    JsonInitialMapping = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    JsonDestinationMapping = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Version = table.Column<byte>(type: "tinyint", nullable: false, defaultValue: (byte)1),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    MappingId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PayloadContentActionId = table.Column<Guid>(type: "uuid", nullable: true),
+                    OriginalSchema = table.Column<string>(type: "jsonb", nullable: true),
+                    MappingType = table.Column<string>(type: "text", nullable: true),
+                    StudentAttributes = table.Column<string>(type: "jsonb", nullable: true),
+                    JsonSourceMapping = table.Column<string>(type: "jsonb", nullable: true),
+                    JsonInitialMapping = table.Column<string>(type: "jsonb", nullable: true),
+                    JsonDestinationMapping = table.Column<string>(type: "jsonb", nullable: true),
+                    Version = table.Column<byte>(type: "smallint", nullable: false, defaultValue: (byte)1),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -473,18 +477,18 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "PayloadContentActions",
                 columns: table => new
                 {
-                    PayloadContentActionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PayloadContentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    PayloadContentActionType = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    ActiveMappingId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Settings = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Process = table.Column<bool>(type: "bit", nullable: false),
-                    PayloadContentActionStatus = table.Column<int>(type: "int", nullable: false),
-                    ProcessState = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    PayloadContentActionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PayloadContentId = table.Column<Guid>(type: "uuid", nullable: true),
+                    PayloadContentActionType = table.Column<string>(type: "text", nullable: true),
+                    ActiveMappingId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Settings = table.Column<string>(type: "jsonb", nullable: true),
+                    Process = table.Column<bool>(type: "boolean", nullable: false),
+                    PayloadContentActionStatus = table.Column<int>(type: "integer", nullable: false),
+                    ProcessState = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -510,8 +514,7 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -537,29 +540,25 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true,
-                filter: "[NormalizedUserName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_EducationOrganizationConnectorSettings_EducationOrganizationId_Connector",
+                name: "IX_EducationOrganizationConnectorSettings_EducationOrganizatio~",
                 table: "EducationOrganizationConnectorSettings",
                 columns: new[] { "EducationOrganizationId", "Connector" },
-                unique: true,
-                filter: "[EducationOrganizationId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_EducationOrganizationPayloadSettings_EducationOrganizationId_Payload",
+                name: "IX_EducationOrganizationPayloadSettings_EducationOrganizationI~",
                 table: "EducationOrganizationPayloadSettings",
                 columns: new[] { "EducationOrganizationId", "Payload" },
-                unique: true,
-                filter: "[EducationOrganizationId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_EducationOrganizations_Domain",
                 table: "EducationOrganizations",
                 column: "Domain",
-                unique: true,
-                filter: "[Domain] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_EducationOrganizations_ParentOrganizationId",
@@ -570,8 +569,7 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "IX_Mappings_PayloadContentActionId_Version",
                 table: "Mappings",
                 columns: new[] { "PayloadContentActionId", "Version" },
-                unique: true,
-                filter: "[PayloadContentActionId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_RequestId",
@@ -582,15 +580,13 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "IX_PayloadContentActions_ActiveMappingId",
                 table: "PayloadContentActions",
                 column: "ActiveMappingId",
-                unique: true,
-                filter: "[ActiveMappingId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_PayloadContentActions_PayloadContentId_PayloadContentActionType",
+                name: "IX_PayloadContentActions_PayloadContentId_PayloadContentAction~",
                 table: "PayloadContentActions",
                 columns: new[] { "PayloadContentId", "PayloadContentActionType" },
-                unique: true,
-                filter: "[PayloadContentId] IS NOT NULL AND [PayloadContentActionType] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PayloadContents_MessageId",
@@ -621,8 +617,7 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "IX_UserRoles_EducationOrganizationId_UserId",
                 table: "UserRoles",
                 columns: new[] { "EducationOrganizationId", "UserId" },
-                unique: true,
-                filter: "[EducationOrganizationId] IS NOT NULL AND [UserId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserRoles_UserId",
@@ -630,9 +625,9 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Worker_Jobs_CreatedBy",
+                name: "IX_Worker_Jobs_InitiatedUserId",
                 table: "Worker_Jobs",
-                column: "CreatedBy");
+                column: "InitiatedUserId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Mappings_PayloadContentActions_PayloadContentActionId",

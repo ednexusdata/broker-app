@@ -19,17 +19,17 @@
   @if(ViewBag.JobId is not null && ViewBag.JobId.ToString() != "")
   {
   <div x-data="preparingIndex">
-    <span x-text="status">@Model.Mapping.PayloadContentAction.PayloadContentActionStatus</span>
+    <span x-text="status">@Model.Mapping?.PayloadContentAction?.PayloadContentActionStatus</span>
   </div>
   }
   else
   {
-    <div>@Model.Mapping.PayloadContentAction.PayloadContentActionStatus</div>
+    <div>@Model.Mapping?.PayloadContentAction?.PayloadContentActionStatus</div>
   }
-  @if (Model.Mapping.RemainingCount is not null && Model.Mapping.RemainingCount == 0)
+  @if (Model.Mapping?.RemainingCount is not null && Model.Mapping.RemainingCount == 0)
   {
     <div>
-    <form method="post" asp-action="Import" asp-route-id="@Model.Mapping.PayloadContentAction.Id" autocomplete="off">
+    <form method="post" asp-action="Import" asp-route-id="@Model.Mapping?.PayloadContentAction?.Id" autocomplete="off">
       <input type="hidden" name="_METHOD" value="PUT" />
       <input type="hidden" name="MappingId" value="@Model.MappingId" />
       <button
@@ -152,7 +152,7 @@
     }}));
 
     Alpine.data('preparingIndex', () => ({
-      status: "@Model.Mapping.PayloadContentAction.PayloadContentActionStatus",
+      status: "@Model.Mapping?.PayloadContentAction?.PayloadContentActionStatus",
       interval: null,
       fetchData: null,
       initFetchData: function() {

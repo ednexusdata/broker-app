@@ -10,12 +10,12 @@ internal static class SharedEntityTypeConfiguration<T> where T : BaseEntity
 {
     public static void ConfigureCreatedUser(EntityTypeBuilder<T> builder)
     {   
-        builder.HasOne(x => x.CreatedByUser).WithMany().HasForeignKey(x => x.CreatedBy);
+        builder.HasOne(x => x.CreatedByUser).WithMany().HasPrincipalKey(x => x.CreatedBy);
     }
 
     public static void ConfigureUpdatedUser(EntityTypeBuilder<T> builder)
     {   
-        builder.HasOne(x => x.UpdatedByUser).WithMany().HasForeignKey(x => x.UpdatedBy);
+        builder.HasOne(x => x.UpdatedByUser).WithMany().HasPrincipalKey(x => x.UpdatedBy);
     }
 
     public static void ConfigureUserStamps(EntityTypeBuilder<T> builder)

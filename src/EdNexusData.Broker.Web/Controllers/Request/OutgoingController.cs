@@ -316,7 +316,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
 
         await _outgoingRequestRepository.UpdateAsync(outgoingRequest);
 
-        var job = await _jobService.CreateJobAsync(typeof(PayloadLoaderJob), typeof(Request), outgoingRequest.Id);
+        var job = await _jobService.CreateJobAsync(typeof(PayloadLoaderJob), typeof(Request), outgoingRequest.Id, _currentUser.AuthenticatedUserId());
 
         TempData[VoiceTone.Positive] = $"Request set to load outgoing payload ({outgoingRequest.Id}).";
         return RedirectToAction(nameof(Update), new { requestId = id, jobId = job.Id });
@@ -343,7 +343,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
 
         await _outgoingRequestRepository.UpdateAsync(outgoingRequest);
 
-        var job = await _jobService.CreateJobAsync(typeof(TransmittingJob), typeof(Request), outgoingRequest.Id);
+        var job = await _jobService.CreateJobAsync(typeof(TransmittingJob), typeof(Request), outgoingRequest.Id, _currentUser.AuthenticatedUserId());
 
         TempData[VoiceTone.Positive] = $"Request marked to send ({outgoingRequest.Id}).";
         return RedirectToAction(nameof(View), "Requests", new { id = id, jobId = job.Id });

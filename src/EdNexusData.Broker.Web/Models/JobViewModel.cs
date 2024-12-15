@@ -50,6 +50,6 @@ public class JobViewModel
         
         JobType = job.JobType;
 
-        User = job.CreatedByUser?.LastFirstName;
+        User = job.InitiatedUser?.LastFirstName;
     }
 }

@@ -18,6 +18,6 @@ internal class JobSharedConfiguration : IEntityTypeConfiguration<Job>
         // Json Fields
         builder.Property(i => i.JobParameters).HasJsonConversion();
 
-        SharedEntityTypeConfiguration<Job>.ConfigureCreatedUser(builder);
+        //SharedEntityTypeConfiguration<Job>.ConfigureCreatedUser(builder);
     }
 }

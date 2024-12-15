@@ -49,7 +49,8 @@ public class MessageService
         var message = new Message()
         {
             RequestId = request.Id,
-            RequestResponse = RequestResponse.Request
+            RequestResponse = RequestResponse.Request,
+            MessageContents = new MessageContents()
         };
 
         await _messageRepo.AddAsync(message);
@@ -96,10 +97,10 @@ public class MessageService
         // Move request manifest to message
         if (request.IncomingOutgoing == IncomingOutgoing.Incoming)
         {
-            message.MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.RequestManifest));
+            message.MessageContents.Contents = JsonDocument.Parse(JsonSerializer.Serialize(request.RequestManifest));
         } else if (request.IncomingOutgoing == IncomingOutgoing.Outgoing)
         {
-            message.MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.ResponseManifest));
+            message.MessageContents.Contents = JsonDocument.Parse(JsonSerializer.Serialize(request.ResponseManifest));
         }
 
         // Set sender
@@ -128,7 +129,7 @@ public class MessageService
                 Email = userIdentity?.Email?.ToLower()
             },
             SentTimestamp = DateTimeOffset.UtcNow,
-            Contents = message.MessageContents
+            Contents = message.MessageContents?.Contents
         };
     }
 

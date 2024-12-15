@@ -43,6 +43,7 @@ public class ManifestService
             {
                 Id = request.EducationOrganization!.ParentOrganizationId!.Value,
                 Name = request.EducationOrganization!.ParentOrganization!.Name,
+                ShortName = request.EducationOrganization!.ParentOrganization!.ShortName,
                 Number = request.EducationOrganization.ParentOrganization?.Number,
                 Domain = request.EducationOrganization.ParentOrganization?.Domain,
                 Address = request.EducationOrganization.ParentOrganization?.Address
@@ -51,6 +52,7 @@ public class ManifestService
             {
                 Id = request.EducationOrganizationId,
                 Name = request.EducationOrganization.Name,
+                ShortName = request.EducationOrganization.ShortName,
                 Number = request.EducationOrganization.Number,
                 Address = request.EducationOrganization.Address
             },

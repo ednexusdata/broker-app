@@ -22,6 +22,7 @@ public class PayloadLoaderJob : IJob
     private readonly IRepository<Domain.PayloadContent> _payloadContentRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
     private readonly JobStatusService _jobStatusServiceForLoader;
+    private readonly JobService jobService;
 
     public PayloadLoaderJob(
             PayloadResolver payloadResolver,
@@ -30,7 +31,8 @@ public class PayloadLoaderJob : IJob
             IRepository<Request> requestRepository,
             IRepository<Domain.PayloadContent> payloadContentRepository,
             FocusEducationOrganizationResolver focusEducationOrganizationResolver,
-            JobStatusService jobStatusServiceForLoader)
+            JobStatusService jobStatusServiceForLoader,
+            JobService jobService)
     {
         _payloadResolver = payloadResolver;
         _payloadJobResolver = payloadJobResolver;
@@ -39,6 +41,7 @@ public class PayloadLoaderJob : IJob
         _payloadContentRepository = payloadContentRepository;
         _focusEducationOrganizationResolver = focusEducationOrganizationResolver;
         _jobStatusServiceForLoader = jobStatusServiceForLoader;
+        this.jobService = jobService;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -170,5 +173,9 @@ public class PayloadLoaderJob : IJob
         }
 
         await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Finished updating request.");
+
+        // Queue job to send update
+        var jobData = new MessageContents { RequestStatus = RequestStatus.Loaded, MessageText = "Updated request status to loaded." };
+        var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), request.Id, null, JsonSerializer.SerializeToDocument(jobData));
     }
 }

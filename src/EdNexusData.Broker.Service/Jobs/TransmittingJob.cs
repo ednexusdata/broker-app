@@ -64,7 +64,7 @@ public class TransmittingJob : IJob
         Guard.Against.Null(request, "request", $"Unable to find request id {jobInstance.ReferenceGuid}");
         
         var message = await _messageService.Create(jobInstance, request);
-        var messageContent = JsonSerializer.Deserialize<Manifest>(message.MessageContents.ToJsonString()!);
+        var messageContent = JsonSerializer.Deserialize<Manifest>(message.MessageContents?.Contents?.ToJsonString()!);
 
         Guard.Against.Null(messageContent, "Message did not convert to type Manifest");
         Guard.Against.Null(messageContent?.To?.District?.Domain, "Domain is missing");

@@ -88,7 +88,13 @@ public class RequestsController : Controller
                         MessageTimestamp = DateTime.UtcNow,
                         Sender = messageTransmission.Sender,
                         SenderSentTimestamp = messageTransmission.SentTimestamp,
-                        MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.ResponseManifest)),
+                        MessageContents = new MessageContents()
+                        {
+                            RequestStatus = RequestStatus.Received,
+                            Sender = messageTransmission.Sender,
+                            SenderSentTimestamp = messageTransmission.SentTimestamp,
+                            Contents = JsonDocument.Parse(JsonSerializer.Serialize(request.ResponseManifest))
+                        },
                         TransmissionDetails = JsonSerializer.SerializeToDocument(FormatTransmissionMessage(HttpContext)),
                         RequestStatus = RequestStatus.Received
                     };
@@ -119,9 +125,15 @@ public class RequestsController : Controller
                         MessageTimestamp = DateTime.UtcNow,
                         Sender = messageTransmission.Sender,
                         SenderSentTimestamp = messageTransmission.SentTimestamp,
-                        MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.RequestManifest)),
+                        MessageContents = new MessageContents()
+                        {     
+                            Sender = messageTransmission.Sender,
+                            SenderSentTimestamp = messageTransmission.SentTimestamp,
+                            Contents = JsonDocument.Parse(JsonSerializer.Serialize(request.RequestManifest)),
+                            RequestStatus = RequestStatus.Requested
+                        },
                         TransmissionDetails = JsonSerializer.SerializeToDocument(FormatTransmissionMessage(HttpContext)),
-                        RequestStatus = RequestStatus.Received
+                        RequestStatus = RequestStatus.Requested
                     };
                     await _messageRepository.AddAsync(message);
                 }
@@ -146,9 +158,15 @@ public class RequestsController : Controller
                     RequestResponse = RequestResponse.Response,
                     Sender = messageTransmission.Sender,
                     SenderSentTimestamp = messageTransmission.SentTimestamp,
-                    MessageContents = JsonDocument.Parse(JsonSerializer.Serialize(request.RequestManifest)),
+                    MessageContents = new MessageContents()
+                    {
+                        Sender = messageTransmission.Sender,
+                        SenderSentTimestamp = messageTransmission.SentTimestamp,
+                        Contents = JsonDocument.Parse(JsonSerializer.Serialize(request.RequestManifest)),
+                        RequestStatus = RequestStatus.Requested
+                    },
                     TransmissionDetails = JsonSerializer.SerializeToDocument(FormatTransmissionMessage(HttpContext)),
-                    RequestStatus = RequestStatus.Received
+                    RequestStatus = RequestStatus.Requested
                 };
                 await _messageRepository.AddAsync(message);
             }
@@ -203,7 +221,30 @@ public class RequestsController : Controller
                 await _requestRepository.UpdateAsync(request);
             }
 
-            return Created("requests", request!.Id.ToString());
+            // create message response and return it
+            var returnMessageContent = new MessageContents()
+            {
+                SenderSentTimestamp = DateTimeOffset.UtcNow,
+                Sender = new EducationOrganizationContact()
+                {
+                    Name = "Broker " +  Dns.GetHostName()
+                },
+                MessageText = string.Format("Request received with request id: {0}", request!.Id.ToString()),
+                Contents = JsonSerializer.SerializeToDocument(request!.Id.ToString()),
+                RequestStatus = RequestStatus.Received
+            };
+            var returnMessage = new Message()
+            {
+                Request = request,
+                Sender = returnMessageContent.Sender,
+                MessageTimestamp = DateTime.UtcNow,
+                SenderSentTimestamp = DateTime.UtcNow,
+                RequestStatus = RequestStatus.Received,
+                MessageContents = returnMessageContent
+            };
+            await _messageRepository.AddAsync(returnMessage);
+
+            return Created("requests", returnMessageContent);
         }
         catch(Exception ex)
         {

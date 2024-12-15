@@ -1,6 +1,7 @@
 @model EdNexusData.Broker.Web.ViewModels.Requests.RequestViewModel
 @using EdNexusData.Broker.Domain.Extensions
 @using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+@inject EdNexusData.Broker.Web.Helpers.TimezoneHelper TimezoneHelper;
 @using System.Text.Json;
 @{
     // Copyright: 2023 Education Nexus Oregon
@@ -27,8 +28,8 @@
             <div class="grid grid-cols-5 bg-@incomingBgColor-700 p-1">
                 <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="uppercase text-sm font-bold">⮕ Incoming</div>
-                    <div>@Model.Request?.RequestManifest?.From?.District?.Name / @Model.Request?.RequestManifest?.From?.District?.Number</div>
-                    <div>@Model.Request?.RequestManifest?.From?.School?.Name / @Model.Request?.RequestManifest?.From?.School?.Number</div>
+                    <div>@Model.Request?.RequestManifest?.From?.District?.ShortName / @Model.Request?.RequestManifest?.From?.District?.Number</div>
+                    <div>@Model.Request?.RequestManifest?.From?.School?.ShortName / @Model.Request?.RequestManifest?.From?.School?.Number</div>
                 </div>
                 <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Requested</div>
@@ -54,8 +55,8 @@
             <div class="grid grid-cols-5 bg-@outgoingBgColor-700 p-1">
                 <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="uppercase text-sm font-bold">Outgoing ⮕</div>
-                    <div>@Model.Request?.RequestManifest?.To?.District?.Name / @Model.Request?.RequestManifest?.To?.District?.Number</div>
-                    <div>@Model.Request?.RequestManifest?.To?.School?.Name / @Model.Request?.RequestManifest?.To?.School?.Number</div>
+                    <div>@Model.Request?.RequestManifest?.To?.District?.ShortName / @Model.Request?.RequestManifest?.To?.District?.Number</div>
+                    <div>@Model.Request?.RequestManifest?.To?.School?.ShortName / @Model.Request?.RequestManifest?.To?.School?.Number</div>
                 </div>
                 <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">&nbsp;</div>
                 <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
@@ -74,237 +75,62 @@
                     <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Transmitted)?.Userstamp</div>
                 </div>
             </div>
-
-
-        <div class="mt-4">
-            <div class="flex flex-col w-full max-w-[80%] leading-1.5 p-4 border-gray-200 bg-gray-300 rounded-b-2xl rounded-tr-2xl dark:bg-gray-700">
-                <div class="flex items-center space-x-2 rtl:space-x-reverse">
-                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Bonnie Green</span>
-                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">11:46</span>
-                </div>
-                <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">That's awesome. I think our users will really appreciate the improvements.</p>
-                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">Delivered</span>
-            </div>
-
-            <div class="flex flex-row w-full">
-                <div class="w-full h-full max-w-[20%]">&nbsp;</div>
-                <div class="w-full leading-1.5 p-4 border-tertiary-200 bg-tertiary-500 rounded-b-2xl rounded-tl-2xl mt-2">
-                    <div class="flex items-center space-x-2 rtl:space-x-reverse">
-                        <span class="text-sm font-semibold text-gray-900 dark:text-white">Bonnie Green</span>
-                        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">11:46</span>
-                    </div>
-                    <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">That's awesome. I think our users will really appreciate the improvements.</p>
-                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">Delivered</span>
-                </div>
-            </div>
-        </div>
-
-        </div>
-    </div>
-</div>
-
-<div class="space-y-10 divide-y divide-gray-900/10">
-    <div class="px-4 sm:px-0">
-        <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
-            <div class="px-4 py-6 sm:p-8 grid gap-8">
-                <dl class="grid grid-cols-1 sm:grid-cols-2">
-                    <div class="sm:col-span-1 sm:px-0">
-                        <dt class="text-base font-semibold leading-7 text-gray-900">Requesting</dt>
-                    </div>
-                    <div class="sm:col-span-1 sm:px-0">
-                        <dt class="text-base font-semibold leading-7 text-gray-900">Releasing</dt>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900 mr-6">District</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2 mr-6">
-                            <div>@Model.Request?.RequestManifest?.From?.District?.Name
-                                @Model.Request?.RequestManifest?.From?.District?.Number</div>
-                            <div>@Model.Request?.RequestManifest?.From?.District?.Address?.StreetNumberName</div>
-                            <div>@Model.Request?.RequestManifest?.From?.District?.Address?.City,
-                                @Model.Request?.RequestManifest?.From?.District?.Address?.StateAbbreviation
-                                @Model.Request?.RequestManifest?.From?.District?.Address?.PostalCode</div>
-                            <div>@Model.Request?.RequestManifest?.From?.District?.Domain</div>
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900">District</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
-                            <div>@Model.Request?.ResponseManifest?.From?.District?.Name
-                                @Model.Request?.ResponseManifest?.From?.District?.Number</div>
-                            <div>@Model.Request?.ResponseManifest?.From?.District?.Address?.StreetNumberName</div>
-                            <div>@Model.Request?.ResponseManifest?.From?.District?.Address?.City,
-                                @Model.Request?.ResponseManifest?.From?.District?.Address?.StateAbbreviation
-                                @Model.Request?.ResponseManifest?.From?.District?.Address?.PostalCode</div>
-                            <div>@Model.Request?.ResponseManifest?.From?.District?.Domain</div>
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900 mr-6">School</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2 mr-6">
-                            <div>@Model.Request?.RequestManifest?.From?.School?.Name
-                                @Model.Request?.RequestManifest?.From?.School?.Number
+        
+        @if (Model.Request?.Messages != null && Model.Request.Messages.Count > 0)
+                {
+                    @foreach (var message in Model.Request.Messages)
+                    {
+                        @if (message.RequestResponse == EdNexusData.Broker.Domain.RequestResponse.Response)
+                        {
+                            <div class="mt-4">
+                            <div class="flex flex-col w-full max-w-[60%] leading-1.5 p-4 border-gray-200 bg-gray-300 rounded-b-2xl rounded-tr-2xl">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm font-semibold text-gray-900">@message.Sender?.Name</span>
+                                    <span class="text-sm font-normal text-gray-500">@TimezoneHelper.DisplayTimeFromUtc(message.SenderSentTimestamp)</span>
+                                </div>
+                                @message.MessageContents?.MessageText
+                                <span class="flex text-sm font-normal text-gray-500 gap-2">
+                                    @message.RequestStatus?.GetDescription()
+                                    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="self-center" width="3" height="4" viewBox="0 0 3 4" fill="none">
+                                        <circle cx="1.5" cy="2" r="1.5" fill="#6B7280"/>
+                                    </svg>
+                                    <a asp-action="ViewMessage" asp-route-id="@message.Id" target="_blank">Contents</a>
+                                    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="self-center" width="3" height="4" viewBox="0 0 3 4" fill="none">
+                                        <circle cx="1.5" cy="2" r="1.5" fill="#6B7280"/>
+                                    </svg>
+                                    <a asp-action="ViewTransmission" asp-route-id="@message.Id" target="_blank">Transmission</a></span>
                             </div>
-                            <div>@Model.Request?.RequestManifest?.From?.School?.Address?.StreetNumberName</div>
-                            <div>@Model.Request?.RequestManifest?.From?.School?.Address?.City,
-                                @Model.Request?.RequestManifest?.From?.School?.Address?.StateAbbreviation
-                                @Model.Request?.RequestManifest?.From?.School?.Address?.PostalCode</div>
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900">School</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
-                            <div>@Model.Request?.ResponseManifest?.From?.School?.Name
-                                @Model.Request?.ResponseManifest?.From?.School?.Number</div>
-                            <div>@Model.Request?.ResponseManifest?.From?.School?.Address?.StreetNumberName</div>
-                            <div>@Model.Request?.ResponseManifest?.From?.School?.Address?.City,
-                                @Model.Request?.ResponseManifest?.From?.School?.Address?.StateAbbreviation
-                                @Model.Request?.ResponseManifest?.From?.School?.Address?.PostalCode</div>
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900 mr-6">School Contact</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2 mr-6">
-                            <div>@Model.Request?.RequestManifest?.From?.Sender?.Name</div>
-                            <div>@Model.Request?.RequestManifest?.From?.Sender?.JobTitle</div>
-                            <div>@Model.Request?.RequestManifest?.From?.Sender?.Email</div>
-                            <div>@Model.Request?.RequestManifest?.From?.Sender?.Phone</div>
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900">School Contact</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
-                            <div>@Model.Request?.ResponseManifest?.From?.Sender?.Name</div>
-                            <div>@Model.Request?.ResponseManifest?.From?.Sender?.JobTitle</div>
-                            <div>@Model.Request?.ResponseManifest?.From?.Sender?.Email</div>
-                            <div>@Model.Request?.ResponseManifest?.From?.Sender?.Phone</div>
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900 mr-6">Student</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2 mr-6">
-                            <div>@Model.Request?.RequestManifest?.Student?.LastName,
-                                @Model.Request?.RequestManifest?.Student?.FirstName
-                                @Model.Request?.RequestManifest?.Student?.MiddleName</div>
-                            <div>@Model.Request?.RequestManifest?.Student?.Birthdate
-                                @Model.Request?.RequestManifest?.Student?.Gender
                             </div>
-                            <div>@Model.Request?.RequestManifest?.Student?.StudentNumber</div>
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900">Student</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
-                            <div>@Model.Request?.ResponseManifest?.Student?.LastName,
-                                @Model.Request?.ResponseManifest?.Student?.FirstName
-                                @Model.Request?.ResponseManifest?.Student?.MiddleName</div>
-                            <div>@Model.Request?.ResponseManifest?.Student?.Birthdate
-                                @Model.Request?.ResponseManifest?.Student?.Gender
+                        }
+                        else
+                        {
+                            <div class="mt-4">
+                            <div class="flex flex-row w-full">
+                                <div class="w-full h-full max-w-[40%]">&nbsp;</div>
+                                <div class="w-full leading-1.5 p-4 border-tertiary-200 bg-tertiary-500 rounded-b-2xl rounded-tl-2xl mt-2">
+                                    <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                                        <span class="text-sm font-semibold text-black dark:text-white">@message.Sender?.Name</span>
+                                        <span class="text-sm font-normal dark:text-white">@TimezoneHelper.DisplayTimeFromUtc(message.SenderSentTimestamp)</span>
+                                    </div>
+                                    <div>
+                                        @message.MessageContents?.MessageText
+                                    </div>
+                                    <span class="flex text-sm font-normal dark:text-white gap-2">
+                                        @message.RequestStatus?.GetDescription()
+                                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="self-center" width="3" height="4" viewBox="0 0 3 4" fill="none">
+                                            <circle cx="1.5" cy="2" r="1.5" fill="#6B7280"/>
+                                        </svg>
+                                        <a asp-action="ViewMessage" asp-route-id="@message.Id" target="_blank">Contents</a>
+                                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="self-center" width="3" height="4" viewBox="0 0 3 4" fill="none">
+                                            <circle cx="1.5" cy="2" r="1.5" fill="#6B7280"/>
+                                        </svg>
+                                        <a asp-action="ViewTransmission" asp-route-id="@message.Id" target="_blank">Transmission</a></span>
+                                </div>
                             </div>
-                            <div>@Model.Request?.ResponseManifest?.Student?.StudentNumber</div>
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900 mr-6">Note</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2 mr-6">
-                            @Model.Request?.RequestManifest?.Note</dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900">Note</dt>
-                        <dd class="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">@Model.Request?.ResponseManifest?.Note
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900 mr-6">Attachments</dt>
-                        <dd class="mt-2 text-sm text-gray-900 mr-6">
-                            @if (Model.Request?.RequestManifest?.Contents is not null &&
-                            Model.Request?.RequestManifest?.Contents?.Count > 0)
-                            {
-                                <ul role="list" class="divide-y divide-gray-100 rounded-md border border-gray-200">
-                                    @foreach (var payloadContent in Model.Request?.RequestManifest?.Contents!)
-                                    {
-                                        <li class="flex items-center justify-between py-2 pl-4 pr-5 text-sm leading-6">
-                                            <div class="flex w-0 flex-1 items-center">
-                                                <svg class="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20"
-                                                    fill="currentColor" aria-hidden="true">
-                                                    <path fill-rule="evenodd"
-                                                        d="M15.621 4.379a3 3 0 00-4.242 0l-7 7a3 3 0 004.241 4.243h.001l.497-.5a.75.75 0 011.064 1.057l-.498.501-.002.002a4.5 4.5 0 01-6.364-6.364l7-7a4.5 4.5 0 016.368 6.36l-3.455 3.553A2.625 2.625 0 119.52 9.52l3.45-3.451a.75.75 0 111.061 1.06l-3.45 3.451a1.125 1.125 0 001.587 1.595l3.454-3.553a3 3 0 000-4.242z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
-                                                <div class="ml-4 flex min-w-0 flex-1 gap-2">
-                                                    <span class="truncate font-medium"><a target="_blank"
-                                                            asp-action="ViewAttachment"
-                                                            asp-route-id="@payloadContent.Id">@payloadContent.FileName</a></span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    }
-                                </ul>
-                            }
-                        </dd>
-                    </div>
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900">Attachments</dt>
-                        <dd class="mt-2 text-sm text-gray-900">
-                            @if (Model.Request?.ResponseManifest?.Contents is not null &&
-                            Model.Request?.ResponseManifest?.Contents?.Count > 0)
-                            {
-                                <ul role="list" class="divide-y divide-gray-100 rounded-md border border-gray-200">
-
-                                    @foreach (var payloadContent in Model.Request?.ResponseManifest?.Contents!)
-                                    {
-                                        <li class="flex items-center justify-between py-2 pl-4 pr-5 text-sm leading-6">
-                                            <div class="flex w-0 flex-1 items-center">
-                                                <svg class="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20"
-                                                    fill="currentColor" aria-hidden="true">
-                                                    <path fill-rule="evenodd"
-                                                        d="M15.621 4.379a3 3 0 00-4.242 0l-7 7a3 3 0 004.241 4.243h.001l.497-.5a.75.75 0 011.064 1.057l-.498.501-.002.002a4.5 4.5 0 01-6.364-6.364l7-7a4.5 4.5 0 016.368 6.36l-3.455 3.553A2.625 2.625 0 119.52 9.52l3.45-3.451a.75.75 0 111.061 1.06l-3.45 3.451a1.125 1.125 0 001.587 1.595l3.454-3.553a3 3 0 000-4.242z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
-                                                <div class="ml-4 flex min-w-0 flex-1 gap-2">
-                                                    <span class="truncate font-medium"><a target="_blank"
-                                                            asp-action="ViewAttachment"
-                                                            asp-route-id="@payloadContent.Id">@payloadContent.FileName</a></span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    }
-                                </ul>
-                            }
-                        </dd>
-                    </div>
-
-                    <div class="border-t border-gray-100 px-4 py-6 sm:col-span-2 sm:px-0">
-                        <dt class="text-sm font-medium leading-6 text-gray-900">Messages</dt>
-                        <table class="min-w-full divide-y divide-gray-300">
-                            <tr>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                    Timestamp</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                    Request/Response</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                    Message Contents</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                    Transmission Details</th>
-                            </tr>
-                            @if (Model.Request?.Messages != null && Model.Request.Messages.Count > 0)
-                                @foreach (var message in Model.Request.Messages)
-                                {
-                                    <tr class="even:bg-gray-50">
-                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.MessageTimestamp
-                                        </td>
-                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestResponse
-                                        </td>
-                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                            <a asp-action="ViewMessage" asp-route-id="@message.Id" target="_blank">View</a>
-                                        </td>
-                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                            @message.TransmissionDetails</td>
-                                    </tr>
-                                }
-                        </table>
-                    </div>
-                </dl>
-            </div>
+                            </div>
+                        }
+                    }
+                }
         </div>
     </div>
 </div>
@@ -313,61 +139,61 @@
 {
     @if (ViewBag.JobId is not null && ViewBag.JobId.ToString() != "")
     {
-        <div x-data="preparingIndex">
-    <span x-text="status"></span>
-</div>
+                <div x-data="preparingIndex">
+            <span x-text="status"></span>
+        </div>
     }
     else
     {
-        <div>@Model.Request?.RequestStatus</div>
+                <div>@Model.Request?.RequestStatus</div>
     }
 }
 
 @section scripts
 {
-    <script>
-        document.addEventListener('alpine:init', () => {
+        <script>
+            document.addEventListener('alpine:init', () => {
 
-            Alpine.data('preparingIndex', () => ({
-                status: "Sending...",
-                interval: null,
-                fetchData: null,
-                initFetchData: function () {
-                    this.fetchData = async () => {
-                        try {
-                            const response = await fetch('/api/v1/jobs?jobId=@ViewBag.JobId');
-                            const data = await response.json();
-                            //console.log(data);
-                            this.status = data.workerState;
-                            //console.log("Worker State: " + data.workerState);
+                Alpine.data('preparingIndex', () => ({
+                    status: "Sending...",
+                    interval: null,
+                    fetchData: null,
+                    initFetchData: function () {
+                        this.fetchData = async () => {
+                            try {
+                                const response = await fetch('/api/v1/jobs?jobId=@ViewBag.JobId');
+                                const data = await response.json();
+                                //console.log(data);
+                                this.status = data.workerState;
+                                //console.log("Worker State: " + data.workerState);
 
-                            //console.log("Job Status: " + data.jobStatus);
-                            if (data.jobStatus == 2) {
-                                //console.log("Inside job status");
-                                location.reload();
+                                //console.log("Job Status: " + data.jobStatus);
+                                if (data.jobStatus == 2) {
+                                    //console.log("Inside job status");
+                                    location.reload();
+                                    clearInterval(this.interval);
+                                }
+
+                            } catch (error) {
+                                console.error('Error fetching status:', error);
                                 clearInterval(this.interval);
                             }
+                        };
+                    },
+                    init() {
+                        this.initFetchData();
+                        //console.log("Called startPolling and about to call setInterval");
+                        this.interval = setInterval(this.fetchData, 2000); // Poll every 2 seconds (adjust as needed)
+                        //this.status = "Called setInternal";
+                        //console.log("Called setInterval");
 
-                        } catch (error) {
-                            console.error('Error fetching status:', error);
-                            clearInterval(this.interval);
-                        }
-                    };
-                },
-                init() {
-                    this.initFetchData();
-                    //console.log("Called startPolling and about to call setInterval");
-                    this.interval = setInterval(this.fetchData, 2000); // Poll every 2 seconds (adjust as needed)
-                    //this.status = "Called setInternal";
-                    //console.log("Called setInterval");
+                    },
+                    destroy() {
+                        // Detach the handler, avoiding memory and side-effect leakage
+                        clearInterval(this.interval);
+                    },
+                }))
 
-                },
-                destroy() {
-                    // Detach the handler, avoiding memory and side-effect leakage
-                    clearInterval(this.interval);
-                },
-            }))
-
-        });
-    </script>
+            });
+        </script>
 }

@@ -533,6 +533,9 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Property<DateTimeOffset?>("FinishDateTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("InitiatedUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("JobParameters")
                         .HasColumnType("jsonb");
 
@@ -571,7 +574,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedBy");
+                    b.HasIndex("InitiatedUserId");
 
                     b.ToTable("Worker_Jobs", (string)null);
                 });
@@ -1016,11 +1019,11 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
             modelBuilder.Entity("EdNexusData.Broker.Domain.Worker.Job", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.User", "CreatedByUser")
+                    b.HasOne("EdNexusData.Broker.Domain.User", "InitiatedUser")
                         .WithMany()
-                        .HasForeignKey("CreatedBy");
+                        .HasForeignKey("InitiatedUserId");
 
-                    b.Navigation("CreatedByUser");
+                    b.Navigation("InitiatedUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

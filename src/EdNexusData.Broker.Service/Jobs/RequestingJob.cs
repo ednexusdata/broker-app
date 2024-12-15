@@ -15,6 +15,9 @@ using System.ComponentModel;
 using Microsoft.AspNetCore.Http;
 using EdNexusData.Broker.Domain.Internal;
 using Org.BouncyCastle.Math.EC.Rfc7748;
+using Azure;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
@@ -64,7 +67,7 @@ public class RequestingJob : IJob
         Guard.Against.Null(request, "request", $"Unable to find request id {jobInstance.ReferenceGuid}");
         
         var message = await _messageService.Create(jobInstance, request);
-        var messageContent = JsonSerializer.Deserialize<Manifest>(message.MessageContents.ToJsonString()!);
+        var messageContent = JsonSerializer.Deserialize<Manifest>(message.MessageContents?.Contents!);
         var messageToTransmit = await _messageService.PrepareTransmission(message, request.RequestProcessUserId!.Value);
 
         Guard.Against.Null(messageContent, "Message did not convert to type Manifest");
@@ -105,6 +108,11 @@ public class RequestingJob : IJob
         var result = await _httpClient.PostAsync(path + "api/v1/requests", multipartContent);
 
         var content = await result.Content.ReadAsStringAsync();
+        var jsonReturnedContent = JsonSerializer.Deserialize<MessageContents>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }
+        );
 
         await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, "Sent request result: {0} / {1}", result.StatusCode, content);
 
@@ -114,6 +122,19 @@ public class RequestingJob : IJob
         // mark message as sent
         await _messageService.MarkSent(message);
         await _jobStatusService.UpdateMessageStatus(jobInstance, message, RequestStatus.Requested, "Message marked as requested.");
+
+        // add response as message
+        var responseMessage = new Message()
+        {
+            Request = request,
+            MessageTimestamp = DateTime.UtcNow,
+            Sender = jsonReturnedContent?.Sender,
+            SenderSentTimestamp = jsonReturnedContent?.SenderSentTimestamp,
+            RequestStatus = jsonReturnedContent?.RequestStatus,
+            RequestResponse = RequestResponse.Response,
+            MessageContents = jsonReturnedContent
+        };
+        await _messageRepository.AddAsync(responseMessage);
 
         // Update request to sent
         var dbRequest = await _requestRepository.GetByIdAsync(request.Id);
