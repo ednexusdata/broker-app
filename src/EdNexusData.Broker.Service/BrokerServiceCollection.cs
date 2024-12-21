@@ -73,6 +73,8 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         services.AddScoped<FocusEducationOrganizationResolver>();
         services.AddScoped<DistrictEducationOrganizationResolver>();
         services.AddScoped<PayloadJobResolver>();
+        services.AddScoped<BrokerResolver>();
+        services.AddScoped<RequestResolver>();
         
         // Jobs
         services.AddScoped<RequestingJob>();

@@ -175,7 +175,7 @@ public class PayloadLoaderJob : IJob
         await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Finished updating request.");
 
         // Queue job to send update
-        var jobData = new MessageContents { RequestStatus = RequestStatus.Loaded, MessageText = "Updated request status to loaded." };
+        var jobData = new MessageContents { RequestId = request.Id, RequestStatus = RequestStatus.Loaded, MessageText = "Updated request status to loaded." };
         var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), request.Id, null, JsonSerializer.SerializeToDocument(jobData));
     }
 }

@@ -39,7 +39,7 @@ public class MessageService
 
     public async Task<Message> Create(Job jobInstance, Request request)
     {
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, "Create message and move attachments");
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, null, "Create message and move attachments");
 
         Guard.Against.Null(request);
 
@@ -109,6 +109,8 @@ public class MessageService
         await _messageRepo.UpdateAsync(message);
     
         transaction.Commit();
+        
+        await _jobStatusService.UpdateRequestStatus(jobInstance, request, null, "Finished creating message and moving attachments");
 
         return message;
     }
