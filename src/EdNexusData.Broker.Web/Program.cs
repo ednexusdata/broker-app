@@ -178,10 +178,8 @@ else
 
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
-builder.Services.AddConnectorLoader();
-builder.Services.AddConnectorDependencies();
-
 builder.Services.AddBrokerServices();
+builder.Services.AddConnectorDependencies();
 
 builder.Services.Configure<IISServerOptions>(options =>
 {

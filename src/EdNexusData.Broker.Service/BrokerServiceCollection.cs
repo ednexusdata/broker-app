@@ -8,6 +8,7 @@ using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Cache;
 using EdNexusData.Broker.Service.Services;
 using EdNexusData.Broker.Core.Configuration;
+using EdNexusData.Broker.Core.Connector;
 
 namespace EdNexusData.Broker.Service;
 
@@ -22,6 +23,9 @@ public static class BrokerServiceCollection
 
     public static IServiceCollection AddBrokerServices(this IServiceCollection services)
     {
+        // Loaders
+        services.AddSingleton<ConnectorLoader>();
+        
         // Caches
         services.AddSingleton<MappingLookupCache>();
         
@@ -59,6 +63,9 @@ public static class BrokerServiceCollection
 
     public static IServiceCollection AddBrokerServicesForWorker(this IServiceCollection services)
     {
+        // Loaders
+        services.AddSingleton<ConnectorLoader>();
+
         // Services
         services.AddSingleton<ILookupClient, LookupClient>();
         services.AddScoped<DirectoryLookupService>();
@@ -87,6 +94,23 @@ public static class BrokerServiceCollection
         // Worker
         services.AddScoped(typeof(JobStatusService<>));
         
+        return services;
+    }
+
+    public static IServiceCollection AddConnectorDependencies(this IServiceCollection services)
+    {
+        Activator.CreateInstance<ConnectorLoader>();
+        
+        var types = AppDomain.CurrentDomain.GetAssemblies()
+                        .SelectMany(s => s.GetExportedTypes())
+                        .Where(p => p.GetInterface(nameof(IConnectorServiceCollection)) is not null);
+        
+        foreach(var type in types)
+        {   
+            var myMethod = type.GetMethod("AddDependencies");
+            myMethod!.Invoke(null, new object[] { services });
+        }
+
         return services;
     }
 }

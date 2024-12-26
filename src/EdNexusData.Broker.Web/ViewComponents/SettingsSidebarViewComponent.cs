@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using EdNexusData.Broker.Web.Models;
-using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Service;
 
 namespace EdNexusData.Broker.Web.ViewComponents;
 
