@@ -1,4 +1,4 @@
-using IConfiguration = EdNexusData.Broker.Connector.Configuration.IConfiguration;
+using IConfiguration = EdNexusData.Broker.Core.Configuration.IConfiguration;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 

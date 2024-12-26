@@ -1,14 +1,12 @@
+using EdNexusData.Broker.Core.EducationOrganizations;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.SharedKernel;
 
 namespace EdNexusData.Broker.Web.Helpers;
 
 public class EducationOrganizationHelper
 {
-    private IRepository<EducationOrganization> _repo { get; set; }
-    public EducationOrganizationHelper(IRepository<EducationOrganization> repo)
+    private IRepository<Domain.EducationOrganization> _repo { get; set; }
+    public EducationOrganizationHelper(IRepository<Domain.EducationOrganization> repo)
     {
         _repo = repo;
     }
@@ -34,7 +32,7 @@ public class EducationOrganizationHelper
         return selectListItems;
     }
 
-    public async Task<IEnumerable<SelectListItem>> GetOrganizationsSelectList(List<EducationOrganization>? edOrgsToRemove)
+    public async Task<IEnumerable<SelectListItem>> GetOrganizationsSelectList(List<Domain.EducationOrganization>? edOrgsToRemove)
     {
         var selectListItems = new List<SelectListItem>();
 

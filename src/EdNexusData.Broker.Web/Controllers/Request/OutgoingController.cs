@@ -2,8 +2,6 @@
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
 
 using Microsoft.AspNetCore.Mvc;
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.SharedKernel;
 using Microsoft.AspNetCore.Authorization;
 using EdNexusData.Broker.Web.Models.OutgoingRequests;
 using EdNexusData.Broker.Web.Models.Paginations;
@@ -17,13 +15,12 @@ using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.Extensions.Genders;
 using Ardalis.GuardClauses;
 using System.Text.Json;
-using EdNexusData.Broker.Connector.Payloads;
-using EdNexusData.Broker.Domain.Internal.Specifications;
 using EdNexusData.Broker.Web.Utilities;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Service;
-using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Service.Jobs;
+using EdNexusData.Broker.Core.Payloads;
+using EdNexusData.Broker.Core.Jobs;
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = TransferOutgoingRecords)]
@@ -196,7 +193,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
             };
 
             outgoingRequest.ResponseManifest = new Manifest() {
-                RequestType = typeof(StudentCumulativeRecord).FullName!,
+                RequestType = typeof(StudentCumulativeRecordPayload).FullName!,
                 Student = student,
                 Note = viewModel.ReleasingNotes,
                 To = new RequestAddress()

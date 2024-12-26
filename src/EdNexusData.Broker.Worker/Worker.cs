@@ -1,10 +1,9 @@
-using EdNexusData.Broker.SharedKernel;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.Service.Resolvers;
 using EdNexusData.Broker.Domain.Worker;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Service.Worker;
+using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Core.Jobs;
 
 namespace EdNexusData.Broker.Worker;
 

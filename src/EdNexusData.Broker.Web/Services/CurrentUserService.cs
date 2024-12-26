@@ -1,4 +1,3 @@
-using EdNexusData.Broker.SharedKernel;
 using Microsoft.Identity.Web;
 
 namespace EdNexusData.Broker.Web.Services;

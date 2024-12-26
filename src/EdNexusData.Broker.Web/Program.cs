@@ -4,13 +4,11 @@
 using EdNexusData.Broker.Data;
 using MediatR;
 using Autofac;
-using EdNexusData.Broker.SharedKernel;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using EdNexusData.Broker.Web;
 using EdNexusData.Broker.Web.Services;
 using System.Reflection;
-using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Service;
 using Microsoft.AspNetCore.Authentication;
 using EdNexusData.Broker.Web.Extensions.Routes;

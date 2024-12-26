@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EdNexusData.Broker.SharedKernel;
-using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Models.OutgoingRequests;
@@ -11,17 +9,18 @@ using EdNexusData.Broker.Web.ViewModels.EducationOrganizations;
 using System.Linq.Expressions;
 using EdNexusData.Broker.Web.Extensions.States;
 using EdNexusData.Broker.Web.Specifications;
+using EdNexusData.Broker.Core.EducationOrganizations;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = "SuperAdmin")]
 public class EducationOrganizationsController : AuthenticatedController<EducationOrganizationsController>
 {
-    private readonly IRepository<EducationOrganization> _educationOrganizationRepository;
+    private readonly IRepository<Domain.EducationOrganization> _educationOrganizationRepository;
     private readonly EducationOrganizationHelper _educationOrganizationHelper;
     public EducationOrganizationsController(
         IHttpContextAccessor httpContextAccessor,
-        IRepository<EducationOrganization> educationOrganizationRepository,
+        IRepository<Domain.EducationOrganization> educationOrganizationRepository,
         EducationOrganizationHelper educationOrganizationHelper)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
@@ -38,7 +37,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
         var sortExpressions = model.BuildSortExpressions();
 
-        var specificationPre = new SearchableWithPaginationSpecification<EducationOrganization>.Builder(model.Page, model.Size)
+        var specificationPre = new SearchableWithPaginationSpecification<Domain.EducationOrganization>.Builder(model.Page, model.Size)
             .WithAscending(model.IsAscending)
             .WithSortExpressions(sortExpressions)
             .WithSearchExpressions(searchExpressions)
@@ -81,7 +80,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
         var sortExpressions = model.BuildSortExpressions();
 
-        var specification = new SearchableWithPaginationSpecification<EducationOrganization>.Builder(model.Page, model.Size)
+        var specification = new SearchableWithPaginationSpecification<Domain.EducationOrganization>.Builder(model.Page, model.Size)
             .WithAscending(model.IsAscending)
             .WithSortExpressions(sortExpressions)
             .WithSearchExpressions(searchExpressions)
@@ -130,7 +129,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
     {
         if (!ModelState.IsValid) { TempData[VoiceTone.Critical] = "Organization not created."; return RedirectToAction(nameof(Create)); }
         
-        var organization = new EducationOrganization()
+        var organization = new Domain.EducationOrganization()
         {
             Id = Guid.NewGuid(),
             ParentOrganizationId = data.EducationOrganizationType == EducationOrganizationType.School ? data.ParentOrganizationId : null,
@@ -167,10 +166,10 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
     public async Task<IActionResult> Update(Guid Id)
     {
-       Expression<Func<EducationOrganization, bool>> focusOrganizationExpression = request =>
+       Expression<Func<Domain.EducationOrganization, bool>> focusOrganizationExpression = request =>
             request.Id == Id;
 
-        var specification = new SearchableWithPaginationSpecification<EducationOrganization>.Builder(1, -1)
+        var specification = new SearchableWithPaginationSpecification<Domain.EducationOrganization>.Builder(1, -1)
             .WithSearchExpression(focusOrganizationExpression)
             .Build();
 
@@ -215,10 +214,10 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
         if (!data.EducationOrganizationId.HasValue) { throw new ArgumentNullException("EducationOrganizationId required."); }
         
         // Get existing organization
-       Expression<Func<EducationOrganization, bool>> focusOrganizationExpression = request =>
+       Expression<Func<Domain.EducationOrganization, bool>> focusOrganizationExpression = request =>
             request.Id == data.EducationOrganizationId;
 
-        var specification = new SearchableWithPaginationSpecification<EducationOrganization>.Builder(1, -1)
+        var specification = new SearchableWithPaginationSpecification<Domain.EducationOrganization>.Builder(1, -1)
             .WithSearchExpression(focusOrganizationExpression)
             .Build();
 

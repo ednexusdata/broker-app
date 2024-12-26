@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Domain.Worker;
 using System.Linq.Expressions;

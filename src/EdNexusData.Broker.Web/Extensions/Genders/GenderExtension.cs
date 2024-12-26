@@ -1,6 +1,6 @@
 
+using EdNexusData.Broker.Core.Students;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Web.Extensions.Genders;
 

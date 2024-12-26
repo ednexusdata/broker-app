@@ -1,23 +1,20 @@
-using EdNexusData.Broker.Connector.StudentLookup;
-using EdNexusData.Broker.Connector.Resolvers;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Connector.Payloads;
 using EdNexusData.Broker.Service.Resolvers;
-using EdNexusData.Broker.Connector;
-using Ardalis.GuardClauses;
-using EdNexusData.Broker.Connector.Student;
+using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Students;
+using EdNexusData.Broker.Core.Payloads;
 
 namespace EdNexusData.Broker.Service.Lookup;
 
 public class StudentService
 {
-    private readonly IPayloadResolver _payloadResolver;
+    private readonly PayloadResolver _payloadResolver;
     private readonly StudentResolver _studentResolver;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
     private readonly ConnectorLoader _connectorLoader;
     
     public StudentService(ConnectorLoader connectorLoader, 
-                    IPayloadResolver payloadResolver, 
+                    PayloadResolver payloadResolver, 
                     StudentResolver studentResolver, 
                     FocusEducationOrganizationResolver focusEducationOrganizationResolver)
     {
@@ -27,13 +24,13 @@ public class StudentService
         _focusEducationOrganizationResolver = focusEducationOrganizationResolver;
     }
 
-    public async Task<IStudent?> FetchAsync(PayloadDirection payloadDirection, Student studentToFetch)
+    public async Task<IStudent?> FetchAsync(PayloadDirection payloadDirection, Domain.Student studentToFetch)
     {
         string studentLookupConnector = default!;
 
         if (payloadDirection == PayloadDirection.Incoming)
         {
-            var payloadSettings = await _payloadResolver.FetchIncomingPayloadSettingsAsync<StudentCumulativeRecord>((await _focusEducationOrganizationResolver.Resolve()).Id);
+            var payloadSettings = await _payloadResolver.FetchIncomingPayloadSettingsAsync<StudentCumulativeRecordPayload>((await _focusEducationOrganizationResolver.Resolve()).Id);
 
             if (payloadSettings.StudentInformationSystem is null)
             {
@@ -45,7 +42,7 @@ public class StudentService
 
         if (payloadDirection == PayloadDirection.Outgoing)
         {
-            var payloadSettings = await _payloadResolver.FetchOutgoingPayloadSettingsAsync<StudentCumulativeRecord>((await _focusEducationOrganizationResolver.Resolve()).Id);
+            var payloadSettings = await _payloadResolver.FetchOutgoingPayloadSettingsAsync<StudentCumulativeRecordPayload>((await _focusEducationOrganizationResolver.Resolve()).Id);
 
             if (payloadSettings.StudentLookupConnector is null)
             {
@@ -63,6 +60,6 @@ public class StudentService
 
         var connectorStudentService = _studentResolver.Resolve(typeConnectorToUse);
 
-        return await connectorStudentService.FetchAsync(studentToFetch);
+        return await connectorStudentService.FetchAsync(studentToFetch.ToContract());
     }
 }

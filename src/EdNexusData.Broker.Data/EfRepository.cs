@@ -2,7 +2,6 @@
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
 
 using Ardalis.Specification.EntityFrameworkCore;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Data;  

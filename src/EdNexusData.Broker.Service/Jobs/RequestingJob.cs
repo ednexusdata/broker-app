@@ -1,8 +1,7 @@
 using Microsoft.Extensions.Logging;
 using EdNexusData.Broker.Data;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.SharedKernel;
+using EdNexusData.Broker.Domain.Specifications;
 using DnsClient;
 using EdNexusData.Broker.Service.Lookup;
 using Ardalis.GuardClauses;
@@ -10,14 +9,8 @@ using System.Text.Json;
 using System.Net.Http.Json;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Domain.Worker;
-using EdNexusData.Broker.Connector;
 using System.ComponentModel;
-using Microsoft.AspNetCore.Http;
-using EdNexusData.Broker.Domain.Internal;
-using Org.BouncyCastle.Math.EC.Rfc7748;
-using Azure;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json.Linq;
+using EdNexusData.Broker.Core.Jobs;
 
 namespace EdNexusData.Broker.Service.Jobs;
 

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using EdNexusData.Broker.Connector.StudentLookup;
+using EdNexusData.Broker.Core.StudentLookup;
 using Ardalis.GuardClauses;
 
 namespace EdNexusData.Broker.Service.Resolvers;

@@ -1,14 +1,14 @@
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.SharedKernel;
 using System.Text.Json;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.Connector;
+using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Core;
 using Microsoft.Extensions.DependencyInjection;
 using EdNexusData.Broker.Domain.Worker;
 using System.ComponentModel;
+using EdNexusData.Broker.Core.Jobs;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
@@ -180,7 +180,7 @@ public class PrepareMappingJob : IJob
         action.ActiveMappingId = newMapping.Id;
         await _actionRepository.UpdateAsync(action);
 
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, action, PayloadContentActionStatus.Prepared, "Prepared");
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, action, Domain.PayloadContentActionStatus.Prepared, "Prepared");
 
         await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Complete, "Finished preparing mapping.");
     }

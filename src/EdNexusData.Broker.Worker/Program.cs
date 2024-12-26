@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Caching.Memory;
 using EdNexusData.Broker.Data;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Worker;
 using EdNexusData.Broker.Worker.Services;
 using EdNexusData.Broker.Service;
 using EdNexusData.Broker.Service.Worker;
 using Microsoft.AspNetCore.Identity;
+using EdNexusData.Broker.Domain;
 
 var builder = Host.CreateDefaultBuilder(args);
 

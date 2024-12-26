@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.Models;
 using Ardalis.GuardClauses;
+using EdNexusData.Broker.Core.EducationOrganizations;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -42,7 +40,7 @@ public class UserRolesController : AuthenticatedController<UserRolesController>
 
         var userRoleViewModels = new List<UserRoleViewModel>();
 
-        var existingOrganizations = new List<EducationOrganization>();
+        var existingOrganizations = new List<Domain.EducationOrganization>();
 
         if (userRoles is not null)
         {

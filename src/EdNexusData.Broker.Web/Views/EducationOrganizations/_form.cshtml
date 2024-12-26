@@ -1,5 +1,6 @@
 @model EdNexusData.Broker.Web.ViewModels.EducationOrganizations.CreateEducationOrganizationRequestViewModel
 @using EdNexusData.Broker.Domain;
+@using EdNexusData.Broker.Core.EducationOrganizations;
 @using EdNexusData.Broker.Web.Helpers;
 
 <div
@@ -24,7 +25,7 @@
                 @Html.LabelFor(it => it.EducationOrganizationType, new { @class = "block text-sm font-medium leading-6 text-gray-900" })
                 <div class="mt-2">
                     <div class="grid grid-cols-2 gap-6">
-                      @foreach (var edOrgType in Enum.GetValues<EducationOrganizationType>())
+                      @foreach (var edOrgType in Enum.GetValues<EdNexusData.Broker.Core.EducationOrganizations.EducationOrganizationType>())
                       {
                           <label :class="(educationOrganizationType == '@edOrgType') ? 'flex items-center justify-center rounded-md py-3 px-3 text-sm font-semibold sm:flex-1 cursor-pointer focus:outline-none bg-tertiary-700 text-white hover:bg-tertiary-500' : 'flex items-center justify-center rounded-md py-3 px-3 text-sm font-semibold sm:flex-1 cursor-pointer focus:outline-none ring-1 ring-inset ring-gray-300 bg-white text-gray-900 hover:bg-gray-50'">
                               <input id="EducationOrganizationType_@((int)edOrgType)" asp-for="EducationOrganizationType" class="sr-only" type="radio" value="@edOrgType" x-model="educationOrganizationType" aria-labelledby="EducationOrganizationType_@((int)edOrgType)_label" />

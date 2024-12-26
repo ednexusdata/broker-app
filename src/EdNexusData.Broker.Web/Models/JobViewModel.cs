@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Domain.Worker;
 
 namespace EdNexusData.Broker.Web.Models;

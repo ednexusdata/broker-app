@@ -1,10 +1,9 @@
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.Connector;
+using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using EdNexusData.Broker.Domain.Worker;
@@ -66,7 +65,7 @@ public class ImportMappingJob : IJob
         
         Guard.Against.Null(request, "request", $"Unable to find request id {jobInstance.ReferenceGuid}");
         
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, PayloadContentActionStatus.Importing, "Begin import mapping for: {0}", request.Payload);
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Domain.PayloadContentActionStatus.Importing, "Begin import mapping for: {0}", request.Payload);
         
         // Set the ed org
         _focusEducationOrganizationResolver.EducationOrganizationId = request.EducationOrganization!.ParentOrganizationId!.Value;
@@ -81,10 +80,10 @@ public class ImportMappingJob : IJob
 
         var importers = new Dictionary<Type, dynamic>();
 
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, PayloadContentActionStatus.Importing, "Begin processing map with type: {0}.", mapping.MappingType);
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Domain.PayloadContentActionStatus.Importing, "Begin processing map with type: {0}.", mapping.MappingType);
 
         // Deseralize object to the type
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, PayloadContentActionStatus.Importing, "Will deseralize object of type: {0}.", mapping.MappingType);
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Domain.PayloadContentActionStatus.Importing, "Will deseralize object of type: {0}.", mapping.MappingType);
         var mappingType = AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany(s => s.GetExportedTypes())
                     .Where(p => p.FullName == mapping.MappingType).FirstOrDefault();
@@ -110,19 +109,19 @@ public class ImportMappingJob : IJob
         {
             importer = ActivatorUtilities.CreateInstance(_serviceProvider, importerType);
             importers.Add(importerType, importer);
-            await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, PayloadContentActionStatus.Importing, "Created importer of type {0}.", importerType.FullName);
+            await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Domain.PayloadContentActionStatus.Importing, "Created importer of type {0}.", importerType.FullName);
         }
         
         methodInfo!.Invoke(importer, new object[] { mappingType, mappingCollection, request.RequestManifest?.Student!, request.EducationOrganization, request.ResponseManifest! });
 
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, PayloadContentActionStatus.Importing, "Called prepare on {0}.", importerType.FullName);
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Domain.PayloadContentActionStatus.Importing, "Called prepare on {0}.", importerType.FullName);
 
         // Call finish method on each importer
         methodInfo = importerType.GetMethod("ImportAsync");
         var result = await methodInfo!.Invoke(importer, new object[] { });
 
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, PayloadContentActionStatus.Importing, "Called import on {0} and it returned {1}.", importerType.FullName, result);
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Domain.PayloadContentActionStatus.Importing, "Called import on {0} and it returned {1}.", importerType.FullName, result);
 
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, PayloadContentActionStatus.Imported, "Finished importing mapping.");
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Domain.PayloadContentActionStatus.Imported, "Finished importing mapping.");
     }
 }

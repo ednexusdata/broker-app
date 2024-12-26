@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using EdNexusData.Broker.Data;
-using EdNexusData.Broker.SharedKernel;
+using EdNexusData.Broker.Domain;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

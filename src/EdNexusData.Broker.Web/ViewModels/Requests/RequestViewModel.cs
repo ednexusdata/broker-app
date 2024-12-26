@@ -1,4 +1,4 @@
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core.Jobs;
 
 namespace EdNexusData.Broker.Web.ViewModels.Requests;
 

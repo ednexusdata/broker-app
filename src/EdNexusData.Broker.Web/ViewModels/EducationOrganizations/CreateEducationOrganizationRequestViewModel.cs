@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using EdNexusData.Broker.Core.EducationOrganizations;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Web.ViewModels.EducationOrganizations;
 

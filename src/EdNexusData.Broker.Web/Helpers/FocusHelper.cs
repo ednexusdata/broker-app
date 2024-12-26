@@ -1,24 +1,22 @@
 using System.Linq.Expressions;
 using Ardalis.Specification;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Exceptions;
 using EdNexusData.Broker.Web.Specifications;
 using static EdNexusData.Broker.Web.Constants.Sessions.SessionKey;
+using EdNexusData.Broker.Core.EducationOrganizations;
 
 namespace EdNexusData.Broker.Web.Helpers;
 
 public class FocusHelper
 {
-    private readonly IReadRepository<EducationOrganization> _educationOrganizationRepository;
+    private readonly IReadRepository<Domain.EducationOrganization> _educationOrganizationRepository;
     private readonly IRepository<UserRole> _userRoleRepo;
     private readonly IRepository<User> _userRepo;
     private readonly ISession _session;
 
     public FocusHelper(
-        IReadRepository<EducationOrganization> educationOrganizationRepository,
+        IReadRepository<Domain.EducationOrganization> educationOrganizationRepository,
         IRepository<UserRole> userRoleRepo,
         IRepository<User> userRepo,
         IHttpContextAccessor httpContextAccessor)
@@ -93,9 +91,9 @@ public class FocusHelper
             {
                 _session.SetString(FocusOrganizationKey, educationOrganizationId);
 
-                Expression<Func<EducationOrganization, bool>> focusOrganizationExpression = request => request.Id == organizationIdGuid;
+                Expression<Func<Domain.EducationOrganization, bool>> focusOrganizationExpression = request => request.Id == organizationIdGuid;
 
-                var specification = new SearchableWithPaginationSpecification<EducationOrganization>.Builder(1, -1)
+                var specification = new SearchableWithPaginationSpecification<Domain.EducationOrganization>.Builder(1, -1)
                     .WithSearchExpression(focusOrganizationExpression)
                     .WithIncludeEntities(builder => builder
                         .Include(educationOrganization => educationOrganization.ParentOrganization))
@@ -187,7 +185,7 @@ public class FocusHelper
         return null;
     }
 
-    public async Task<List<EducationOrganization>> GetFocusedSchools()
+    public async Task<List<Domain.EducationOrganization>> GetFocusedSchools()
     {
         if (IsEdOrgAllFocus())
         {

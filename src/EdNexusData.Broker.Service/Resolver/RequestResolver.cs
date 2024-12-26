@@ -1,8 +1,8 @@
 using Ardalis.GuardClauses;
+using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Service.Services;
-using EdNexusData.Broker.SharedKernel;
 using Microsoft.Extensions.Logging;
 
 namespace EdNexusData.Broker.Service.Resolvers;

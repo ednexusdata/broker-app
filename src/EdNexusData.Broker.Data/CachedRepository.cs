@@ -1,7 +1,7 @@
 using Ardalis.Specification;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using EdNexusData.Broker.SharedKernel;
+using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Data;
 

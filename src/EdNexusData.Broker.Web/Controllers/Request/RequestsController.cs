@@ -1,15 +1,10 @@
 using Ardalis.GuardClauses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.ViewModels.Requests;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using System.Text.Json;
-using Newtonsoft.Json;
 using EdNexusData.Broker.Web.Helpers;
+using EdNexusData.Broker.Core.Jobs;
 
 namespace EdNexusData.Broker.Web.Controllers;
 

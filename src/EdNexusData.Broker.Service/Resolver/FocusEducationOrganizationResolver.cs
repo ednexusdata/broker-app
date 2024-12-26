@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.SharedKernel;
+using EdNexusData.Broker.Domain.Specifications;
 using Ardalis.GuardClauses;
 
 namespace EdNexusData.Broker.Service.Resolvers;

@@ -1,14 +1,12 @@
 using Microsoft.Extensions.Logging;
-using System.Linq;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Domain.Worker;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Connector.Services;
+using EdNexusData.Broker.Core.Jobs;
 
 namespace EdNexusData.Broker.Service.Services;
 
-public class JobStatusService : IJobStatusService
+public class JobStatusService
 {
     private readonly IRepository<Job> _jobRepo;
     private readonly IRepository<Request> _requestRepo;

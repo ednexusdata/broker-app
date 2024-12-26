@@ -1,13 +1,9 @@
 using System.ComponentModel;
-using Ardalis.GuardClauses;
 using Ardalis.Specification;
-using EdNexusData.Broker.Connector;
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.Domain.Worker;
+using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Connector;
+using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Service;
-using EdNexusData.Broker.Service.Jobs;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.ViewModels.Preparing;

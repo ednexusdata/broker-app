@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.SharedKernel;
 using static EdNexusData.Broker.Web.Constants.Sessions.SessionKey;
 using EdNexusData.Broker.Web.Helpers;
 using System.Security.Claims;

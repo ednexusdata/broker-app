@@ -3,9 +3,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using EdNexusData.Broker.Domain;
 using System.Security.Claims;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Web.Models.Paginations;
 using Ardalis.Specification;
 using EdNexusData.Broker.Web.Specifications;
@@ -17,9 +15,7 @@ using System.Linq.Expressions;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 using EdNexusData.Broker.Web.Extensions.States;
 using EdNexusData.Broker.Web.Extensions.Genders;
-using EdNexusData.Broker.Connector.Payloads;
 using EdNexusData.Broker.Web.Helpers;
-using EdNexusData.Broker.Domain.Internal.Specifications;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using System.Text.Json;
@@ -27,6 +23,8 @@ using EdNexusData.Broker.Web.Utilities;
 using System.ComponentModel.DataAnnotations;
 using EdNexusData.Broker.Service;
 using EdNexusData.Broker.Service.Jobs;
+using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Core.Payloads;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -179,7 +177,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
                     } : null
                 }, 
                 RequestManifest = new Manifest() {
-                    RequestType = typeof(StudentCumulativeRecord).FullName!,
+                    RequestType = typeof(StudentCumulativeRecordPayload).FullName!,
                     RequestId = incomingRequestId,
                     Student = student,
                     Note = viewModel.Note,
@@ -193,7 +191,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
                 RequestProcessUserId = userId,
                 RequestStatus = RequestStatus.Draft,
                 IncomingOutgoing = IncomingOutgoing.Incoming,
-                Payload = typeof(StudentCumulativeRecord).FullName!
+                Payload = typeof(StudentCumulativeRecordPayload).FullName!
             };
 
             await _incomingRequestRepository.AddAsync(incomingRequest);
@@ -292,7 +290,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
             };
 
             incomingRequest.RequestManifest = new Manifest() {
-                RequestType = typeof(StudentCumulativeRecord).FullName!,
+                RequestType = typeof(StudentCumulativeRecordPayload).FullName!,
                 Student = student,
                 Note = viewModel.Note,
                 To = new RequestAddress()

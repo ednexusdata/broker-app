@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using EdNexusData.Broker.Domain;
+﻿using EdNexusData.Broker.Core.Jobs;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 namespace EdNexusData.Broker.Web.ViewModels.OutgoingRequests;
 

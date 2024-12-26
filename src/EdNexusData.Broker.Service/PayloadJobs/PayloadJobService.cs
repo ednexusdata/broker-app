@@ -1,4 +1,4 @@
-using EdNexusData.Broker.Connector;
+using EdNexusData.Broker.Core;
 using System.ComponentModel;
 
 namespace EdNexusData.Broker.Service;

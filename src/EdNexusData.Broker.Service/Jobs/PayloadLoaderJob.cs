@@ -1,14 +1,14 @@
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.SharedKernel;
 using System.Text.Json;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Connector;
 using EdNexusData.Broker.Domain.Worker;
-using EdNexusData.Broker.Domain.Internal.Specifications;
+using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.Service.Services;
 using System.ComponentModel;
+using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Core.PayloadContents;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
@@ -78,9 +78,7 @@ public class PayloadLoaderJob : IJob
             await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
 
             // Attach job status info
-            jobToExecute.JobStatusService = _jobStatusServiceForLoader;
-            _jobStatusServiceForLoader.JobRecord = jobInstance;
-            _jobStatusServiceForLoader.RequestRecord = request;
+            jobToExecute.JobStatusService = new JobStatusServiceProxy(jobToExecute, jobInstance, request);
 
             object? result = null;
 
@@ -88,27 +86,27 @@ public class PayloadLoaderJob : IJob
             {
                 if (jobToExecute is DelayedPayloadJob)
                 {
-                    DelayedPayloadJob delayedJobToExecute = (jobToExecute as DelayedPayloadJob)!;
+                    DelayedPayloadJob delayedJobToExecute = (DelayedPayloadJob)jobToExecute!;
                     
                     var startResult = await delayedJobToExecute.StartAsync(request.Student?.Student?.StudentNumber!, (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null);
                     
-                    if (startResult == DelayedPayloadJob.Status.Finish)
+                    if (startResult == DelayedJobStatus.Finish)
                     {
                         result = await delayedJobToExecute.FinishAsync();
                     }
                     else
                     {
                         var continueLooping = true;
-                        DelayedPayloadJob.Status? continueResult = null;
+                        DelayedJobStatus? continueResult = null;
                         while (continueLooping)
                         {
                             await Task.Delay(5000);
                             continueResult = await delayedJobToExecute.ContinueAsync();
-                            if (continueResult != DelayedPayloadJob.Status.Continue)
+                            if (continueResult != DelayedJobStatus.Continue)
                                 continueLooping = false;
                         }
 
-                        if (continueResult is not null && continueResult == DelayedPayloadJob.Status.Finish)
+                        if (continueResult is not null && continueResult == DelayedJobStatus.Finish)
                         {
                             result = await delayedJobToExecute.FinishAsync();
                         }

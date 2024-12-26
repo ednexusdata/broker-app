@@ -33,23 +33,23 @@
                 </div>
                 <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Requested</div>
-                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Requested)?.Timestamp</div>
-                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Requested)?.Userstamp</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Requested)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Requested)?.Userstamp</div>
                 </div>
                 <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Transmitted</div>
-                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Transmitted)?.Timestamp</div>
-                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Transmitted)?.Userstamp</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Transmitted)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Transmitted)?.Userstamp</div>
                 </div>
                 <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">In-Progress</div>
-                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.InProgress)?.Timestamp</div>
-                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.InProgress)?.Userstamp</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.InProgress)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.InProgress)?.Userstamp</div>
                 </div>
                 <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Finished</div>
-                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Finished)?.Timestamp</div>
-                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Finished)?.Userstamp</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Finished)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Finished)?.Userstamp</div>
                 </div>
             </div>
             <div class="grid grid-cols-5 bg-@outgoingBgColor-700 p-1">
@@ -61,18 +61,18 @@
                 <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">&nbsp;</div>
                 <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Received</div>
-                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Received)?.Timestamp</div>
-                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Received)?.Userstamp</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Received)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Received)?.Userstamp</div>
                 </div>
                 <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Loaded</div>
-                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Loaded)?.Timestamp</div>
-                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Loaded)?.Userstamp</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Loaded)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Loaded)?.Userstamp</div>
                 </div>
                 <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Transmitted</div>
-                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Transmitted)?.Timestamp</div>
-                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Domain.RequestStatus.Transmitted)?.Userstamp</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Transmitted)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Core.Jobs.RequestStatus.Transmitted)?.Userstamp</div>
                 </div>
             </div>
         

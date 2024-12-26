@@ -1,10 +1,7 @@
-using EdNexusData.Broker.Connector.Payloads;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.SharedKernel;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Connector;
-using EdNexusData.Broker.Connector.Authentication;
+using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EdNexusData.Broker.Service.Resolvers;

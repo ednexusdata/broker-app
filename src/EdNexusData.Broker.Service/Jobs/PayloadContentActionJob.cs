@@ -1,15 +1,16 @@
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.SharedKernel;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Domain.Internal.Specifications;
-using EdNexusData.Broker.Connector;
+using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using EdNexusData.Broker.Domain.Worker;
-using EdNexusData.Broker.Connector.Student;
+using EdNexusData.Broker.Core.Students;
 using System.ComponentModel;
+using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Core.Mappings;
 
 namespace EdNexusData.Broker.Service.Jobs;
 
@@ -23,7 +24,7 @@ public class PayloadContentActionJob : IJob
     private readonly IRepository<Request> _requestRepository;
     private readonly IRepository<PayloadContentAction> _payloadContentActionRepository;
     private readonly IServiceProvider _serviceProvider;
-    private readonly IRepository<Mapping> _mappingRepository;
+    private readonly IRepository<Domain.Mapping> _mappingRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
 
     public PayloadContentActionJob(
@@ -34,7 +35,7 @@ public class PayloadContentActionJob : IJob
             IRepository<Request> requestRepository,
             IRepository<PayloadContentAction> payloadContentActionRepository,
             IServiceProvider serviceProvider,
-            IRepository<Mapping> mappingRepository,
+            IRepository<Domain.Mapping> mappingRepository,
             FocusEducationOrganizationResolver focusEducationOrganizationResolver)
     {
         _connectorLoader = connectorLoader;
@@ -64,7 +65,7 @@ public class PayloadContentActionJob : IJob
 
         Guard.Against.Null(payloadContentAction.ActiveMapping, "mapping", $"Unable to find mapping Id {jobInstance.ReferenceGuid}");
 
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Importing, "Fetched payload content action.");
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, Domain.PayloadContentActionStatus.Importing, "Fetched payload content action.");
         await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.InProgress, "Importing.");
         
         var mapping = payloadContentAction.ActiveMapping;
@@ -80,10 +81,10 @@ public class PayloadContentActionJob : IJob
         var sisConnectorType = _connectorResolver.Resolve(payloadSettings.StudentInformationSystem);
         Guard.Against.Null(sisConnectorType, null, "Unable to load connector.");
 
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Importing, "Begin processing map with type: {0}.", mapping.MappingType);
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, Domain.PayloadContentActionStatus.Importing, "Begin processing map with type: {0}.", mapping.MappingType);
 
         // Resolve payload content action type
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Importing, "Will deseralize object of type: {0}.", mapping.MappingType);
+        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, Domain.PayloadContentActionStatus.Importing, "Will deseralize object of type: {0}.", mapping.MappingType);
         var payloadContentActionType = AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany(s => s.GetExportedTypes())
                     .Where(p => p.FullName == payloadContentAction.PayloadContentActionType).FirstOrDefault();
@@ -152,7 +153,7 @@ public class PayloadContentActionJob : IJob
                 payloadContentAction.PayloadContent.Request.EducationOrganization
             });
 
-            await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Imported, result.ToString());
+            await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, Domain.PayloadContentActionStatus.Imported, result.ToString());
             await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.InProgress, "Imported.");
         }
 

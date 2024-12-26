@@ -1,8 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using EdNexusData.Broker.Connector.PayloadContentActions;
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Extensions;
-using EdNexusData.Broker.Web.Constants.DesignSystems;
+using EdNexusData.Broker.Core.Jobs;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace EdNexusData.Broker.Web.ViewModels.Preparing;

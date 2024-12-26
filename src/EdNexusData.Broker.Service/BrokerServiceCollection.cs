@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using EdNexusData.Broker.Connector.Resolvers;
 using EdNexusData.Broker.Service.Resolvers;
 using EdNexusData.Broker.Service.Lookup;
 using EdNexusData.Broker.Service.Serializers;
@@ -8,10 +7,11 @@ using DnsClient;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Cache;
 using EdNexusData.Broker.Service.Services;
+using EdNexusData.Broker.Core.Configuration;
 
 namespace EdNexusData.Broker.Service;
 
-public static class BrokerServiceCollection //: IConnectorServiceCollection
+public static class BrokerServiceCollection
 {
     /*
     public static IServiceCollection AddConfig(this IServiceCollection services, IConfiguration config)
@@ -36,6 +36,7 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         // Resolvers
         services.AddScoped<IConfigurationResolver, ConfigurationResolver>();
         services.AddScoped<IPayloadResolver, PayloadResolver>();
+        services.AddScoped<PayloadResolver>();
         services.AddScoped<FocusEducationOrganizationResolver>();
         services.AddScoped<DistrictEducationOrganizationResolver>();
         services.AddScoped<StudentLookupResolver>();
@@ -88,4 +89,9 @@ public static class BrokerServiceCollection //: IConnectorServiceCollection
         
         return services;
     }
+}
+
+// Exists to not conflict with generic IPayloadResolver type
+internal interface IPayloadResolver
+{
 }

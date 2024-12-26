@@ -1,3 +1,4 @@
+using EdNexusData.Broker.Core.EducationOrganizations;
 using Microsoft.Extensions.Logging;
 
 namespace EdNexusData.Broker.Data.Seeds.Populated;
@@ -33,7 +34,7 @@ public class InitialSeed
             Name = "Oregon School District",
             ShortName = "Oregon SD",
             Domain = "or.makoa.dev",
-            EducationOrganizationType = Domain.EducationOrganizationType.District,
+            EducationOrganizationType = EducationOrganizationType.District,
             Address = new Domain.Address()
             {
                 StreetNumberName = "255 Capitol St NE",
@@ -52,7 +53,7 @@ public class InitialSeed
             Name = "Clackamas Elementary School",
             ShortName = "Clackamas ES",
             ParentOrganization = edOrg_district,
-            EducationOrganizationType = Domain.EducationOrganizationType.School,
+            EducationOrganizationType = EducationOrganizationType.School,
             Address = new Domain.Address()
             {
                 StreetNumberName = "1710 Red Soils Ct, Suite 100",
@@ -79,7 +80,7 @@ public class InitialSeed
             Name = "Multnomah Middle School",
             ShortName = "Multnomah MS",
             ParentOrganization = edOrg_district,
-            EducationOrganizationType = Domain.EducationOrganizationType.School,
+            EducationOrganizationType = EducationOrganizationType.School,
             Address = new Domain.Address()
             {
                 StreetNumberName = "1620 SE 190th Ave",
@@ -106,7 +107,7 @@ public class InitialSeed
             Name = "Yamhill High School",
             ShortName = "Yamhill HS",
             ParentOrganization = edOrg_district,
-            EducationOrganizationType = Domain.EducationOrganizationType.School,
+            EducationOrganizationType = EducationOrganizationType.School,
             Address = new Domain.Address()
             {
                 StreetNumberName = "535 NE 5th Str",
@@ -136,7 +137,7 @@ public class InitialSeed
             Name = "Washington School District",
             ShortName = "Washington SD",
             Domain = "wa.makoa.dev",
-            EducationOrganizationType = Domain.EducationOrganizationType.District,
+            EducationOrganizationType = EducationOrganizationType.District,
             Address = new Domain.Address()
             {
                 StreetNumberName = "600 Washington St SE",
@@ -155,7 +156,7 @@ public class InitialSeed
             Name = "Cowlitz Elementary School",
             ShortName = "Cowlitz ES",
             ParentOrganization = edOrg_district,
-            EducationOrganizationType = Domain.EducationOrganizationType.School,
+            EducationOrganizationType = EducationOrganizationType.School,
             Address = new Domain.Address()
             {
                 StreetNumberName = "207 4th Ave. N.",
@@ -182,7 +183,7 @@ public class InitialSeed
             Name = "Pacific Middle School",
             ShortName = "Pacific MS",
             ParentOrganization = edOrg_district,
-            EducationOrganizationType = Domain.EducationOrganizationType.School,
+            EducationOrganizationType = EducationOrganizationType.School,
             Address = new Domain.Address()
             {
                 StreetNumberName = "300 Memorial Drive",
@@ -209,7 +210,7 @@ public class InitialSeed
             Name = "Skamania High School",
             ShortName = "Skamania HS",
             ParentOrganization = edOrg_district,
-            EducationOrganizationType = Domain.EducationOrganizationType.School,
+            EducationOrganizationType = EducationOrganizationType.School,
             Address = new Domain.Address()
             {
                 StreetNumberName = "240 NW Vancouver Ave",

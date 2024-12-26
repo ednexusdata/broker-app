@@ -1,21 +1,21 @@
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.SharedKernel;
 using Ardalis.GuardClauses;
+using EdNexusData.Broker.Core.EducationOrganizations;
 
 namespace EdNexusData.Broker.Service.Resolvers;
 
 public class DistrictEducationOrganizationResolver
 {
-    private readonly IRepository<EducationOrganization> _edOrgRepo;
+    private readonly IRepository<Domain.EducationOrganization> _edOrgRepo;
     private readonly IServiceProvider _serviceProvider;
     
-    public DistrictEducationOrganizationResolver(IRepository<EducationOrganization> edOrgRepo, IServiceProvider serviceProvider)
+    public DistrictEducationOrganizationResolver(IRepository<Domain.EducationOrganization> edOrgRepo, IServiceProvider serviceProvider)
     {
         _edOrgRepo = edOrgRepo;
         _serviceProvider = serviceProvider;
     }
 
-    public EducationOrganization Resolve(EducationOrganization educationOrganization)
+    public Domain.EducationOrganization Resolve(Domain.EducationOrganization educationOrganization)
     {
         if (educationOrganization.EducationOrganizationType == EducationOrganizationType.District)
             return educationOrganization;

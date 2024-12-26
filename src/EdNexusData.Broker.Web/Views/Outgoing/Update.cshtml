@@ -29,7 +29,7 @@
   {
     <div>@Model.RequestStatus.GetDescription()</div>
   }
-  @if (Model.RequestStatus == EdNexusData.Broker.Domain.RequestStatus.Received || Model.RequestStatus == EdNexusData.Broker.Domain.RequestStatus.Loaded)
+  @if (Model.RequestStatus == EdNexusData.Broker.Core.Jobs.RequestStatus.Received || Model.RequestStatus == EdNexusData.Broker.Core.Jobs.RequestStatus.Loaded)
   {
     <div>
     <form method="post" asp-action="Load" asp-route-id="@Model.RequestId" autocomplete="off">
@@ -41,7 +41,7 @@
     </form>
     </div>
   } 
-  @if (Model.RequestStatus == EdNexusData.Broker.Domain.RequestStatus.Loaded) {
+  @if (Model.RequestStatus == EdNexusData.Broker.Core.Jobs.RequestStatus.Loaded) {
     <div>
     <form method="post" asp-action="Send" asp-route-id="@Model.RequestId" autocomplete="off">
       <input type="hidden" name="_METHOD" value="PUT" />

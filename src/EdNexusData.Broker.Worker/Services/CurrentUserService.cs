@@ -1,4 +1,4 @@
-using EdNexusData.Broker.SharedKernel;
+using EdNexusData.Broker.Domain;
 
 namespace EdNexusData.Broker.Worker.Services;
 

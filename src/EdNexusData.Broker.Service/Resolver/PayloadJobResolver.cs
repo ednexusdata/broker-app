@@ -1,13 +1,11 @@
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.SharedKernel;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Connector;
-using EdNexusData.Broker.Connector.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using EdNexusData.Broker.Core.Jobs;
 
 namespace EdNexusData.Broker.Service.Resolvers;
 
-public class PayloadJobResolver //: IPayloadResolver
+public class PayloadJobResolver
 {
     private readonly IRepository<EducationOrganizationPayloadSettings> _edOrgPayloadSettings;
     private readonly FocusEducationOrganizationResolver _focusEdOrg;

@@ -1,5 +1,4 @@
-﻿using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Web.Models.Results;
+﻿using EdNexusData.Broker.Web.Models.Results;
 
 namespace EdNexusData.Broker.Web.Services.PayloadContents
 {
