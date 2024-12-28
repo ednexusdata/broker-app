@@ -1,6 +1,5 @@
 using EdNexusData.Broker.Core.Worker;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Core.Worker;
 using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Common.Jobs;

@@ -1,22 +1,18 @@
 // Copyright: 2023 Education Nexus Oregon
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
-
 using Ardalis.Specification.EntityFrameworkCore;
-using EdNexusData.Broker.Core;
 
-namespace EdNexusData.Broker.Data;  
+namespace EdNexusData.Broker.Core;  
   
 // We are using the EfRepository from Ardalis.Specification
 // https://github.com/ardalis/Specification/blob/v5/ArdalisSpecificationEF/src/Ardalis.Specification.EF/RepositoryBaseOfT.cs
 public class EfRepository<T> : RepositoryBase<T>, IRepository<T> where T : BaseEntity, IAggregateRoot
 {
-    private readonly BrokerDbContext _dbContext;
     private readonly ICurrentUser _currentUser;
     
-    public EfRepository(BrokerDbContext dbContext, ICurrentUser currentUser) : base(dbContext)
+    public EfRepository(DbContext dbContext, ICurrentUser currentUser) : base(dbContext)
     {
         _currentUser = currentUser;
-        _dbContext = dbContext;
     }
 
     public override Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)

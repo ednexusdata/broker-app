@@ -1,9 +1,8 @@
 using Ardalis.Specification;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using EdNexusData.Broker.Core;
 
-namespace EdNexusData.Broker.Data;
+namespace EdNexusData.Broker.Core;
 
 public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAggregateRoot
 {
@@ -84,22 +83,22 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
-                _logger.LogWarning($"Fetching source data for {key}");
+                _logger.LogInformation($"Fetching source data for {key}");
                 return _sourceRepository.FirstOrDefaultAsync(specification, cancellationToken);
             })!;
         }
         return _sourceRepository.FirstOrDefaultAsync(specification, cancellationToken);
     }
 
-    public Task<T?> GetByIdAsync<TId>(TId id, CancellationToken cancellationToken = default)
+    public Task<T?> GetByIdAsync<TId>(TId id, CancellationToken cancellationToken = default) where TId : notnull
     {
         string key = $"{typeof(T).Name}-{id}";
         _logger.LogInformation("Checking cache for " + key);
         return _cache.GetOrCreate(key, entry =>
         {
-        entry.SetOptions(_cacheOptions);
-        _logger.LogWarning("Fetching source data for " + key);
-        return _sourceRepository.GetByIdAsync(id, cancellationToken);
+            entry.SetOptions(_cacheOptions);
+            _logger.LogInformation("Fetching source data for " + key);
+            return _sourceRepository.GetByIdAsync(id, cancellationToken);
         })!;
     }
 
@@ -107,36 +106,14 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
     public Task<T?> GetBySpecAsync<Spec>(Spec specification,
         CancellationToken cancellationToken = default) where Spec : ISingleResultSpecification, ISpecification<T>
     {
-        if (specification.CacheEnabled)
-        {
-        string key = $"{specification.CacheKey}-GetBySpecAsync";
-        _logger.LogInformation("Checking cache for " + key);
-        return _cache.GetOrCreate(key, entry =>
-        {
-            entry.SetOptions(_cacheOptions);
-            _logger.LogWarning("Fetching source data for " + key);
-            return _sourceRepository.GetBySpecAsync(specification, cancellationToken);
-        })!;
-        }
-        return _sourceRepository.GetBySpecAsync(specification);
+        throw new NotSupportedException("GetBySpecAsync obsolete.");
     }
 
     [Obsolete]
     public Task<TResult?> GetBySpecAsync<TResult>(ISpecification<T, TResult> specification,
         CancellationToken cancellationToken = default)
     {
-        if (specification.CacheEnabled)
-        {
-        string key = $"{specification.CacheKey}-GetBySpecAsync";
-        _logger.LogInformation("Checking cache for " + key);
-        return _cache.GetOrCreate(key, entry =>
-        {
-            entry.SetOptions(_cacheOptions);
-            _logger.LogWarning("Fetching source data for " + key);
-            return _sourceRepository.GetBySpecAsync(specification, cancellationToken);
-        })!;
-        }
-        return _sourceRepository.GetBySpecAsync(specification, cancellationToken);
+        throw new NotSupportedException("GetBySpecAsync obsolete.");
     }
 
     public Task<T?> GetBySpecAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)
