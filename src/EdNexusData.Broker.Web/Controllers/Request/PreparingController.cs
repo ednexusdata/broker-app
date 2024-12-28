@@ -1,9 +1,7 @@
 using System.ComponentModel;
 using Ardalis.Specification;
-using EdNexusData.Broker.Common;
 using EdNexusData.Broker.Common.Connector;
 using EdNexusData.Broker.Common.Jobs;
-using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.ViewModels.Preparing;
@@ -18,7 +16,7 @@ namespace EdNexusData.Broker.Web.Controllers;
 public class PreparingController : AuthenticatedController<RequestsController>
 {
     private readonly IRepository<Request> _requestRepository;
-    private readonly IRepository<Core.PayloadContent> _payloadContentRepository;
+    private readonly IRepository<PayloadContent> _payloadContentRepository;
     private readonly IRepository<PayloadContentAction> _actionRepository;
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly JobService _jobService;
@@ -27,7 +25,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
 
     public PreparingController(
         IRepository<Request> requestRepository, 
-        IRepository<Core.PayloadContent> payloadContentRepository, 
+        IRepository<PayloadContent> payloadContentRepository, 
         IRepository<PayloadContentAction> actionRepository,
         IRepository<Mapping> mappingRepository,
         ConnectorLoader connectorLoader,
