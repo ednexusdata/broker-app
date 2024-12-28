@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using EdNexusData.Broker.Core;
-using EdNexusData.Broker.SharedKernel;
+using EdNexusData.Broker.Common.EducationOrganizations;
+using EdNexusData.Broker.Common.Jobs;
 
 namespace EdNexusData.Broker.Core.IntegrationTests.Fixtures;
 
@@ -95,7 +96,10 @@ public static class BrokerDbFixture
             Id = requestGuid,
             EducationOrganizationId = school.Id,
             InitialRequestSentDate = DateTime.UtcNow.AddDays(-1),
-            Student = JsonDocument.Parse(studentJsonString)!,
+            // Student = new StudentRequest()
+            // {
+
+            // } JsonDocument.Parse(studentJsonString)!,
             RequestStatus = RequestStatus.Received
         };
 

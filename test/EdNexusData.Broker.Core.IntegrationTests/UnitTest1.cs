@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using EdNexusData.Broker.Data;
 using EdNexusData.Broker.Core.IntegrationTests.Fixtures;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdNexusData.Broker.Core.IntegrationTests;
 
@@ -18,7 +18,7 @@ public class UnitTest1
     [Fact]
     public void Test1()
     {
-        var dbcontext = _services.Services!.GetService<BrokerDbContext>();
+        var dbcontext = _services.Services!.GetService<DbContext>();
 
         Assert.NotNull(dbcontext);
     }

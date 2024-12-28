@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using EdNexusData.Broker.Data.IntegrationTests.Services;
 using EdNexusData.Broker.Core;
-using EdNexusData.Broker.SharedKernel;
 
 namespace EdNexusData.Broker.Data.IntegrationTests.Fixtures;
 

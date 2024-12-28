@@ -1,4 +1,4 @@
-using EdNexusData.Broker.SharedKernel;
+using EdNexusData.Broker.Core;
 
 namespace EdNexusData.Broker.Data.IntegrationTests.Services;
 
