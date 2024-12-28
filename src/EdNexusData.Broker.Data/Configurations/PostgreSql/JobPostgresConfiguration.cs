@@ -5,8 +5,8 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Worker;
+using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Worker;
 
 namespace EdNexusData.Broker.Data.Configurations.PostgreSql;
 

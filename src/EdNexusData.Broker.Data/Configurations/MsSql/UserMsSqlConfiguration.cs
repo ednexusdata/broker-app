@@ -5,7 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core;
 
 namespace EdNexusData.Broker.Data.Configurations.MsSql;
 

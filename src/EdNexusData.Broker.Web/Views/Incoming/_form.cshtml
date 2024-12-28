@@ -1,7 +1,7 @@
 @model EdNexusData.Broker.Web.ViewModels.IncomingRequests.CreateIncomingRequestViewModel
 @using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 @using System.Text.Json;
-@using EdNexusData.Broker.Domain;
+@using EdNexusData.Broker.Core;
 @{
   var domain = (Model.ToDistrict != null) ? Model.ToDistrict.Domain : "";
 }

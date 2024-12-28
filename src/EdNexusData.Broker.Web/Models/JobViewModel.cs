@@ -1,5 +1,5 @@
 using EdNexusData.Broker.Common.Jobs;
-using EdNexusData.Broker.Domain.Worker;
+using EdNexusData.Broker.Core.Worker;
 
 namespace EdNexusData.Broker.Web.Models;
 

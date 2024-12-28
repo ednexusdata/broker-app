@@ -16,11 +16,11 @@ namespace EdNexusData.Broker.Web.Controllers;
 [Authorize(Policy = "SuperAdmin")]
 public class EducationOrganizationsController : AuthenticatedController<EducationOrganizationsController>
 {
-    private readonly IRepository<Domain.EducationOrganization> _educationOrganizationRepository;
+    private readonly IRepository<Core.EducationOrganization> _educationOrganizationRepository;
     private readonly EducationOrganizationHelper _educationOrganizationHelper;
     public EducationOrganizationsController(
         IHttpContextAccessor httpContextAccessor,
-        IRepository<Domain.EducationOrganization> educationOrganizationRepository,
+        IRepository<Core.EducationOrganization> educationOrganizationRepository,
         EducationOrganizationHelper educationOrganizationHelper)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
@@ -37,7 +37,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
         var sortExpressions = model.BuildSortExpressions();
 
-        var specificationPre = new SearchableWithPaginationSpecification<Domain.EducationOrganization>.Builder(model.Page, model.Size)
+        var specificationPre = new SearchableWithPaginationSpecification<Core.EducationOrganization>.Builder(model.Page, model.Size)
             .WithAscending(model.IsAscending)
             .WithSortExpressions(sortExpressions)
             .WithSearchExpressions(searchExpressions)
@@ -80,7 +80,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
         var sortExpressions = model.BuildSortExpressions();
 
-        var specification = new SearchableWithPaginationSpecification<Domain.EducationOrganization>.Builder(model.Page, model.Size)
+        var specification = new SearchableWithPaginationSpecification<Core.EducationOrganization>.Builder(model.Page, model.Size)
             .WithAscending(model.IsAscending)
             .WithSortExpressions(sortExpressions)
             .WithSearchExpressions(searchExpressions)
@@ -129,7 +129,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
     {
         if (!ModelState.IsValid) { TempData[VoiceTone.Critical] = "Organization not created."; return RedirectToAction(nameof(Create)); }
         
-        var organization = new Domain.EducationOrganization()
+        var organization = new Core.EducationOrganization()
         {
             Id = Guid.NewGuid(),
             ParentOrganizationId = data.EducationOrganizationType == EducationOrganizationType.School ? data.ParentOrganizationId : null,
@@ -166,10 +166,10 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
     public async Task<IActionResult> Update(Guid Id)
     {
-       Expression<Func<Domain.EducationOrganization, bool>> focusOrganizationExpression = request =>
+       Expression<Func<Core.EducationOrganization, bool>> focusOrganizationExpression = request =>
             request.Id == Id;
 
-        var specification = new SearchableWithPaginationSpecification<Domain.EducationOrganization>.Builder(1, -1)
+        var specification = new SearchableWithPaginationSpecification<Core.EducationOrganization>.Builder(1, -1)
             .WithSearchExpression(focusOrganizationExpression)
             .Build();
 
@@ -214,10 +214,10 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
         if (!data.EducationOrganizationId.HasValue) { throw new ArgumentNullException("EducationOrganizationId required."); }
         
         // Get existing organization
-       Expression<Func<Domain.EducationOrganization, bool>> focusOrganizationExpression = request =>
+       Expression<Func<Core.EducationOrganization, bool>> focusOrganizationExpression = request =>
             request.Id == data.EducationOrganizationId;
 
-        var specification = new SearchableWithPaginationSpecification<Domain.EducationOrganization>.Builder(1, -1)
+        var specification = new SearchableWithPaginationSpecification<Core.EducationOrganization>.Builder(1, -1)
             .WithSearchExpression(focusOrganizationExpression)
             .Build();
 

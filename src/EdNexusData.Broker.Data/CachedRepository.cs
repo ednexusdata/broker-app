@@ -1,11 +1,11 @@
 using Ardalis.Specification;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core;
 
 namespace EdNexusData.Broker.Data;
 
-public class CachedRepository<T> : IReadRepository<T> where T : Domain.BaseEntity, IAggregateRoot
+public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAggregateRoot
 {
     private readonly IMemoryCache _cache;
     private readonly ILogger<CachedRepository<T>> _logger;

@@ -1,5 +1,5 @@
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Service.Resolvers;
+using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Resolvers;
 
 namespace EdNexusData.Broker.Web.ViewModels;
 

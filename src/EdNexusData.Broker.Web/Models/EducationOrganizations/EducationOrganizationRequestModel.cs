@@ -15,11 +15,11 @@ public class EducationOrganizationRequestModel : SearchableModelWithPagination
     public string City { get; set; }
     public string StateAbbreviation { get; set; }
     public string PostalCode { get; set; }
-    public List<Expression<Func<Domain.EducationOrganization, object>>> BuildSortExpressions()
+    public List<Expression<Func<Core.EducationOrganization, object>>> BuildSortExpressions()
     {
-        var sortExpressions = new List<Expression<Func<Domain.EducationOrganization, object>>>();
+        var sortExpressions = new List<Expression<Func<Core.EducationOrganization, object>>>();
         var sortBy = SortBy?.ToLower();
-        Expression<Func<Domain.EducationOrganization, object>> ValueToAdd = sortBy switch
+        Expression<Func<Core.EducationOrganization, object>> ValueToAdd = sortBy switch
         {
             "district" => educationOrganization => educationOrganization.ParentOrganization.Name,
             "name" => educationOrganization => educationOrganization.Name,
@@ -38,16 +38,16 @@ public class EducationOrganizationRequestModel : SearchableModelWithPagination
         return sortExpressions;
     }
 
-    private List<Expression<Func<Domain.EducationOrganization, object>>> AddDefaultSortExpressions(List<Expression<Func<Domain.EducationOrganization, object>>> sortExpressions)
+    private List<Expression<Func<Core.EducationOrganization, object>>> AddDefaultSortExpressions(List<Expression<Func<Core.EducationOrganization, object>>> sortExpressions)
     {
         sortExpressions.Add(educationOrganization => educationOrganization.ParentOrganization.Name + educationOrganization.Name);
         
         return sortExpressions;
     }
 
-    public List<Expression<Func<Domain.EducationOrganization, bool>>> BuildSearchExpressions()
+    public List<Expression<Func<Core.EducationOrganization, bool>>> BuildSearchExpressions()
     {
-        var searchExpressions = new List<Expression<Func<Domain.EducationOrganization, bool>>>();
+        var searchExpressions = new List<Expression<Func<Core.EducationOrganization, bool>>>();
 
         if (!string.IsNullOrWhiteSpace(SearchBy))
         {

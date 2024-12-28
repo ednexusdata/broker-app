@@ -4,10 +4,10 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core;
 using EdNexusData.Broker.SharedKernel;
 
-namespace EdNexusData.Broker.Service.IntegrationTests.Fixtures;
+namespace EdNexusData.Broker.Core.IntegrationTests.Fixtures;
 
 public static class BrokerDbFixture 
 {

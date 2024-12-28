@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EdNexusData.Broker.Domain\EdNexusData.Broker.Domain.csproj" />
+    <ProjectReference Include="..\EdNexusData.Broker.Core\EdNexusData.Broker.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

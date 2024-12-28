@@ -1,6 +1,6 @@
 using EdNexusData.Broker.SharedKernel;
 
-namespace EdNexusData.Broker.Service.IntegrationTests.Services;
+namespace EdNexusData.Broker.Core.IntegrationTests.Services;
 
 public class CurrentUserService : ICurrentUser
 {

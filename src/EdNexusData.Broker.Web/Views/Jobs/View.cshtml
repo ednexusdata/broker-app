@@ -1,5 +1,5 @@
-@model EdNexusData.Broker.Domain.Worker.Job
-@using EdNexusData.Broker.Domain.Extensions
+@model EdNexusData.Broker.Core.Worker.Job
+@using EdNexusData.Broker.Core.Extensions
 @using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 @using System.Text.Json;
 @{
@@ -55,7 +55,7 @@
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium leading-6 text-gray-900">Reference Guid</label>
                             <div class="mt-2 text-gray-700">
-                                @if (Model.ReferenceType == "EdNexusData.Broker.Domain.Request")
+                                @if (Model.ReferenceType == "EdNexusData.Broker.Core.Request")
                                 {
                                     <a asp-controller="Requests" asp-action="View" asp-route-id="@Model.ReferenceGuid" class="text-tertiary-700 hover:text-tertiary-900">@Model.ReferenceGuid</a>
                                 }

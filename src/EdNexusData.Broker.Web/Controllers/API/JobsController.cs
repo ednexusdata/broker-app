@@ -1,7 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EdNexusData.Broker.Service.Worker;
+using EdNexusData.Broker.Core.Worker;
 
 namespace EdNexusData.Broker.Controllers.Api;
 

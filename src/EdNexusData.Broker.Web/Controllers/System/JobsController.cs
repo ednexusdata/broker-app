@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EdNexusData.Broker.Web.Helpers;
-using EdNexusData.Broker.Domain.Worker;
+using EdNexusData.Broker.Core.Worker;
 using System.Linq.Expressions;
 using EdNexusData.Broker.Web.Specifications;
 using Ardalis.Specification;
@@ -12,7 +12,7 @@ using EdNexusData.Broker.Web.Models.Jobs;
 using EdNexusData.Broker.Web.Models;
 using EdNexusData.Broker.Web.Models.Paginations;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Service;
+using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 
 namespace EdNexusData.Broker.Web.Controllers;

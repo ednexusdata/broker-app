@@ -4,9 +4,9 @@ using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core;
 using Microsoft.Extensions.Configuration;
-using EdNexusData.Broker.Domain.Worker;
+using EdNexusData.Broker.Core.Worker;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace EdNexusData.Broker.Data;

@@ -1,10 +1,10 @@
 using System.Reflection;
-using MediatR;
+//using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using EdNexusData.Broker.Data;
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -41,7 +41,7 @@ public static class BrokerDataServiceCollectionExtension
         // );
 
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
-        services.AddScoped(typeof(IMediator), typeof(Mediator));
+        //services.AddScoped(typeof(IMediator), typeof(Mediator));
 
         services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
         {

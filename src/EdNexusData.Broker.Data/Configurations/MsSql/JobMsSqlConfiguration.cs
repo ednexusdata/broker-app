@@ -3,7 +3,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using EdNexusData.Broker.Domain.Worker;
+using EdNexusData.Broker.Core.Worker;
 
 namespace EdNexusData.Broker.Data.Configurations.MsSql;
 

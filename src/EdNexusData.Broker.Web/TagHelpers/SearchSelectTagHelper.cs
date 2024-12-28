@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core;
 
 namespace EdNexusData.Broker.Web.TagHelpers;
 

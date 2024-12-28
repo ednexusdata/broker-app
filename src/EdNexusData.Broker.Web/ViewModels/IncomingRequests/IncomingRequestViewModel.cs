@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Domain.Extensions;
+using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Extensions;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 

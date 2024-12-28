@@ -5,8 +5,8 @@ namespace EdNexusData.Broker.Web.Helpers;
 
 public class EducationOrganizationHelper
 {
-    private IRepository<Domain.EducationOrganization> _repo { get; set; }
-    public EducationOrganizationHelper(IRepository<Domain.EducationOrganization> repo)
+    private IRepository<Core.EducationOrganization> _repo { get; set; }
+    public EducationOrganizationHelper(IRepository<Core.EducationOrganization> repo)
     {
         _repo = repo;
     }
@@ -32,7 +32,7 @@ public class EducationOrganizationHelper
         return selectListItems;
     }
 
-    public async Task<IEnumerable<SelectListItem>> GetOrganizationsSelectList(List<Domain.EducationOrganization>? edOrgsToRemove)
+    public async Task<IEnumerable<SelectListItem>> GetOrganizationsSelectList(List<Core.EducationOrganization>? edOrgsToRemove)
     {
         var selectListItems = new List<SelectListItem>();
 

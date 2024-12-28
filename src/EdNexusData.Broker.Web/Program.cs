@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using EdNexusData.Broker.Web;
 using EdNexusData.Broker.Web.Services;
 using System.Reflection;
-using EdNexusData.Broker.Service;
+using EdNexusData.Broker.Core;
 using Microsoft.AspNetCore.Authentication;
 using EdNexusData.Broker.Web.Extensions.Routes;
 using EdNexusData.Broker.Web.Services.PayloadContents;
@@ -18,7 +18,8 @@ using src.Services.Shared;
 using Microsoft.Extensions.Caching.Memory;
 using EdNexusData.Broker.Web.Exceptions;
 using Microsoft.AspNetCore.DataProtection;
-using EdNexusData.Broker.Service.Worker;
+using EdNexusData.Broker.Core.Worker;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,10 +36,12 @@ switch (builder.Configuration["DatabaseProvider"])
 {
     case DbProviderType.MsSql:
         builder.Services.AddDbContext<BrokerDbContext, MsSqlDbContext>();
+        builder.Services.AddScoped<DbContext, MsSqlDbContext>();
         break;
 
     case DbProviderType.PostgreSql:
         builder.Services.AddDbContext<BrokerDbContext, PostgresDbContext>();
+        builder.Services.AddScoped<DbContext, PostgresDbContext>();
         break;
 }
 

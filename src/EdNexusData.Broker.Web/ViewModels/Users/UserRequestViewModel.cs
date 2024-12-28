@@ -1,4 +1,4 @@
-﻿using EdNexusData.Broker.Domain;
+﻿using EdNexusData.Broker.Core;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 

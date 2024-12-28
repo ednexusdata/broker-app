@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using static EdNexusData.Broker.Web.Constants.Sessions.SessionKey;
 using EdNexusData.Broker.Web.Helpers;
 using System.Security.Claims;
-using EdNexusData.Broker.Service.Resolvers;
+using EdNexusData.Broker.Core.Resolvers;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using System.Collections.Immutable;

@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core;
 using System.Data;
 using System.Security.Claims;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
-using EdNexusData.Broker.Domain.Specifications;
+using EdNexusData.Broker.Core.Specifications;
 
 namespace EdNexusData.Broker.Web;
 

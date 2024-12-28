@@ -36,7 +36,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("__BrokerSeedsHistory", (string)null);
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.EducationOrganization", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganization", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -94,7 +94,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("EducationOrganizations");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.EducationOrganizationConnectorSettings", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationConnectorSettings", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -131,7 +131,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("EducationOrganizationConnectorSettings");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.EducationOrganizationPayloadSettings", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationPayloadSettings", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -165,7 +165,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("EducationOrganizationPayloadSettings");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Mapping", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Mapping", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -218,7 +218,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("Mappings", (string)null);
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Message", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Message", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -268,7 +268,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("Messages", (string)null);
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.PayloadContent", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.PayloadContent", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -317,7 +317,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("PayloadContents", (string)null);
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.PayloadContentAction", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.PayloadContentAction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -368,7 +368,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("PayloadContentActions", (string)null);
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Request", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Request", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -435,7 +435,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("Requests");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.User", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -479,7 +479,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.UserRole", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.UserRole", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -517,7 +517,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("UserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Worker.Job", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Worker.Job", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -793,31 +793,31 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.EducationOrganization", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganization", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.EducationOrganization", "ParentOrganization")
+                    b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "ParentOrganization")
                         .WithMany("EducationOrganizations")
                         .HasForeignKey("ParentOrganizationId");
 
                     b.Navigation("ParentOrganization");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.EducationOrganizationConnectorSettings", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationConnectorSettings", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.EducationOrganization", "EducationOrganization")
+                    b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
                         .WithMany()
                         .HasForeignKey("EducationOrganizationId");
 
                     b.Navigation("EducationOrganization");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.EducationOrganizationPayloadSettings", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationPayloadSettings", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.EducationOrganization", "EducationOrganization")
+                    b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
                         .WithMany()
                         .HasForeignKey("EducationOrganizationId");
 
-                    b.OwnsOne("EdNexusData.Broker.Domain.IncomingPayloadSettings", "IncomingPayloadSettings", b1 =>
+                    b.OwnsOne("EdNexusData.Broker.Core.IncomingPayloadSettings", "IncomingPayloadSettings", b1 =>
                         {
                             b1.Property<Guid>("EducationOrganizationPayloadSettingsId")
                                 .HasColumnType("uuid");
@@ -834,7 +834,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                             b1.WithOwner()
                                 .HasForeignKey("EducationOrganizationPayloadSettingsId");
 
-                            b1.OwnsMany("EdNexusData.Broker.Domain.PayloadSettingsContentType", "PayloadContents", b2 =>
+                            b1.OwnsMany("EdNexusData.Broker.Core.PayloadSettingsContentType", "PayloadContents", b2 =>
                                 {
                                     b2.Property<Guid>("IncomingPayloadSettingsEducationOrganizationPayloadSettingsId")
                                         .HasColumnType("uuid");
@@ -864,7 +864,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                             b1.Navigation("PayloadContents");
                         });
 
-                    b.OwnsOne("EdNexusData.Broker.Domain.OutgoingPayloadSettings", "OutgoingPayloadSettings", b1 =>
+                    b.OwnsOne("EdNexusData.Broker.Core.OutgoingPayloadSettings", "OutgoingPayloadSettings", b1 =>
                         {
                             b1.Property<Guid>("EducationOrganizationPayloadSettingsId")
                                 .HasColumnType("uuid");
@@ -881,7 +881,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                             b1.WithOwner()
                                 .HasForeignKey("EducationOrganizationPayloadSettingsId");
 
-                            b1.OwnsMany("EdNexusData.Broker.Domain.PayloadSettingsContentType", "PayloadContents", b2 =>
+                            b1.OwnsMany("EdNexusData.Broker.Core.PayloadSettingsContentType", "PayloadContents", b2 =>
                                 {
                                     b2.Property<Guid>("OutgoingPayloadSettingsEducationOrganizationPayloadSettingsId")
                                         .HasColumnType("uuid");
@@ -918,18 +918,18 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Navigation("OutgoingPayloadSettings");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Mapping", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Mapping", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.PayloadContentAction", "PayloadContentAction")
+                    b.HasOne("EdNexusData.Broker.Core.PayloadContentAction", "PayloadContentAction")
                         .WithMany("Mappings")
                         .HasForeignKey("PayloadContentActionId");
 
                     b.Navigation("PayloadContentAction");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Message", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Message", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.Request", "Request")
+                    b.HasOne("EdNexusData.Broker.Core.Request", "Request")
                         .WithMany("Messages")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -938,13 +938,13 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.PayloadContent", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.PayloadContent", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.Message", "Message")
+                    b.HasOne("EdNexusData.Broker.Core.Message", "Message")
                         .WithMany("PayloadContents")
                         .HasForeignKey("MessageId");
 
-                    b.HasOne("EdNexusData.Broker.Domain.Request", "Request")
+                    b.HasOne("EdNexusData.Broker.Core.Request", "Request")
                         .WithMany("PayloadContents")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -955,13 +955,13 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.PayloadContentAction", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.PayloadContentAction", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.Mapping", "ActiveMapping")
+                    b.HasOne("EdNexusData.Broker.Core.Mapping", "ActiveMapping")
                         .WithOne("PrimaryPayloadContentAction")
-                        .HasForeignKey("EdNexusData.Broker.Domain.PayloadContentAction", "ActiveMappingId");
+                        .HasForeignKey("EdNexusData.Broker.Core.PayloadContentAction", "ActiveMappingId");
 
-                    b.HasOne("EdNexusData.Broker.Domain.PayloadContent", "PayloadContent")
+                    b.HasOne("EdNexusData.Broker.Core.PayloadContent", "PayloadContent")
                         .WithMany("PayloadContentActions")
                         .HasForeignKey("PayloadContentId");
 
@@ -970,19 +970,19 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Navigation("PayloadContent");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Request", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Request", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.EducationOrganization", "EducationOrganization")
+                    b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
                         .WithMany()
                         .HasForeignKey("EducationOrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EdNexusData.Broker.Domain.User", "RequestProcessUser")
+                    b.HasOne("EdNexusData.Broker.Core.User", "RequestProcessUser")
                         .WithMany()
                         .HasForeignKey("RequestProcessUserId");
 
-                    b.HasOne("EdNexusData.Broker.Domain.User", "ResponseProcessUser")
+                    b.HasOne("EdNexusData.Broker.Core.User", "ResponseProcessUser")
                         .WithMany()
                         .HasForeignKey("ResponseProcessUserId");
 
@@ -993,22 +993,22 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Navigation("ResponseProcessUser");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.User", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.User", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser<System.Guid>", null)
                         .WithOne()
-                        .HasForeignKey("EdNexusData.Broker.Domain.User", "Id")
+                        .HasForeignKey("EdNexusData.Broker.Core.User", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.UserRole", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.UserRole", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.EducationOrganization", "EducationOrganization")
+                    b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
                         .WithMany()
                         .HasForeignKey("EducationOrganizationId");
 
-                    b.HasOne("EdNexusData.Broker.Domain.User", "User")
+                    b.HasOne("EdNexusData.Broker.Core.User", "User")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId");
 
@@ -1017,9 +1017,9 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Worker.Job", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Worker.Job", b =>
                 {
-                    b.HasOne("EdNexusData.Broker.Domain.User", "InitiatedUser")
+                    b.HasOne("EdNexusData.Broker.Core.User", "InitiatedUser")
                         .WithMany()
                         .HasForeignKey("InitiatedUserId");
 
@@ -1077,39 +1077,39 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.EducationOrganization", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganization", b =>
                 {
                     b.Navigation("EducationOrganizations");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Mapping", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Mapping", b =>
                 {
                     b.Navigation("PrimaryPayloadContentAction");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Message", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Message", b =>
                 {
                     b.Navigation("PayloadContents");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.PayloadContent", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.PayloadContent", b =>
                 {
                     b.Navigation("PayloadContentActions");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.PayloadContentAction", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.PayloadContentAction", b =>
                 {
                     b.Navigation("Mappings");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.Request", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.Request", b =>
                 {
                     b.Navigation("Messages");
 
                     b.Navigation("PayloadContents");
                 });
 
-            modelBuilder.Entity("EdNexusData.Broker.Domain.User", b =>
+            modelBuilder.Entity("EdNexusData.Broker.Core.User", b =>
                 {
                     b.Navigation("UserRoles");
                 });

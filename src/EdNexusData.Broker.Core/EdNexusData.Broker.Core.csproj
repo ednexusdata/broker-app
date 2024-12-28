@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\broker-common\src\EdNexusData.Broker.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DnsClient" Version="1.7.0" />
+    <PackageReference Include="MimeKit" Version="4.*" />
+    <PackageReference Include="Ardalis.Specification" Version="6.1.0" />
+    <PackageReference Include="Ardalis.GuardClauses" Version="4.0.1" />
+    <PackageReference Include="Ardalis.Result" Version="4.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
+  </ItemGroup>
+
+</Project>

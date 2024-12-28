@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core;
 using System.ComponentModel.DataAnnotations;
 
 namespace EdNexusData.Broker.Web.ViewModels.Users;

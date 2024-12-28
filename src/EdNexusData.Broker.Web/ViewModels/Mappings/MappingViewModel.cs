@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using EdNexusData.Broker.Common.Lookup;
 using EdNexusData.Broker.Common.Mappings;
-using EdNexusData.Broker.Service.Lookup;
+using EdNexusData.Broker.Core.Lookup;
 
 namespace EdNexusData.Broker.Web.ViewModels.Mappings;
 
@@ -15,9 +15,9 @@ public class MappingViewModel
 
     public Guid? RequestId { get; set; }
 
-    public List<Domain.Mapping>? RequestMappings { get; set; }
+    public List<Core.Mapping>? RequestMappings { get; set; }
 
-    public Domain.Mapping? Mapping { get; set; }
+    public Core.Mapping? Mapping { get; set; }
 
     public dynamic? MappingSourceRecords { get; set; }  
     public dynamic? MappingDestinationRecords { get; set; }

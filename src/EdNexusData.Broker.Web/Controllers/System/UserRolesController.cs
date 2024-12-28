@@ -40,7 +40,7 @@ public class UserRolesController : AuthenticatedController<UserRolesController>
 
         var userRoleViewModels = new List<UserRoleViewModel>();
 
-        var existingOrganizations = new List<Domain.EducationOrganization>();
+        var existingOrganizations = new List<Core.EducationOrganization>();
 
         if (userRoles is not null)
         {

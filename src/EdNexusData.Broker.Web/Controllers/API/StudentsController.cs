@@ -2,8 +2,8 @@ using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EdNexusData.Broker.Web.Controllers;
-using EdNexusData.Broker.Service.Lookup;
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core.Lookup;
+using EdNexusData.Broker.Core;
 
 namespace EdNexusData.Broker.Controllers.Api;
 

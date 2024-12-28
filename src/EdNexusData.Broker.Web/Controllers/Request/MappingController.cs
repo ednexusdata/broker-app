@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.ViewModels.Mappings;
-using EdNexusData.Broker.Service.Lookup;
+using EdNexusData.Broker.Core.Lookup;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
-using EdNexusData.Broker.Service;
-using EdNexusData.Broker.Service.Jobs;
+using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Jobs;
 
 namespace EdNexusData.Broker.Web.Controllers;
 

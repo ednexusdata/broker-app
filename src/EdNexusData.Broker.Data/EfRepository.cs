@@ -2,13 +2,13 @@
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
 
 using Ardalis.Specification.EntityFrameworkCore;
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core;
 
 namespace EdNexusData.Broker.Data;  
   
 // We are using the EfRepository from Ardalis.Specification
 // https://github.com/ardalis/Specification/blob/v5/ArdalisSpecificationEF/src/Ardalis.Specification.EF/RepositoryBaseOfT.cs
-public class EfRepository<T> : RepositoryBase<T>, IRepository<T> where T : Domain.BaseEntity, IAggregateRoot
+public class EfRepository<T> : RepositoryBase<T>, IRepository<T> where T : BaseEntity, IAggregateRoot
 {
     private readonly BrokerDbContext _dbContext;
     private readonly ICurrentUser _currentUser;

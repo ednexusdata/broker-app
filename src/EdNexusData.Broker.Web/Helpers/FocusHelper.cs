@@ -10,13 +10,13 @@ namespace EdNexusData.Broker.Web.Helpers;
 
 public class FocusHelper
 {
-    private readonly IReadRepository<Domain.EducationOrganization> _educationOrganizationRepository;
+    private readonly IReadRepository<Core.EducationOrganization> _educationOrganizationRepository;
     private readonly IRepository<UserRole> _userRoleRepo;
     private readonly IRepository<User> _userRepo;
     private readonly ISession _session;
 
     public FocusHelper(
-        IReadRepository<Domain.EducationOrganization> educationOrganizationRepository,
+        IReadRepository<Core.EducationOrganization> educationOrganizationRepository,
         IRepository<UserRole> userRoleRepo,
         IRepository<User> userRepo,
         IHttpContextAccessor httpContextAccessor)
@@ -91,9 +91,9 @@ public class FocusHelper
             {
                 _session.SetString(FocusOrganizationKey, educationOrganizationId);
 
-                Expression<Func<Domain.EducationOrganization, bool>> focusOrganizationExpression = request => request.Id == organizationIdGuid;
+                Expression<Func<Core.EducationOrganization, bool>> focusOrganizationExpression = request => request.Id == organizationIdGuid;
 
-                var specification = new SearchableWithPaginationSpecification<Domain.EducationOrganization>.Builder(1, -1)
+                var specification = new SearchableWithPaginationSpecification<Core.EducationOrganization>.Builder(1, -1)
                     .WithSearchExpression(focusOrganizationExpression)
                     .WithIncludeEntities(builder => builder
                         .Include(educationOrganization => educationOrganization.ParentOrganization))
@@ -185,7 +185,7 @@ public class FocusHelper
         return null;
     }
 
-    public async Task<List<Domain.EducationOrganization>> GetFocusedSchools()
+    public async Task<List<Core.EducationOrganization>> GetFocusedSchools()
     {
         if (IsEdOrgAllFocus())
         {

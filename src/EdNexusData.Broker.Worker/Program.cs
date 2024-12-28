@@ -2,10 +2,10 @@ using Microsoft.Extensions.Caching.Memory;
 using EdNexusData.Broker.Data;
 using EdNexusData.Broker.Worker;
 using EdNexusData.Broker.Worker.Services;
-using EdNexusData.Broker.Service;
-using EdNexusData.Broker.Service.Worker;
+using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Worker;
 using Microsoft.AspNetCore.Identity;
-using EdNexusData.Broker.Domain;
+using Microsoft.EntityFrameworkCore;
 
 var builder = Host.CreateDefaultBuilder(args);
 
@@ -19,10 +19,12 @@ builder.ConfigureServices((hostContext, services) =>
     {
         case DbProviderType.MsSql:
             services.AddDbContext<BrokerDbContext, MsSqlDbContext>();
+            services.AddScoped<DbContext, MsSqlDbContext>();
             break;
 
         case DbProviderType.PostgreSql:
             services.AddDbContext<BrokerDbContext, PostgresDbContext>();
+            services.AddScoped<DbContext, PostgresDbContext>();
             break;
     }
 

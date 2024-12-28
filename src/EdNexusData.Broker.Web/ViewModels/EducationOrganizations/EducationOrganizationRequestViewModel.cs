@@ -51,12 +51,12 @@ public class EducationOrganizationRequestViewModel
     [Display(Name = "Email")]
     public string? ContacEmail { get; set; }
 
-    public Domain.EducationOrganization ParentOrganization { get; set; } = new();
+    public Core.EducationOrganization ParentOrganization { get; set; } = new();
 
     public EducationOrganizationRequestViewModel() { }
 
     public EducationOrganizationRequestViewModel(
-        Domain.EducationOrganization educationOrganization)
+        Core.EducationOrganization educationOrganization)
     {
         Id = educationOrganization.Id;
         Name = educationOrganization.Name;
@@ -64,7 +64,7 @@ public class EducationOrganizationRequestViewModel
         Number = educationOrganization.Number ?? string.Empty;
         EducationOrganizationType = educationOrganization.EducationOrganizationType;
         ParentOrganizationId = educationOrganization.ParentOrganizationId;
-        ParentOrganization = educationOrganization.ParentOrganization ?? new Domain.EducationOrganization();
+        ParentOrganization = educationOrganization.ParentOrganization ?? new Core.EducationOrganization();
         StreetNumberName = educationOrganization.Address?.StreetNumberName;
         City = educationOrganization.Address?.City;
         StateAbbreviation = educationOrganization.Address?.StateAbbreviation;

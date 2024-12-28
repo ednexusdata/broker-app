@@ -1,4 +1,4 @@
-﻿using EdNexusData.Broker.Domain;
+﻿using EdNexusData.Broker.Core;
 using System.Linq.Expressions;
 using EdNexusData.Broker.Web.Models.Searchables;
 using System.Net.NetworkInformation;

@@ -1,7 +1,7 @@
 // Copyright: 2023 Education Nexus Oregon
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
 
-using EdNexusData.Broker.Domain;
+using EdNexusData.Broker.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EdNexusData.Broker.Service;
-using EdNexusData.Broker.Service.Serializers;
+using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Serializers;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.Models;
