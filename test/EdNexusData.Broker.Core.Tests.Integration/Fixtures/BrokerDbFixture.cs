@@ -8,7 +8,7 @@ using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Common.EducationOrganizations;
 using EdNexusData.Broker.Common.Jobs;
 
-namespace EdNexusData.Broker.Core.IntegrationTests.Fixtures;
+namespace EdNexusData.Broker.Core.Tests.Integration.Fixtures;
 
 public static class BrokerDbFixture 
 {

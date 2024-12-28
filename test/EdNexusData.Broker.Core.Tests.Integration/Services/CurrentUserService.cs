@@ -1,6 +1,6 @@
 using EdNexusData.Broker.Core;
 
-namespace EdNexusData.Broker.Core.IntegrationTests.Services;
+namespace EdNexusData.Broker.Core.Tests.Integration.Services;
 
 public class CurrentUserService : ICurrentUser
 {
