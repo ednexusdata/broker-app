@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using EdNexusData.Broker.Service.Resolvers;
 using EdNexusData.Broker.Service.Cache;
-using EdNexusData.Broker.Core.Lookup;
+using EdNexusData.Broker.Common.Lookup;
 
 namespace EdNexusData.Broker.Service.Lookup;
 

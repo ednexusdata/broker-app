@@ -1,8 +1,8 @@
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Service.Resolvers;
-using EdNexusData.Broker.Core;
-using EdNexusData.Broker.Core.Students;
-using EdNexusData.Broker.Core.Payloads;
+using EdNexusData.Broker.Common;
+using EdNexusData.Broker.Common.Students;
+using EdNexusData.Broker.Common.Payloads;
 
 namespace EdNexusData.Broker.Service.Lookup;
 
@@ -60,6 +60,6 @@ public class StudentService
 
         var connectorStudentService = _studentResolver.Resolve(typeConnectorToUse);
 
-        return await connectorStudentService.FetchAsync(studentToFetch.ToContract());
+        return await connectorStudentService.FetchAsync(studentToFetch.ToCommon());
     }
 }

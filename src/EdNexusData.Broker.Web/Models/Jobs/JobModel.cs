@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
-using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Web.Models.Searchables;
 #nullable disable

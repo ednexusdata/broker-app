@@ -1,5 +1,5 @@
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Common;
 
 namespace EdNexusData.Broker.Service.Resolvers;
 

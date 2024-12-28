@@ -9,7 +9,7 @@ using EdNexusData.Broker.Web.ViewModels.EducationOrganizations;
 using System.Linq.Expressions;
 using EdNexusData.Broker.Web.Extensions.States;
 using EdNexusData.Broker.Web.Specifications;
-using EdNexusData.Broker.Core.EducationOrganizations;
+using EdNexusData.Broker.Common.EducationOrganizations;
 
 namespace EdNexusData.Broker.Web.Controllers;
 

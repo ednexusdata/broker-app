@@ -3,7 +3,7 @@ using EdNexusData.Broker.Domain.Specifications;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using System.Dynamic;
-using EdNexusData.Broker.Core.Payloads;
+using EdNexusData.Broker.Common.Payloads;
 
 namespace EdNexusData.Broker.Service.Serializers;
 

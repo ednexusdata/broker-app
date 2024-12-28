@@ -3,14 +3,14 @@ using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Resolvers;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Domain.Specifications;
-using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using EdNexusData.Broker.Domain.Worker;
-using EdNexusData.Broker.Core.Students;
+using EdNexusData.Broker.Common.Students;
 using System.ComponentModel;
-using EdNexusData.Broker.Core.Jobs;
-using EdNexusData.Broker.Core.Mappings;
+using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Common.Mappings;
 
 namespace EdNexusData.Broker.Service.Jobs;
 

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using EdNexusData.Broker.Core.Lookup;
+using EdNexusData.Broker.Common.Lookup;
 using EdNexusData.Broker.Service.Lookup;
 
 namespace EdNexusData.Broker.Web.ViewModels.Mappings;

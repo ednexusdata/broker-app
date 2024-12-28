@@ -1,12 +1,12 @@
 using System.Reflection;
-using EdNexusData.Broker.Core.Attributes;
-using EdNexusData.Broker.Core.Authentication;
-using EdNexusData.Broker.Core.Configuration;
-using EdNexusData.Broker.Core.Connector;
-using EdNexusData.Broker.Core.Jobs;
-using EdNexusData.Broker.Core.Mappings;
-using EdNexusData.Broker.Core.PayloadContentActions;
-using EdNexusData.Broker.Core.Payloads;
+using EdNexusData.Broker.Common.Attributes;
+using EdNexusData.Broker.Common.Authentication;
+using EdNexusData.Broker.Common.Configuration;
+using EdNexusData.Broker.Common.Connector;
+using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Common.Mappings;
+using EdNexusData.Broker.Common.PayloadContentActions;
+using EdNexusData.Broker.Common.Payloads;
 using Microsoft.Extensions.Logging;
 
 namespace EdNexusData.Broker.Service;

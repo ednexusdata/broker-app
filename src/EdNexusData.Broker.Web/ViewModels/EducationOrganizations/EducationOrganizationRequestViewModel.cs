@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using EdNexusData.Broker.Core.EducationOrganizations;
+using EdNexusData.Broker.Common.EducationOrganizations;
 
 namespace EdNexusData.Broker.Web.ViewModels.EducationOrganizations;
 

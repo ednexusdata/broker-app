@@ -57,7 +57,7 @@
                                 <div class="pt-6 sm:pt-4">
                                     <select x-model="status" name="status" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
                                         <option value="">Select a Request Status</option>
-                                        @foreach (var status in Enum.GetValues(typeof(EdNexusData.Broker.Core.Jobs.RequestStatus)))
+                                        @foreach (var status in Enum.GetValues(typeof(EdNexusData.Broker.Common.Jobs.RequestStatus)))
                                         {
                                         <option value="@status">@status</option>
                                         }

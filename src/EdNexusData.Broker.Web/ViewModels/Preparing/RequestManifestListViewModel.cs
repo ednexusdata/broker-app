@@ -1,4 +1,4 @@
-using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Common.Jobs;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace EdNexusData.Broker.Web.ViewModels.Preparing;

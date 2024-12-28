@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using Ardalis.Specification;
-using EdNexusData.Broker.Core;
-using EdNexusData.Broker.Core.Connector;
-using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Common;
+using EdNexusData.Broker.Common.Connector;
+using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Service;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;

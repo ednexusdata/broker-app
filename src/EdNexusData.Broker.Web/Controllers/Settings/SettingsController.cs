@@ -6,7 +6,7 @@ using EdNexusData.Broker.Service.Serializers;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.Models;
-using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Common;
 
 namespace EdNexusData.Broker.Web.Controllers;
 

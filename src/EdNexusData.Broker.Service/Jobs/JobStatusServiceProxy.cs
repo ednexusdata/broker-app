@@ -1,4 +1,4 @@
-using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Worker;
 
@@ -22,7 +22,7 @@ public class JobStatusServiceProxy : IJobStatusService
         throw new NotImplementedException();
     }
 
-    public Task UpdatePayloadContentActionStatus(Core.PayloadContentActions.PayloadContentActionStatus? newPayloadContentActionStatus, string? message, params object?[] messagePlaceholders)
+    public Task UpdatePayloadContentActionStatus(Common.PayloadContentActions.PayloadContentActionStatus? newPayloadContentActionStatus, string? message, params object?[] messagePlaceholders)
     {
         throw new NotImplementedException();
     }

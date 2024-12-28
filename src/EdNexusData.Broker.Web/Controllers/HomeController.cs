@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using EdNexusData.Broker.Web.Models;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.ViewModels;
-using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Common.Jobs;
 
 namespace EdNexusData.Broker.Web.Controllers;
 

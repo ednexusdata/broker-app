@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Core.Mappings;
+using EdNexusData.Broker.Common.Mappings;
 
 namespace EdNexusData.Broker.Service.Resolvers;
 

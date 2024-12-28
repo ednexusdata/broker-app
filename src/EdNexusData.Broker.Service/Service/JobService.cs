@@ -1,4 +1,4 @@
-using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Worker;
 using System.Text.Json;

@@ -1,5 +1,5 @@
 using Ardalis.Specification;
-using EdNexusData.Broker.Core.EducationOrganizations;
+using EdNexusData.Broker.Common.EducationOrganizations;
 
 namespace EdNexusData.Broker.Domain.Specifications;
 

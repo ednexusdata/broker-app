@@ -1,8 +1,7 @@
-using EdNexusData.Broker.Core.StudentLookup;
+using EdNexusData.Broker.Common.StudentLookup;
 using EdNexusData.Broker.Domain;
-using EdNexusData.Broker.Core.Payloads;
+using EdNexusData.Broker.Common.Payloads;
 using EdNexusData.Broker.Service.Resolvers;
-using EdNexusData.Broker.Core;
 
 namespace EdNexusData.Broker.Service.Lookup;
 
@@ -70,7 +69,7 @@ public class StudentLookupService
         };
 
         // Pass search parameters to connector for processing
-        var results = await connectorStudentLookupService.SearchAsync(searchStudent.ToContract());
+        var results = await connectorStudentLookupService.SearchAsync(searchStudent.ToCommon());
 
         return results;
     }

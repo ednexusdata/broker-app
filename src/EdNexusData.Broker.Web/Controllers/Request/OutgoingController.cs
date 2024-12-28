@@ -19,8 +19,8 @@ using EdNexusData.Broker.Web.Utilities;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Service;
 using EdNexusData.Broker.Service.Jobs;
-using EdNexusData.Broker.Core.Payloads;
-using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Common.Payloads;
+using EdNexusData.Broker.Common.Jobs;
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = TransferOutgoingRecords)]

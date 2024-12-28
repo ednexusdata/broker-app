@@ -1,4 +1,4 @@
-using EdNexusData.Broker.Core.EducationOrganizations;
+using EdNexusData.Broker.Common.EducationOrganizations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace EdNexusData.Broker.Web.Helpers;

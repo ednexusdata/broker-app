@@ -1,8 +1,6 @@
 // Copyright: 2023 Education Nexus Oregon
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using Ardalis.GuardClauses;
 
 namespace EdNexusData.Broker.Domain;
 

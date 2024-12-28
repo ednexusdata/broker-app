@@ -1,7 +1,7 @@
 using EdNexusData.Broker.Domain;
 using EdNexusData.Broker.Domain.Specifications;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Core.Payloads;
+using EdNexusData.Broker.Common.Payloads;
 
 namespace EdNexusData.Broker.Service.Resolvers;
 
@@ -22,12 +22,12 @@ public class PayloadResolver : IPayloadResolver
         _serviceProvider = serviceProvider;
     }
     
-    public async Task<Core.PayloadSettings.IncomingPayloadSettings> FetchIncomingPayloadSettingsAsync<T>(Guid educationOrganizationId) where T : Payload
+    public async Task<Common.PayloadSettings.IncomingPayloadSettings> FetchIncomingPayloadSettingsAsync<T>(Guid educationOrganizationId) where T : Payload
     {
         return await FetchIncomingPayloadSettingsAsync(typeof(T), educationOrganizationId);
     }
 
-    public async Task<Core.PayloadSettings.IncomingPayloadSettings> FetchIncomingPayloadSettingsAsync(string payloadType, Guid educationOrganizationId)
+    public async Task<Common.PayloadSettings.IncomingPayloadSettings> FetchIncomingPayloadSettingsAsync(string payloadType, Guid educationOrganizationId)
     {
         var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetExportedTypes())
@@ -40,7 +40,7 @@ public class PayloadResolver : IPayloadResolver
         return await FetchIncomingPayloadSettingsAsync(foundPayloadType, educationOrganizationId);
     }
 
-    public async Task<Core.PayloadSettings.IncomingPayloadSettings> FetchIncomingPayloadSettingsAsync(Type t, Guid educationOrganizationId)
+    public async Task<Common.PayloadSettings.IncomingPayloadSettings> FetchIncomingPayloadSettingsAsync(Type t, Guid educationOrganizationId)
     {
         Guard.Against.Null(t);
         
@@ -50,15 +50,15 @@ public class PayloadResolver : IPayloadResolver
         Guard.Against.Null(repoConnectorSettings);
         Guard.Against.Null(repoConnectorSettings.IncomingPayloadSettings);
 
-        return repoConnectorSettings!.IncomingPayloadSettings.ToContract();
+        return repoConnectorSettings!.IncomingPayloadSettings.ToCommon();
     }
 
-    public async Task<Core.PayloadSettings.OutgoingPayloadSettings> FetchOutgoingPayloadSettingsAsync<T>(Guid educationOrganizationId) where T : Payload
+    public async Task<Common.PayloadSettings.OutgoingPayloadSettings> FetchOutgoingPayloadSettingsAsync<T>(Guid educationOrganizationId) where T : Payload
     {
         return await FetchOutgoingPayloadSettingsAsync(typeof(T), educationOrganizationId);
     }
 
-    public async Task<Core.PayloadSettings.OutgoingPayloadSettings> FetchOutgoingPayloadSettingsAsync(string payloadType, Guid educationOrganizationId)
+    public async Task<Common.PayloadSettings.OutgoingPayloadSettings> FetchOutgoingPayloadSettingsAsync(string payloadType, Guid educationOrganizationId)
     {
         var types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetExportedTypes())
@@ -71,7 +71,7 @@ public class PayloadResolver : IPayloadResolver
         return await FetchOutgoingPayloadSettingsAsync(foundPayloadType, educationOrganizationId);
     }
 
-    public async Task<Core.PayloadSettings.OutgoingPayloadSettings> FetchOutgoingPayloadSettingsAsync(Type t, Guid educationOrganizationId)
+    public async Task<Common.PayloadSettings.OutgoingPayloadSettings> FetchOutgoingPayloadSettingsAsync(Type t, Guid educationOrganizationId)
     {
         Guard.Against.Null(t);
 
@@ -81,6 +81,6 @@ public class PayloadResolver : IPayloadResolver
         Guard.Against.Null(repoConnectorSettings);
         Guard.Against.Null(repoConnectorSettings.OutgoingPayloadSettings);
 
-        return repoConnectorSettings!.OutgoingPayloadSettings.ToContract();
+        return repoConnectorSettings!.OutgoingPayloadSettings.ToCommon();
     }
 }

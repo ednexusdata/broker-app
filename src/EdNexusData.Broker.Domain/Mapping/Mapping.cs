@@ -1,5 +1,5 @@
 using System.Text.Json;
-using EdNexusData.Broker.Core.Mappings;
+using EdNexusData.Broker.Common.Mappings;
 
 namespace EdNexusData.Broker.Domain;
 

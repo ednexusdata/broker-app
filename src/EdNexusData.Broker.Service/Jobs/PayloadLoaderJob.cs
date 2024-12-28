@@ -7,8 +7,8 @@ using EdNexusData.Broker.Domain.Worker;
 using EdNexusData.Broker.Domain.Specifications;
 using EdNexusData.Broker.Service.Services;
 using System.ComponentModel;
-using EdNexusData.Broker.Core.Jobs;
-using EdNexusData.Broker.Core.PayloadContents;
+using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Common.PayloadContents;
 
 namespace EdNexusData.Broker.Service.Jobs;
 

@@ -10,7 +10,7 @@ using System.Net.Http.Json;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Domain.Worker;
 using System.ComponentModel;
-using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Common.Jobs;
 
 namespace EdNexusData.Broker.Service.Jobs;
 

@@ -9,7 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EdNexusData.Broker.Domain\EdNexusData.Broker.Domain.csproj" />
     <ProjectReference Include="..\EdNexusData.Broker.Data\EdNexusData.Broker.Data.csproj" />
-    <ProjectReference Include="..\..\..\broker-core\src\EdNexusData.Broker.Core\EdNexusData.Broker.Core.csproj" />
+    <ProjectReference Include="..\..\..\broker-common\src\EdNexusData.Broker.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

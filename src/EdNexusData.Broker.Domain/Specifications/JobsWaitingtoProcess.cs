@@ -1,5 +1,5 @@
 using Ardalis.Specification;
-using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Domain.Worker;
 
 namespace EdNexusData.Broker.Domain.Specifications;

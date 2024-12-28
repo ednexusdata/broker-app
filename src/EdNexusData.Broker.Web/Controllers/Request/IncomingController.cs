@@ -23,8 +23,8 @@ using EdNexusData.Broker.Web.Utilities;
 using System.ComponentModel.DataAnnotations;
 using EdNexusData.Broker.Service;
 using EdNexusData.Broker.Service.Jobs;
-using EdNexusData.Broker.Core.Jobs;
-using EdNexusData.Broker.Core.Payloads;
+using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Common.Payloads;
 
 namespace EdNexusData.Broker.Web.Controllers;
 

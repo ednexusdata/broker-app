@@ -1,8 +1,5 @@
 // Copyright: 2023 Education Nexus Oregon
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
-
-using System.Text.Json;
-
 namespace EdNexusData.Broker.Domain;
 
 public class EducationOrganizationPayloadSettings : BaseEntity, IAggregateRoot

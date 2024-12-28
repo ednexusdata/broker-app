@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using EdNexusData.Broker.Web.Exceptions;
 using EdNexusData.Broker.Web.Specifications;
 using static EdNexusData.Broker.Web.Constants.Sessions.SessionKey;
-using EdNexusData.Broker.Core.EducationOrganizations;
+using EdNexusData.Broker.Common.EducationOrganizations;
 
 namespace EdNexusData.Broker.Web.Helpers;
 

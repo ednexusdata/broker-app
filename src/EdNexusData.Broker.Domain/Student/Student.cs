@@ -13,9 +13,9 @@ public class Student
     public DateOnly? Birthdate { get; set; }
     public string? Gender { get; set; }
 
-    public Core.Students.Student ToContract()
+    public Common.Students.Student ToCommon()
     {
-        var student = new Core.Students.Student()
+        var student = new Common.Students.Student()
         {
             LastName = this.LastName,
             FirstName = this.FirstName,

@@ -1,6 +1,6 @@
 using EdNexusData.Broker.Domain;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Core.EducationOrganizations;
+using EdNexusData.Broker.Common.EducationOrganizations;
 
 namespace EdNexusData.Broker.Service.Resolvers;
 

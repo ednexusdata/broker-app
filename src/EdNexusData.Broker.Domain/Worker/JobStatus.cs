@@ -1,5 +1,5 @@
 // using System.ComponentModel;
-// using EdNexusData.Broker.Core.Contracts;
+// using EdNexusData.Broker.Common.Contracts;
 
 // namespace EdNexusData.Broker.Domain.Worker;
 

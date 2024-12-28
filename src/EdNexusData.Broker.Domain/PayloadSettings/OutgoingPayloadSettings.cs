@@ -8,15 +8,15 @@ public class OutgoingPayloadSettings
     public string? StudentLookupConnector { get; set; }
     public List<PayloadSettingsContentType>? PayloadContents { get; set; }
 
-    public Core.PayloadSettings.OutgoingPayloadSettings ToContract()
+    public Common.PayloadSettings.OutgoingPayloadSettings ToCommon()
     {
-        var payloadContents = new List<Core.PayloadContentActions.PayloadSettingsContentType>();
+        var payloadContents = new List<Common.PayloadContentActions.PayloadSettingsContentType>();
 
         if (PayloadContents is not null)
         {
             foreach(var payloadContent in PayloadContents)
             {
-                payloadContents.Add(new Core.PayloadContentActions.PayloadSettingsContentType() {
+                payloadContents.Add(new Common.PayloadContentActions.PayloadSettingsContentType() {
                     JobId = payloadContent.JobId,
                     PayloadContentType = payloadContent.PayloadContentType,
                     Settings = payloadContent.Settings
@@ -24,7 +24,7 @@ public class OutgoingPayloadSettings
             }
         }
         
-        return new Core.PayloadSettings.OutgoingPayloadSettings()
+        return new Common.PayloadSettings.OutgoingPayloadSettings()
         {
             StudentLookupConnector = StudentLookupConnector,
             PayloadContents = payloadContents

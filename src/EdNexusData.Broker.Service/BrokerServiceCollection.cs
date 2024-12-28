@@ -7,8 +7,8 @@ using DnsClient;
 using EdNexusData.Broker.Service.Worker;
 using EdNexusData.Broker.Service.Cache;
 using EdNexusData.Broker.Service.Services;
-using EdNexusData.Broker.Core.Configuration;
-using EdNexusData.Broker.Core.Connector;
+using EdNexusData.Broker.Common.Configuration;
+using EdNexusData.Broker.Common.Connector;
 
 namespace EdNexusData.Broker.Service;
 

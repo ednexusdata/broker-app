@@ -1,4 +1,4 @@
-using EdNexusData.Broker.Core.EducationOrganizations;
+using EdNexusData.Broker.Common.EducationOrganizations;
 using Microsoft.Extensions.Logging;
 
 namespace EdNexusData.Broker.Data.Seeds.Populated;

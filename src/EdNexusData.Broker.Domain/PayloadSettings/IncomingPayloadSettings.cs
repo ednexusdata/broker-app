@@ -7,15 +7,15 @@ public class IncomingPayloadSettings
     public string? StudentInformationSystem { get; set; }
     public List<PayloadSettingsContentType>? PayloadContents { get; set; }
 
-    public Core.PayloadSettings.IncomingPayloadSettings ToContract()
+    public Common.PayloadSettings.IncomingPayloadSettings ToCommon()
     {
-        var payloadContents = new List<Core.PayloadContentActions.PayloadSettingsContentType>();
+        var payloadContents = new List<Common.PayloadContentActions.PayloadSettingsContentType>();
 
         if (PayloadContents is not null)
         {
             foreach(var payloadContent in PayloadContents)
             {
-                payloadContents.Add(new Core.PayloadContentActions.PayloadSettingsContentType() {
+                payloadContents.Add(new Common.PayloadContentActions.PayloadSettingsContentType() {
                     JobId = payloadContent.JobId,
                     PayloadContentType = payloadContent.PayloadContentType,
                     Settings = payloadContent.Settings
@@ -23,7 +23,7 @@ public class IncomingPayloadSettings
             }
         }
         
-        return new Core.PayloadSettings.IncomingPayloadSettings()
+        return new Common.PayloadSettings.IncomingPayloadSettings()
         {
             StudentInformationSystem = StudentInformationSystem,
             PayloadContents = payloadContents
