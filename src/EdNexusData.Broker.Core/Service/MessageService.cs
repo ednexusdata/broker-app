@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Ardalis.GuardClauses;
+using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Core.Worker;
 using Microsoft.AspNetCore.Identity;
@@ -11,8 +12,7 @@ public class MessageService
     private readonly IRepository<Message> _messageRepo;
     private readonly IRepository<PayloadContent> _payloadContentRepository;
     private readonly IRepository<Request> _requestRepo;
-    private readonly IReadRepository<User> _user;
-    private readonly UserManager<IdentityUser<Guid>> _userManager;
+    private readonly EducationOrganizationContactService educationOrganizationContactService;
     private readonly JobStatusService<MessageService> _jobStatusService;
     private readonly DbContext _brokerDbContext;
 
@@ -21,16 +21,14 @@ public class MessageService
                         IRepository<Request> requestRepo,
                         JobStatusService<MessageService> jobStatusService,
                         DbContext brokerDbContext,
-                        IReadRepository<User> user,
-                        UserManager<IdentityUser<Guid>> userManager)
+                        EducationOrganizationContactService educationOrganizationContactService)
     {
         _messageRepo = messageRepo;
         _payloadContentRepository = payloadContentRepository;
         _requestRepo = requestRepo;
         _jobStatusService = jobStatusService;
         _brokerDbContext = brokerDbContext;
-        _user = user;
-        _userManager = userManager;
+        this.educationOrganizationContactService = educationOrganizationContactService;
     }
 
     public async Task<Message> Create(Job jobInstance, Request request)
@@ -112,20 +110,10 @@ public class MessageService
     }
 
     public async Task<MessageTransmission> PrepareTransmission(Message message, Guid fromUserId)
-    {
-        // Find user
-        var user = await _user.GetByIdAsync(fromUserId);
-        var userIdentity = await _userManager.FindByIdAsync(fromUserId.ToString());
-
-        Guard.Against.Null(user, "User not found.");
-    
+    {    
         return new MessageTransmission()
         {
-            Sender = new EducationOrganizationContact()
-            {
-                Name = user.Name,
-                Email = userIdentity?.Email?.ToLower()
-            },
+            Sender = await educationOrganizationContactService.FromUser(fromUserId),
             SentTimestamp = DateTimeOffset.UtcNow,
             Contents = message.MessageContents?.Contents
         };

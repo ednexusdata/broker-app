@@ -1,7 +1,6 @@
-using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Common.EducationOrganizations;
 
-namespace EdNexusData.Broker.Core.Tests.Unit;
+namespace EdNexusData.Broker.Core.Specifications.Tests.Unit;
 
 public class OrganizationByTypeSpecTests
 {

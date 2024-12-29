@@ -56,6 +56,7 @@ public static class BrokerServiceCollection
         services.AddScoped<ManifestService>();
         services.AddScoped<MappingLookupService>();
         services.AddScoped<JobService>();
+        services.AddScoped<EducationOrganizationContactService>();
         services.AddScoped(typeof(JobStatusService<>));
 
         return services;
@@ -72,6 +73,7 @@ public static class BrokerServiceCollection
         services.AddScoped<MessageService>();
         services.AddScoped<JobService>();
         services.AddScoped<JobStatusService>();
+        services.AddScoped<EducationOrganizationContactService>();
         
         // Resolvers
         services.AddScoped<IConfigurationResolver, ConfigurationResolver>();
