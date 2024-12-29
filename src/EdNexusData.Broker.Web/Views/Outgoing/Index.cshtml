@@ -177,6 +177,7 @@
                                         </span>
                                     </td>
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
+                                        <div class="flex justify-end gap-2">
                                         @if (outgoingRequest.Status == EdNexusData.Broker.Common.Jobs.RequestStatus.Received.GetDescription() ||
                                             outgoingRequest.Status == EdNexusData.Broker.Common.Jobs.RequestStatus.Loaded.GetDescription())
                                             {
@@ -191,8 +192,7 @@
                                             Edit
                                         </a>
                                             }
-                                            else
-                                            {
+                                            
                                             <a
                                                 asp-controller="Requests"
                                                 asp-action="View"
@@ -203,8 +203,7 @@
                                             >
                                                 View
                                             </a>
-                                            }
-                                        
+                                        </div>
                                     </td>
                                 </tr>
                                 even = !even;

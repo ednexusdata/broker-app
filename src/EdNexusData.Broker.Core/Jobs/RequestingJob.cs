@@ -8,7 +8,7 @@ using System.Net.Http.Json;
 using EdNexusData.Broker.Core.Worker;
 using System.ComponentModel;
 using EdNexusData.Broker.Common.Jobs;
-using Microsoft.EntityFrameworkCore;
+using EdNexusData.Broker.Core.Services;
 
 namespace EdNexusData.Broker.Core.Jobs;
 

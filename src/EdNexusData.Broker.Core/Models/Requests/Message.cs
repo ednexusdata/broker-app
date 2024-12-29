@@ -2,6 +2,7 @@
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
 using System.Text.Json;
 using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Core.Messages;
 
 namespace EdNexusData.Broker.Core;
 
@@ -17,4 +18,5 @@ public class Message : BaseEntity, IAggregateRoot
     public JsonDocument? TransmissionDetails { get; set; }
     public List<PayloadContent>? PayloadContents { get; set; }
     public RequestStatus? RequestStatus { get; set; }
+    public MessageStatus? MessageStatus { get; set; }
 }

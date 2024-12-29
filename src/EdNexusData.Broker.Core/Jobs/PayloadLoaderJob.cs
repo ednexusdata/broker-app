@@ -7,6 +7,7 @@ using EdNexusData.Broker.Core.Services;
 using System.ComponentModel;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.PayloadContents;
+using EdNexusData.Broker.Core.Interfaces;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -17,20 +18,24 @@ public class PayloadLoaderJob : IJob
     private readonly PayloadJobResolver _payloadJobResolver;
     private readonly JobStatusService<PayloadLoaderJob> _jobStatusService;
     private readonly IRepository<Request> _requestRepository;
-    private readonly IRepository<Core.PayloadContent> _payloadContentRepository;
+    private readonly IRepository<PayloadContent> _payloadContentRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
-    private readonly JobStatusService _jobStatusServiceForLoader;
+    private readonly JobStatusService<PayloadLoaderJob> _jobStatusServiceForLoader;
     private readonly JobService jobService;
+    private readonly EducationOrganizationContactService educationOrganizationContactService;
+    private readonly INowWrapper nowWrapper;
 
     public PayloadLoaderJob(
             PayloadResolver payloadResolver,
             PayloadJobResolver payloadJobResolver,
             JobStatusService<PayloadLoaderJob> jobStatusService,
             IRepository<Request> requestRepository,
-            IRepository<Core.PayloadContent> payloadContentRepository,
+            IRepository<PayloadContent> payloadContentRepository,
             FocusEducationOrganizationResolver focusEducationOrganizationResolver,
-            JobStatusService jobStatusServiceForLoader,
-            JobService jobService)
+            JobStatusService<PayloadLoaderJob> jobStatusServiceForLoader,
+            JobService jobService,
+            EducationOrganizationContactService educationOrganizationContactService,
+            INowWrapper nowWrapper)
     {
         _payloadResolver = payloadResolver;
         _payloadJobResolver = payloadJobResolver;
@@ -40,6 +45,8 @@ public class PayloadLoaderJob : IJob
         _focusEducationOrganizationResolver = focusEducationOrganizationResolver;
         _jobStatusServiceForLoader = jobStatusServiceForLoader;
         this.jobService = jobService;
+        this.educationOrganizationContactService = educationOrganizationContactService;
+        this.nowWrapper = nowWrapper;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -137,7 +144,7 @@ public class PayloadLoaderJob : IJob
                         .Where(p => p.FullName == outgoingPayloadContent.PayloadContentType).FirstOrDefault();
 
                 // Save the result
-                var payloadContent = new Core.PayloadContent()
+                var payloadContent = new PayloadContent()
                 {
                     RequestId = request.Id,
                     JsonContent = JsonSerializer.SerializeToDocument(result), // JsonDocument.Parse(result.Content),
@@ -156,7 +163,7 @@ public class PayloadLoaderJob : IJob
                 Guard.Against.Null(payloadContentResult, "payloadContentResult", "Unable to cast result to DocumentPayloadContent type.");
 
                 // Save the result
-                var payloadContent = new Core.PayloadContent()
+                var payloadContent = new PayloadContent()
                 {
                     RequestId = request.Id,
                     BlobContent = payloadContentResult.Content,
@@ -171,7 +178,7 @@ public class PayloadLoaderJob : IJob
         await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Finished updating request.");
 
         // Queue job to send update
-        var jobData = new MessageContents { RequestId = request.Id, RequestStatus = RequestStatus.Loaded, MessageText = "Updated request status to loaded." };
-        var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), request.Id, null, JsonSerializer.SerializeToDocument(jobData));
+        var jobData = new MessageContents { Sender = await educationOrganizationContactService.FromUser(jobInstance.InitiatedUserId!.Value), SenderSentTimestamp = nowWrapper.UtcNow, RequestId = request.Id, RequestStatus = RequestStatus.Loaded, MessageText = "Updated request status to loaded." };
+        var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), request.Id, jobInstance.InitiatedUserId, JsonSerializer.SerializeToDocument(jobData));
     }
 }

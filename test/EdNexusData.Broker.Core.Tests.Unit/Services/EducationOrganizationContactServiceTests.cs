@@ -56,7 +56,7 @@ public class EducationOrganizationContactServiceTests
     }
     
     [Fact, Description("Ensure properly formed EducationOrganizationContact object returned")] 
-    public async void OrganizationByTypeSpec_EducationOrganizations_DistrictsOnly()
+    public async void FromUser_CreateEdOrgContact_JohnDoeEdOrgContact()
     {
         var result = await service.FromUser(userGuid);
 

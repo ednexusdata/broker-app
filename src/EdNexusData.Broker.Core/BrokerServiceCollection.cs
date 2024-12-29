@@ -9,6 +9,7 @@ using EdNexusData.Broker.Core.Cache;
 using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Common.Configuration;
 using EdNexusData.Broker.Common.Connector;
+using EdNexusData.Broker.Core.Interfaces;
 
 namespace EdNexusData.Broker.Core;
 
@@ -59,6 +60,9 @@ public static class BrokerServiceCollection
         services.AddScoped<EducationOrganizationContactService>();
         services.AddScoped(typeof(JobStatusService<>));
 
+        // Wrappers
+        services.AddSingleton<INowWrapper, NowWrapper>();
+
         return services;
     }
 
@@ -72,7 +76,6 @@ public static class BrokerServiceCollection
         services.AddScoped<DirectoryLookupService>();
         services.AddScoped<MessageService>();
         services.AddScoped<JobService>();
-        services.AddScoped<JobStatusService>();
         services.AddScoped<EducationOrganizationContactService>();
         
         // Resolvers
@@ -95,6 +98,9 @@ public static class BrokerServiceCollection
 
         // Worker
         services.AddScoped(typeof(JobStatusService<>));
+
+        // Wrappers
+        services.AddSingleton<INowWrapper, NowWrapper>();
         
         return services;
     }

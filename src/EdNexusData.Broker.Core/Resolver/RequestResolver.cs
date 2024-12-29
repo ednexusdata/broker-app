@@ -1,42 +1,35 @@
-using Ardalis.GuardClauses;
 using EdNexusData.Broker.Common.Jobs;
-using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Worker;
-using EdNexusData.Broker.Core.Services;
-using Microsoft.Extensions.Logging;
 
 namespace EdNexusData.Broker.Core.Resolvers;
 
 public class RequestResolver
 {
-    private readonly ILogger<RequestResolver> logger;
-    private readonly JobStatusService jobStatusService;
-    private readonly IRepository<Request> requestRepository;
+    private readonly JobStatusService<RequestResolver> jobStatusService;
+    private readonly IReadRepository<Request> requestRepository;
 
     public RequestResolver(
-        ILogger<RequestResolver> logger,
-        JobStatusService jobStatusService,
-        IRepository<Request> requestRepository
-        )
+        JobStatusService<RequestResolver> jobStatusService,
+        IReadRepository<Request> requestRepository
+    )
     {
-        this.logger = logger;
         this.jobStatusService = jobStatusService;
         this.requestRepository = requestRepository;
     }
 
     public async Task<Request?> Resolve(Job jobInstance)
     {
-        Guard.Against.Null(jobInstance.ReferenceGuid, "Request Guid", "Need request ID to resolve");
+        _ = jobInstance.ReferenceGuid ?? throw new ArgumentNullException("Request ID required on reference ID for job.");
         
-        jobStatusService.JobRecord = jobInstance;
-        await jobStatusService.UpdateJobStatus(JobStatus.Running, "Resolving request {0}", jobInstance.ReferenceGuid);
+        await jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Resolving request {0}", jobInstance.ReferenceGuid);
 
-        var requestId = jobInstance.ReferenceGuid;
+        var request = await requestRepository.GetByIdAsync(jobInstance.ReferenceGuid.Value);
 
-        var request = await requestRepository.GetByIdAsync(requestId.Value);
-
-        await jobStatusService.UpdateJobStatus(JobStatus.Running, "Resolved request {0}", request);
-
+        if (request is not null)
+        {
+            await jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Resolved request {0}", request?.Id);
+        }
+        
         return request;
     }
 }

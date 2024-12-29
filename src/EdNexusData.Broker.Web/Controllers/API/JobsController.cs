@@ -22,7 +22,7 @@ public class ApiJobsController : Controller
     {
         try
         {
-            var results = await _jobStatusService.Get(jobId);
+            var results = await _jobStatusService.Get(jobId.Value);
 
             return Ok(results);
         }

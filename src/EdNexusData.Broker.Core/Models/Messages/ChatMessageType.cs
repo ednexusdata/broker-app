@@ -1,4 +1,4 @@
-namespace EdNexusData.Broker.Core.MessageTypes;
+namespace EdNexusData.Broker.Core.Messages;
 
 public class ChatMessageType
 {
