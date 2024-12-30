@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using EdNexusData.Broker.Core.Models;
 using System.Web;
 using System.Net.Http.Json;
+using System.Security.Policy;
 
 namespace EdNexusData.Broker.Core.Lookup;
 
@@ -31,11 +32,9 @@ public class DirectoryLookupService
             throw new ArgumentException("{0} is not a valid domain", searchDomain);
         }
         
-        var txtresult = await ResolveBrokerUrl(searchDomain);
+        var txtresult = await ResolveBroker(searchDomain);
+        _ = txtresult.Host ?? throw new NullReferenceException("Unable to get host from broker TXT record.");
 
-        // Get directory list
-        Guard.Against.Null(txtresult.Host, "host", "Unable to get host from broker TXT record.");
-        
         _httpClient.BaseAddress = new Uri($"https://{txtresult.Host}");
         var path = "/" + StripPathSlashes(txtresult.Path) + "/api/v1/directory/search?domain=" + HttpUtility.UrlEncode(searchDomain);
         var client = await _httpClient.GetAsync(path);
@@ -49,7 +48,23 @@ public class DirectoryLookupService
         return new District();
     }
 
-    public async Task<BrokerDnsTxtRecord> ResolveBrokerUrl(string searchDomain)
+    public async Task<BrokerUrl?> ComposeBrokerUrl(string searchDomain, string path)
+    {
+        var brokerTxtRecord = await ResolveBroker(searchDomain);
+
+        if (brokerTxtRecord is not null && brokerTxtRecord.Host is not null)
+        {
+            var brokerUrl = new BrokerUrl()
+            {
+                Host = brokerTxtRecord.Host,
+                Path = "/" + StripPathSlashes(brokerTxtRecord.Path) + path
+            };
+            return brokerUrl;
+        }
+        return null;
+    }
+
+    public async Task<BrokerDnsTxtRecord> ResolveBroker(string searchDomain)
     {
         var txtresult = new BrokerDnsTxtRecord();
         

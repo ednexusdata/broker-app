@@ -65,7 +65,7 @@ public class TransmittingJob : IJob
 
         // Determine where to send the information
         await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Transmitting, "Resolving domain {0}", messageContent.To.District.Domain);
-        var brokerAddress = await _directoryLookupService.ResolveBrokerUrl(messageContent.To.District.Domain);
+        var brokerAddress = await _directoryLookupService.ResolveBroker(messageContent.To.District.Domain);
         var url = $"https://{brokerAddress.Host}";
         var path = "/" + _directoryLookupService.StripPathSlashes(brokerAddress.Path);
 
@@ -105,7 +105,7 @@ public class TransmittingJob : IJob
         message.TransmissionDetails = JsonSerializer.SerializeToDocument(FormatTransmissionMessage(result));
 
         // mark message as sent
-        await _messageService.MarkSent(message);
+        await _messageService.MarkSent(message, result, jobInstance);
         await _jobStatusService.UpdateMessageStatus(jobInstance, message, RequestStatus.Transmitted, "Message marked as sent.");
 
         // Update request to sent

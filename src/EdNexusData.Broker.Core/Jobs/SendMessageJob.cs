@@ -1,8 +1,6 @@
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
-using Ardalis.GuardClauses;
-using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Worker;
 using EdNexusData.Broker.Core.Resolvers;
 using EdNexusData.Broker.Core.Services;
@@ -20,7 +18,7 @@ public class SendMessageJob : IJob
     private readonly HttpClient httpClient;
     private readonly JobStatusService<SendMessageJob> jobStatusService;
     private readonly BrokerResolver brokerResolver;
-    private readonly RequestResolver requestResolver;
+    private readonly RequestService requestService;
     private readonly INowWrapper nowWrapper;
 
     public SendMessageJob(
@@ -30,7 +28,7 @@ public class SendMessageJob : IJob
         IHttpClientFactory httpClientFactory,
         JobStatusService<SendMessageJob> jobStatusService,
         BrokerResolver brokerResolver,
-        RequestResolver requestResolver,
+        RequestService requestService,
         INowWrapper nowWrapper
     )
     {
@@ -40,7 +38,7 @@ public class SendMessageJob : IJob
         this.httpClient = httpClientFactory.CreateClient("default");
         this.jobStatusService = jobStatusService;
         this.brokerResolver = brokerResolver;
-        this.requestResolver = requestResolver;
+        this.requestService = requestService;
         this.nowWrapper = nowWrapper;
     }
 
@@ -50,7 +48,7 @@ public class SendMessageJob : IJob
         var messageContents = JsonSerializer.Deserialize<MessageContents>(jobInstance.JobParameters!);
 
         // Step 2: Resolve request
-        var request = await requestResolver.Resolve(jobInstance);
+        var request = await requestService.Get(jobInstance);
         _ = request ?? throw new NullReferenceException($"Request {jobInstance.ReferenceGuid} must resolve.");
 
         // Step 3: Create message
@@ -71,28 +69,6 @@ public class SendMessageJob : IJob
         var result = await httpClient.PostAsync(resolvedBroker.Item2 + "api/v1/messages", formContent);
 
         // Step 7: Clean up message
-        await messageService.MarkSent(message, await FormatTransmissionMessage(result));
+        await messageService.MarkSent(message, result, jobInstance);
     }
-
-    private async Task<TransmissionMessage> FormatTransmissionMessage(HttpResponseMessage http)
-    {
-        var requestContent = new TransmissionContent()
-        {
-            Headers = http.RequestMessage!.Headers.ToDictionary(x => x.Key, y => y.Value)
-        };
-
-        var responseContent = new TransmissionContent()
-        {
-            StatusCode = http.StatusCode,
-            Headers = http.Headers.ToDictionary(x => x.Key, y => y.Value),
-            Content = await http.Content.ReadAsStringAsync()
-        };
-
-        return new TransmissionMessage()
-        {
-            Request = requestContent,
-            Response = responseContent
-        };
-    }
-    
 }

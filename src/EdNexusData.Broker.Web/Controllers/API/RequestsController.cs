@@ -229,7 +229,8 @@ public class RequestsController : Controller
                 },
                 MessageText = string.Format("Request received with request id: {0}", request!.Id.ToString()),
                 Contents = JsonSerializer.SerializeToDocument(request!.Id.ToString()),
-                RequestStatus = RequestStatus.Received
+                RequestStatus = RequestStatus.Received,
+                RequestId = request!.Id
             };
             var returnMessage = new Message()
             {

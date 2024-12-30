@@ -57,6 +57,9 @@ public static class BrokerServiceCollection
         services.AddScoped<ManifestService>();
         services.AddScoped<MappingLookupService>();
         services.AddScoped<JobService>();
+        services.AddScoped<MessageService>();
+        services.AddScoped<RequestService>();
+        services.AddScoped<PayloadContentService>();
         services.AddScoped<EducationOrganizationContactService>();
         services.AddScoped(typeof(JobStatusService<>));
 
@@ -75,6 +78,8 @@ public static class BrokerServiceCollection
         services.AddSingleton<ILookupClient, LookupClient>();
         services.AddScoped<DirectoryLookupService>();
         services.AddScoped<MessageService>();
+        services.AddScoped<RequestService>();
+        services.AddScoped<PayloadContentService>();
         services.AddScoped<JobService>();
         services.AddScoped<EducationOrganizationContactService>();
         
@@ -87,7 +92,6 @@ public static class BrokerServiceCollection
         services.AddScoped<DistrictEducationOrganizationResolver>();
         services.AddScoped<PayloadJobResolver>();
         services.AddScoped<BrokerResolver>();
-        services.AddScoped<RequestResolver>();
         
         // Jobs
         services.AddScoped<RequestingJob>();

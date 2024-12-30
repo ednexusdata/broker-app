@@ -24,7 +24,7 @@ public class BrokerResolver
 
         _ = request.RequestManifest?.To?.District?.Domain ?? throw new NullReferenceException($"Domain is missing from requestmanifest for request {request.Id}");
 
-        var brokerAddress = await directoryLookupService.ResolveBrokerUrl(request.RequestManifest?.To?.District?.Domain!);
+        var brokerAddress = await directoryLookupService.ResolveBroker(request.RequestManifest?.To?.District?.Domain!);
         var url = $"https://{brokerAddress.Host}";
         var path = "/" + directoryLookupService.StripPathSlashes(brokerAddress.Path);
 

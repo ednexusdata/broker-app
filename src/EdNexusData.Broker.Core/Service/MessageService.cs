@@ -1,7 +1,10 @@
+using System.Net.Http.Json;
 using System.Text.Json;
+using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Core.Interfaces;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Core.Worker;
+using MimeKit;
 
 namespace EdNexusData.Broker.Core.Services;
 
@@ -20,6 +23,7 @@ public class MessageService
     private readonly IRepository<Request> _requestRepo;
     private readonly EducationOrganizationContactService educationOrganizationContactService;
     private readonly INowWrapper nowWrapper;
+    private readonly PayloadContentService payloadContentService;
     private readonly JobStatusService<MessageService> _jobStatusService;
     private readonly DbContext _brokerDbContext;
 
@@ -29,7 +33,8 @@ public class MessageService
                         JobStatusService<MessageService> jobStatusService,
                         DbContext brokerDbContext,
                         EducationOrganizationContactService educationOrganizationContactService,
-                        INowWrapper nowWrapper)
+                        INowWrapper nowWrapper,
+                        PayloadContentService payloadContentService)
     {
         _messageRepo = messageRepo;
         _payloadContentRepository = payloadContentRepository;
@@ -38,6 +43,7 @@ public class MessageService
         _brokerDbContext = brokerDbContext;
         this.educationOrganizationContactService = educationOrganizationContactService;
         this.nowWrapper = nowWrapper;
+        this.payloadContentService = payloadContentService;
     }
 
     public async Task<Message> New(Job jobInstance, Request request)
@@ -96,6 +102,23 @@ public class MessageService
         return message;
     }
 
+    public async Task<Message> CreateWithMessageContents(Request request, MessageContents messageContents)
+    {
+        var message = new Message()
+        {
+            Request = request,
+            MessageTimestamp = nowWrapper.UtcNow,
+            Sender = messageContents?.Sender,
+            SenderSentTimestamp = messageContents?.SenderSentTimestamp,
+            RequestStatus = messageContents?.RequestStatus,
+            RequestResponse = RequestResponse.Response,
+            MessageContents = messageContents
+        };
+        await _messageRepo.AddAsync(message);
+
+        return message;
+    }
+
     public async Task<Message> AppendAttachments(Message message, Request request)
     {
         _ = request ?? throw new ArgumentNullException("Parameter message missing.");
@@ -142,6 +165,17 @@ public class MessageService
         return message;
     }
 
+    public async Task<MultipartContent> PrepareMultipartContent(Message message, Request request)
+    {
+        MultipartFormDataContent multipartContent = new();
+        var jsonContent = JsonContent.Create(await PrepareTransmission(message, request.RequestProcessUserId!.Value));
+        multipartContent.Add(jsonContent, "manifest");
+        // Add on attachments
+        multipartContent = await payloadContentService.AddAttachments(multipartContent, message);
+
+        return multipartContent;
+    }
+
     public async Task<MessageTransmission> PrepareTransmission(Message message, Guid fromUserId)
     {    
         return new MessageTransmission()
@@ -152,23 +186,43 @@ public class MessageService
         };
     }
 
-    public async Task<Message> MarkSent(Message message, TransmissionMessage? transmissionMessage = null)
+    public async Task<Message> MarkSent(Message message, HttpResponseMessage httpResponseMessage, Job? job = null)
     {
-        // Get message
-        var latestMessage = await _messageRepo.GetByIdAsync(message.Id);
-        
-        latestMessage!.MessageTimestamp = nowWrapper.UtcNow;
-        latestMessage!.SenderSentTimestamp = nowWrapper.UtcNow;
+        message.MessageTimestamp = nowWrapper.UtcNow;
+        message.SenderSentTimestamp = nowWrapper.UtcNow;
 
-        if (transmissionMessage is not null)
+        if (httpResponseMessage is not null)
         {
-            latestMessage.TransmissionDetails = JsonSerializer.SerializeToDocument(transmissionMessage);
+            message.TransmissionDetails = 
+                JsonSerializer.SerializeToDocument(FormatTransmissionMessage(httpResponseMessage));
+        }
+        await _messageRepo.UpdateAsync(message);
+
+        if (job is not null)
+        {
+            await _jobStatusService.UpdateMessageStatus(job, message, RequestStatus.Requested, "Message marked as requested");
         }
 
-        await _messageRepo.UpdateAsync(latestMessage);
-
-        return latestMessage;
+        return message;
     }
     
-    
+    private TransmissionMessage FormatTransmissionMessage(HttpResponseMessage http)
+    {
+        var requestContent = new TransmissionContent()
+        {
+            Headers = http.RequestMessage!.Headers.ToDictionary(x => x.Key, y => y.Value)
+        };
+
+        var responseContent = new TransmissionContent()
+        {
+            StatusCode = http.StatusCode,
+            Headers = http.Headers.ToDictionary(x => x.Key, y => y.Value)
+        };
+
+        return new TransmissionMessage()
+        {
+            Request = requestContent,
+            Response = responseContent
+        };
+    }
 }
