@@ -33,8 +33,10 @@ public class JobStatusService<T>
         return await _jobRepo.GetByIdAsync(jobId);
     }
 
-    public async Task UpdateJobStatus(Job jobRecord, JobStatus? newJobStatus, string? message, params object?[] messagePlaceholders)
+    public async Task UpdateJobStatus(Job? jobRecord, JobStatus? newJobStatus, string? message, params object?[] messagePlaceholders)
     {
+        if (jobRecord is null) return;
+        
         if (newJobStatus is not null) { jobRecord.JobStatus = newJobStatus.Value; }
         if (message is not null && messagePlaceholders is not null && messagePlaceholders.Count() > 0)
         { 

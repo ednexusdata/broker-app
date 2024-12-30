@@ -1,8 +1,3 @@
-using Microsoft.Extensions.Logging;
-using EdNexusData.Broker.Core.Specifications;
-using DnsClient;
-using EdNexusData.Broker.Core.Lookup;
-using Ardalis.GuardClauses;
 using System.Text.Json;
 using System.Net.Http.Json;
 using EdNexusData.Broker.Core.Worker;
@@ -17,19 +12,19 @@ namespace EdNexusData.Broker.Core.Jobs;
 public class RequestingJob : IJob
 {
     private readonly JobStatusService<RequestingJob> jobStatusService;
-    private readonly DirectoryLookupService directoryLookupService;
+    private readonly BrokerResolver brokerResolver;
     private readonly MessageService messageService;
     private readonly RequestService requestService;
     private readonly HttpClient httpClient;
 
     public RequestingJob(JobStatusService<RequestingJob> jobStatusService,
-                        DirectoryLookupService directoryLookupService, 
+                        BrokerResolver brokerResolver, 
                         IHttpClientFactory httpClientFactory,
                         MessageService messageService,
                         RequestService requestService)
     {
         this.jobStatusService = jobStatusService;
-        this.directoryLookupService = directoryLookupService;
+        this.brokerResolver = brokerResolver;
         this.messageService = messageService;
         this.requestService = requestService;
         httpClient = httpClientFactory.CreateClient("default");
@@ -43,6 +38,7 @@ public class RequestingJob : IJob
         
         // Step 2: Create message using request's manifest
         var message = await messageService.Create(jobInstance, request);
+        message.MessageContents!.MessageText = $"Sent request {request.Id}";
         var messageContent = JsonSerializer.Deserialize<Manifest>(message.MessageContents?.Contents!);
         _ = messageContent ?? throw new InvalidCastException("Message contents did not deseralize to manifest succesfully.");
 
@@ -50,7 +46,7 @@ public class RequestingJob : IJob
         _ = messageContent?.To?.District?.Domain ?? throw new NullReferenceException("Domain is missing");
         await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, 
             "Resolving domain {0}", messageContent.To.District.Domain);
-        var brokerAddress = await directoryLookupService.ComposeBrokerUrl(messageContent.To.District.Domain, "api/v1/requests");
+        var brokerAddress = await brokerResolver.ComposeBrokerUrl(messageContent.To.District.Domain, "api/v1/requests");
         await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, 
             "Resolved domain with path {0}: url {1} | path {2}", messageContent.To.District.Domain, brokerAddress?.Host, brokerAddress?.Path);
 

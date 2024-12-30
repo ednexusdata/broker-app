@@ -1,10 +1,7 @@
 using System.ComponentModel;
-using System.Text;
-using System.Text.Json;
 using EdNexusData.Broker.Core.Worker;
 using EdNexusData.Broker.Core.Resolvers;
 using EdNexusData.Broker.Core.Services;
-using Microsoft.Extensions.Logging;
 using EdNexusData.Broker.Core.Interfaces;
 
 namespace EdNexusData.Broker.Core.Jobs;
@@ -12,31 +9,22 @@ namespace EdNexusData.Broker.Core.Jobs;
 [Description("Send Message")]
 public class SendMessageJob : IJob
 {
-    private readonly ILogger<SendMessageJob> logger;
-    private readonly IRepository<Message> messageRepository;
     private readonly MessageService messageService;
     private readonly HttpClient httpClient;
-    private readonly JobStatusService<SendMessageJob> jobStatusService;
     private readonly BrokerResolver brokerResolver;
     private readonly RequestService requestService;
     private readonly INowWrapper nowWrapper;
 
     public SendMessageJob(
-        ILogger<SendMessageJob> logger,
-        IRepository<Message> messageRepository,
         MessageService messageService,
         IHttpClientFactory httpClientFactory,
-        JobStatusService<SendMessageJob> jobStatusService,
         BrokerResolver brokerResolver,
         RequestService requestService,
         INowWrapper nowWrapper
     )
     {
-        this.logger = logger;
-        this.messageRepository = messageRepository;
         this.messageService = messageService;
-        this.httpClient = httpClientFactory.CreateClient("default");
-        this.jobStatusService = jobStatusService;
+        httpClient = httpClientFactory.CreateClient("default");
         this.brokerResolver = brokerResolver;
         this.requestService = requestService;
         this.nowWrapper = nowWrapper;
@@ -44,31 +32,25 @@ public class SendMessageJob : IJob
 
     public async Task ProcessAsync(Job jobInstance)
     {
-        // Step 1: Get message contents
-        var messageContents = JsonSerializer.Deserialize<MessageContents>(jobInstance.JobParameters!);
-
-        // Step 2: Resolve request
+        // Step 1: Resolve request
         var request = await requestService.Get(jobInstance);
         _ = request ?? throw new NullReferenceException($"Request {jobInstance.ReferenceGuid} must resolve.");
 
-        // Step 3: Create message
-        var message = await messageService.New(jobInstance, request);
-        message.MessageTimestamp = nowWrapper.UtcNow;
-        message.MessageContents = messageContents;
-        message.Sender = message.MessageContents?.Sender;
-        await messageRepository.AddAsync(message);
+        // Step 2: Create message
+        var message = await messageService.CreateFromJob(jobInstance, request);
 
-        // Step 4: Prepare to send
-        var formContent = new StringContent(JsonSerializer.Serialize(messageContents), Encoding.UTF8, "application/json");
+        // Step 3: Prepare to send
+        var formContent = messageService.PrepareJsonContentFromJob(jobInstance);
 
-        // Step 5: Resolve broker address
-        var resolvedBroker = await brokerResolver.Resolve(jobInstance, request);
-        httpClient.BaseAddress = resolvedBroker.Item1;
-        
-        // Step 6: Send message to broker
-        var result = await httpClient.PostAsync(resolvedBroker.Item2 + "api/v1/messages", formContent);
+        // Step 4: Resolve broker address
+        var resolvedBroker = await brokerResolver.Resolve(request, "api/v1/messages", jobInstance);
+        _ = resolvedBroker ?? throw new NullReferenceException("Unable to resolve broker for request");
 
-        // Step 7: Clean up message
+        // Step 5: Send message to broker
+        httpClient.BaseAddress = resolvedBroker.HostToUri();
+        var result = await httpClient.PostAsync(resolvedBroker.Path, formContent);
+
+        // Step 6: Clean up message
         await messageService.MarkSent(message, result, jobInstance);
     }
 }

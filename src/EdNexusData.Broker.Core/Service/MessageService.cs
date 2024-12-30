@@ -1,10 +1,10 @@
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Core.Interfaces;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Core.Worker;
-using MimeKit;
 
 namespace EdNexusData.Broker.Core.Services;
 
@@ -58,7 +58,7 @@ public class MessageService
             MessageContents = new MessageContents()
         };
         
-        await _jobStatusService.UpdateJobStatus(jobInstance, Common.Jobs.JobStatus.Running, "New message returned");
+        await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "New message returned");
 
         return message;
     }
@@ -119,6 +119,20 @@ public class MessageService
         return message;
     }
 
+    public async Task<Message> CreateFromJob(Job job, Request request)
+    {
+        var messageContents = JsonSerializer.Deserialize<MessageContents>(job.JobParameters!);
+        
+        var message = await New(job, request);
+        message.MessageContents = messageContents;
+        message.MessageTimestamp = nowWrapper.UtcNow;
+        message.Sender = message.MessageContents?.Sender;
+        message.SenderSentTimestamp = messageContents?.SenderSentTimestamp;
+        await _messageRepo.AddAsync(message);
+
+        return message;
+    }
+
     public async Task<Message> AppendAttachments(Message message, Request request)
     {
         _ = request ?? throw new ArgumentNullException("Parameter message missing.");
@@ -163,6 +177,14 @@ public class MessageService
         }
 
         return message;
+    }
+
+    public JsonContent PrepareJsonContentFromJob(Job job)
+    {
+        var messageContents = JsonSerializer.Deserialize<MessageContents>(job.JobParameters!);
+        _ = messageContents ?? throw new NullReferenceException("Job parameters unable to deseralize to MessageContents");
+
+        return JsonContent.Create(messageContents);
     }
 
     public async Task<MultipartContent> PrepareMultipartContent(Message message, Request request)

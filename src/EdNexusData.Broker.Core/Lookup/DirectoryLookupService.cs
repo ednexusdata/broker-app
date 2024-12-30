@@ -1,26 +1,19 @@
-using EdNexusData.Broker.Core;
-using Ardalis.GuardClauses;
 using DnsClient;
-using Microsoft.Extensions.Logging;
 using EdNexusData.Broker.Core.Models;
 using System.Web;
 using System.Net.Http.Json;
-using System.Security.Policy;
 
 namespace EdNexusData.Broker.Core.Lookup;
 
 public class DirectoryLookupService
 {
-    private readonly ILogger<DirectoryLookupService> _logger;
-    
     private readonly ILookupClient _lookupClient;
     private readonly HttpClient _httpClient;
 
-    public DirectoryLookupService(ILogger<DirectoryLookupService> logger, 
+    public DirectoryLookupService(
         ILookupClient lookupClient, 
         IHttpClientFactory httpClientFactory)
     {
-        _logger = logger;
         _lookupClient = lookupClient;
         _httpClient = httpClientFactory.CreateClient("default");
     }
@@ -46,22 +39,6 @@ public class DirectoryLookupService
         }
 
         return new District();
-    }
-
-    public async Task<BrokerUrl?> ComposeBrokerUrl(string searchDomain, string path)
-    {
-        var brokerTxtRecord = await ResolveBroker(searchDomain);
-
-        if (brokerTxtRecord is not null && brokerTxtRecord.Host is not null)
-        {
-            var brokerUrl = new BrokerUrl()
-            {
-                Host = brokerTxtRecord.Host,
-                Path = "/" + StripPathSlashes(brokerTxtRecord.Path) + path
-            };
-            return brokerUrl;
-        }
-        return null;
     }
 
     public async Task<BrokerDnsTxtRecord> ResolveBroker(string searchDomain)
