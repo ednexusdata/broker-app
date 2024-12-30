@@ -17,7 +17,7 @@ namespace EdNexusData.Broker.Core.Jobs;
 public class RequestingJob : IJob
 {
     private readonly JobStatusService<RequestingJob> jobStatusService;
-    private readonly DirectoryLookupService _directoryLookupService;
+    private readonly DirectoryLookupService directoryLookupService;
     private readonly MessageService messageService;
     private readonly RequestService requestService;
     private readonly HttpClient httpClient;
@@ -29,7 +29,7 @@ public class RequestingJob : IJob
                         RequestService requestService)
     {
         this.jobStatusService = jobStatusService;
-        _directoryLookupService = directoryLookupService;
+        this.directoryLookupService = directoryLookupService;
         this.messageService = messageService;
         this.requestService = requestService;
         httpClient = httpClientFactory.CreateClient("default");
@@ -50,7 +50,7 @@ public class RequestingJob : IJob
         _ = messageContent?.To?.District?.Domain ?? throw new NullReferenceException("Domain is missing");
         await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, 
             "Resolving domain {0}", messageContent.To.District.Domain);
-        var brokerAddress = await _directoryLookupService.ComposeBrokerUrl(messageContent.To.District.Domain, "api/v1/requests");
+        var brokerAddress = await directoryLookupService.ComposeBrokerUrl(messageContent.To.District.Domain, "api/v1/requests");
         await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, 
             "Resolved domain with path {0}: url {1} | path {2}", messageContent.To.District.Domain, brokerAddress?.Host, brokerAddress?.Path);
 
