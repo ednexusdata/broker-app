@@ -40,7 +40,8 @@ public class SendMessageJob : IJob
         var message = await messageService.CreateFromJob(jobInstance, request);
 
         // Step 3: Prepare to send
-        var formContent = messageService.PrepareJsonContentFromJob(jobInstance);
+        _ = message.MessageContents ?? throw new NullReferenceException($"Message contents missing from message.");
+        var formContent = messageService.PrepareJsonContent(message.MessageContents);
 
         // Step 4: Resolve broker address
         var resolvedBroker = await brokerResolver.Resolve(request, "api/v1/messages", jobInstance);

@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Core.Interfaces;
@@ -128,6 +127,27 @@ public class MessageService
         message.MessageTimestamp = nowWrapper.UtcNow;
         message.Sender = message.MessageContents?.Sender;
         message.SenderSentTimestamp = messageContents?.SenderSentTimestamp;
+        message.MessageContents!.RequestId = request.RequestManifest?.RequestId;
+        await _messageRepo.AddAsync(message);
+
+        return message;
+    }
+
+    public async Task<Message> CreateFromAPIRequest(string request)
+    {
+        var messageTransmission = JsonSerializer.Deserialize<MessageContents>(request, Defaults.JsonSerializerDefaults.PropertyNameCaseInsensitive);
+
+        var message = new Message()
+        {
+            RequestId = messageTransmission!.RequestId!.Value,
+            RequestResponse = RequestResponse.Response,
+            MessageTimestamp = nowWrapper.UtcNow,
+            Sender = messageTransmission.Sender,
+            SenderSentTimestamp = messageTransmission.SenderSentTimestamp,
+            MessageContents = messageTransmission,
+            RequestStatus = messageTransmission.RequestStatus,
+            MessageStatus = Messages.MessageStatus.Received
+        };
         await _messageRepo.AddAsync(message);
 
         return message;
@@ -179,11 +199,16 @@ public class MessageService
         return message;
     }
 
-    public JsonContent PrepareJsonContentFromJob(Job job)
+    public JsonContent PrepareJsonContent(Job job)
     {
         var messageContents = JsonSerializer.Deserialize<MessageContents>(job.JobParameters!);
         _ = messageContents ?? throw new NullReferenceException("Job parameters unable to deseralize to MessageContents");
 
+        return JsonContent.Create(messageContents);
+    }
+
+    public JsonContent PrepareJsonContent(MessageContents messageContents)
+    {
         return JsonContent.Create(messageContents);
     }
 
@@ -212,6 +237,7 @@ public class MessageService
     {
         message.MessageTimestamp = nowWrapper.UtcNow;
         message.SenderSentTimestamp = nowWrapper.UtcNow;
+        message.MessageStatus = Messages.MessageStatus.Sent;
 
         if (httpResponseMessage is not null)
         {
@@ -222,7 +248,7 @@ public class MessageService
 
         if (job is not null)
         {
-            await _jobStatusService.UpdateMessageStatus(job, message, RequestStatus.Requested, "Message marked as requested");
+            await _jobStatusService.UpdateMessageStatus(job, message, null, "Message marked as sent");
         }
 
         return message;

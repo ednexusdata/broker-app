@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using EdNexusData.Broker.Core.Interfaces;
+using EdNexusData.Broker.Core.Services;
 
 namespace EdNexusData.Broker.Controllers.Api;
 
@@ -13,12 +14,12 @@ namespace EdNexusData.Broker.Controllers.Api;
 public class MessagesController : Controller
 {
     private readonly INowWrapper nowWrapper;
-    private readonly IRepository<Message> messageRepository;
+    private readonly MessageService messageService;
 
-    public MessagesController(INowWrapper nowWrapper, IRepository<Message> messageRepository)
+    public MessagesController(INowWrapper nowWrapper, MessageService messageService)
     {
         this.nowWrapper = nowWrapper;
-        this.messageRepository = messageRepository;
+        this.messageService = messageService;
     }
     
     [HttpGet]
@@ -35,26 +36,8 @@ public class MessagesController : Controller
             using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
             {
                 string rawValue = await reader.ReadToEndAsync();
-
-                var messageTransmission = JsonSerializer.Deserialize<MessageContents>(rawValue, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true 
-                });
-
-                var message = new Message()
-                {
-                    RequestId = messageTransmission!.RequestId!.Value,
-                    RequestResponse = RequestResponse.Response,
-                    MessageTimestamp = nowWrapper.UtcNow,
-                    Sender = messageTransmission.Sender,
-                    SenderSentTimestamp = messageTransmission.SenderSentTimestamp,
-                    MessageContents = messageTransmission,
-                    RequestStatus = messageTransmission.RequestStatus,
-                    MessageStatus = Core.Messages.MessageStatus.Received
-                };
-                await messageRepository.AddAsync(message);
-
-                return Created("messages", messageTransmission.RequestId);
+                var message = await messageService.CreateFromAPIRequest(rawValue);
+                return Created("messages", message.RequestId);
             }
         }
         catch(Exception ex)
