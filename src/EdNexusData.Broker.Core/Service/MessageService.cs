@@ -252,7 +252,6 @@ public class MessageService
 
     public async Task<Message> MarkSent(Message message, HttpResponseMessage httpResponseMessage, RequestStatus? requestStatus, Job? job = null)
     {
-        message.MessageTimestamp = nowWrapper.UtcNow;
         message.SenderSentTimestamp = nowWrapper.UtcNow;
         message.MessageStatus = Messages.MessageStatus.Sent;
 
