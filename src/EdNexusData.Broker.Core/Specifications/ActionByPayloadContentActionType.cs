@@ -5,7 +5,7 @@ namespace EdNexusData.Broker.Core.Specifications;
 
 public class ActionByPayloadContentActionType : Specification<PayloadContentAction>, ISingleResultSpecification
 {
-  public ActionByPayloadContentActionType(Guid payloadContentId, string actionType)
+  public ActionByPayloadContentActionType(Guid payloadContentId, string? actionType)
   {
     Query
         .Where(x => x.PayloadContentId == payloadContentId 

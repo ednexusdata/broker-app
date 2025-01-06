@@ -1,7 +1,11 @@
 using System.ComponentModel;
+using System.Text.Json;
 using Ardalis.Specification;
 using EdNexusData.Broker.Common.Connector;
 using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Core.Interfaces;
+using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.ViewModels.Preparing;
@@ -21,6 +25,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly JobService _jobService;
     private readonly CurrentUserHelper currentUserHelper;
+    private readonly EducationOrganizationContactService educationOrganizationContactService;
+    private readonly INowWrapper nowWrapper;
     private readonly ConnectorLoader _connectorLoader;
 
     public PreparingController(
@@ -30,7 +36,9 @@ public class PreparingController : AuthenticatedController<RequestsController>
         IRepository<Mapping> mappingRepository,
         ConnectorLoader connectorLoader,
         JobService jobService,
-        CurrentUserHelper currentUserHelper)
+        CurrentUserHelper currentUserHelper,
+        EducationOrganizationContactService educationOrganizationContactService,
+        INowWrapper nowWrapper)
     {
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -40,6 +48,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
         _actionRepository = actionRepository;
         _jobService = jobService;
         this.currentUserHelper = currentUserHelper;
+        this.educationOrganizationContactService = educationOrganizationContactService;
+        this.nowWrapper = nowWrapper;
     }
 
     [Route("/Preparing/{id:guid}")]
@@ -141,11 +151,13 @@ public class PreparingController : AuthenticatedController<RequestsController>
     {
         if (PayloadContent.Items is not null && PayloadContent.Items.Any())
         {
+            PayloadContent? payloadContent = null;
+            
             foreach(var item in PayloadContent.Items)
             {
                 if (item.PayloadContentId is null) break;
                 
-                var payloadContent = await _payloadContentRepository.GetByIdAsync(item.PayloadContentId.Value);
+                payloadContent = await _payloadContentRepository.GetByIdAsync(item.PayloadContentId.Value);
 
                 if (payloadContent is null) break;
                 if (item.Action is null) break;
@@ -170,8 +182,20 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     action.Process = (item.Action == "Ignore") ? false : true;
                     await _actionRepository.UpdateAsync(action);
                 }
+            }
 
+            if (payloadContent is not null)
+            {
                 TempData[VoiceTone.Positive] = $"Updated payload actions.";
+                // Queue job to send update
+                var jobData = new MessageContents { 
+                    Sender = await educationOrganizationContactService.FromUser(currentUserHelper.CurrentUserId()!.Value), 
+                    SenderSentTimestamp = nowWrapper.UtcNow, 
+                    RequestId = payloadContent.RequestId, 
+                    RequestStatus = RequestStatus.InProgress, 
+                    MessageText = "Updated request status to in progress."
+                };
+                var job = await _jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), payloadContent.RequestId, currentUserHelper.CurrentUserId()!.Value, JsonSerializer.SerializeToDocument(jobData));
             }
         }
         
