@@ -52,6 +52,6 @@ public class SendMessageJob : IJob
         var result = await httpClient.PostAsync(resolvedBroker.Path, formContent);
 
         // Step 6: Clean up message
-        await messageService.MarkSent(message, result, jobInstance);
+        await messageService.MarkSent(message, result, null, jobInstance);
     }
 }

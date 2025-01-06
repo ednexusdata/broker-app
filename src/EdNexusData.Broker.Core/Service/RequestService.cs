@@ -2,6 +2,7 @@ using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Core.Interfaces;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Core.Worker;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace EdNexusData.Broker.Core.Services;
 
@@ -49,5 +50,59 @@ public class RequestService
         }
 
         return dbRequest;
+    }
+
+    public async Task<Request?> Get(Guid requestId)
+    {
+        return await requestRepository.GetByIdAsync(requestId);
+    }
+
+    public async Task<Request?> UpdateStatus(Request request, RequestStatus requestStatus)
+    {
+        var latestRequest = await requestRepository.GetByIdAsync(request.Id);
+        _ = latestRequest ?? throw new NullReferenceException("Unable to find request");
+
+        latestRequest.RequestStatus = requestStatus;
+        await requestRepository.UpdateAsync(latestRequest);
+
+        return latestRequest;
+    }
+
+    public async Task<Request> Create(
+        Guid educationOrganizationId, 
+        Manifest manifest, 
+        RequestStatus requestStatus, 
+        IncomingOutgoing incomingOutgoing)
+    {
+        var request = new Request()
+        {
+            EducationOrganizationId = educationOrganizationId,
+            RequestStatus = requestStatus,
+            IncomingOutgoing = incomingOutgoing,
+            Payload = manifest.RequestType
+        };
+
+        if (incomingOutgoing == IncomingOutgoing.Incoming)
+        {
+            request.ResponseManifest = manifest;
+        } else if (incomingOutgoing == IncomingOutgoing.Outgoing)
+        {
+            request.RequestManifest = manifest;
+        }
+
+        await requestRepository.AddAsync(request);
+
+        return request;
+    }
+
+    public async Task<Request> UpdateResponseManifest(Guid requestId, Manifest manifest)
+    {
+        var request = await requestRepository.GetByIdAsync(requestId);
+        _ = request ?? throw new NullReferenceException($"Unable to find request Id {requestId}");
+        
+        request.ResponseManifest = manifest;
+        await requestRepository.UpdateAsync(request);
+        
+        return request;
     }
 }

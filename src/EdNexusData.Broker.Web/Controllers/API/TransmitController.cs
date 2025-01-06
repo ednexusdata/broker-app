@@ -8,12 +8,12 @@ namespace EdNexusData.Broker.Controllers.Api;
 
 [AllowAnonymous]
 [ApiController]
-[Route("api/v1/requests")]
-public class RequestsController : Controller
+[Route("api/v1/transmit")]
+public class TransmitController : Controller
 {
     private readonly ReceiveMessageService receiveMessageService;
 
-    public RequestsController(
+    public TransmitController(
         ReceiveMessageService receiveMessageService
     )
     {
@@ -29,12 +29,11 @@ public class RequestsController : Controller
     [HttpPost]
     public async Task<IActionResult> Index([FromForm] string manifest, [FromForm] IList<IFormFile> files)
     {
-        // Process attachments
         var filesToProcess = await FileHelpers.ToFiles(files, ModelState);
         
         try
         {
-            var returnMessageContent = await receiveMessageService.ReceiveRequest(manifest, filesToProcess, HttpContext.Response);
+            var returnMessageContent = await receiveMessageService.ReceiveTransmit(manifest, filesToProcess, HttpContext.Response);
             return Created("requests", returnMessageContent);
         }
         catch(Exception ex)

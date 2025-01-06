@@ -56,21 +56,28 @@ public class RequestingJob : IJob
         // Step 5: Send Request and get result
         httpClient.BaseAddress = brokerAddress?.HostToUri();
         var result = await httpClient.PostAsync(brokerAddress?.Path, multipartContent);
-        var content = await result.Content.ReadFromJsonAsync<MessageContents>(Defaults.JsonSerializerDefaults.PropertyNameCaseInsensitive);
-        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, 
-            "Sent request result: {0} / {1}", result.StatusCode, content?.Contents.ToJsonString());
-        multipartContent.Dispose();
-
-        // Step 6: Update message as sent with http transmission info
-        await messageService.MarkSent(message, result, jobInstance);
-
-        // Step 7: Create message with response
-        if (content is not null)
+        if (result.IsSuccessStatusCode)
         {
-            await messageService.CreateWithMessageContents(request, content);
-        }
+            var content = await result.Content.ReadFromJsonAsync<MessageContents>(Defaults.JsonSerializerDefaults.PropertyNameCaseInsensitive);
+            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, 
+                "Sent request result: {0} / {1}", result.StatusCode, content?.Contents.ToJsonString());
+            multipartContent.Dispose();
 
-        // Step 8: Update request to sent
-        await requestService.MarkRequested(request, jobInstance);
+            // Step 6: Update message as sent with http transmission info
+            await messageService.MarkSent(message, result, RequestStatus.Requested, jobInstance);
+
+            // Step 7: Create message with response
+            if (content is not null)
+            {
+                await messageService.CreateWithMessageContents(request, content, RequestResponse.Response);
+            }
+
+            // Step 8: Update request to sent
+            await requestService.MarkRequested(request, jobInstance);
+        }
+        else
+        {
+            throw new Exception(await result.Content.ReadAsStringAsync());
+        }
     }
 }

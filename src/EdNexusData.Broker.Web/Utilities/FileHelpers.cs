@@ -201,6 +201,28 @@ public static class FileHelpers
         return Array.Empty<byte>();
     }
 
+    public async static Task<List<Core.Models.File>> ToFiles(IList<IFormFile> files, ModelStateDictionary modelState)
+    {
+        var filesToProcess = new List<Core.Models.File>();
+        if (files is not null && files.Count > 0)
+        {
+            foreach(var file in files)
+            {
+                if (file.Length > 0)
+                {
+                    var fileBlob = await ProcessFormFile<BufferedSingleFileUploadDb>(file, modelState, [".png", ".txt", ".pdf", ".json"], 2097152);
+
+                    filesToProcess.Add(new Core.Models.File()
+                    {
+                        Name = file.FileName,
+                        Contents = fileBlob
+                    });
+                }
+            }
+        }
+        return filesToProcess;
+    }
+
     private static bool IsValidFileExtensionAndSignature(string fileName, Stream data, string[] permittedExtensions)
     {
         if (string.IsNullOrEmpty(fileName) || data == null || data.Length == 0)
@@ -275,4 +297,15 @@ public static class FileHelpers
                 headerBytes.Take(signature.Length).SequenceEqual(signature));
         }
     }
+}
+
+public class BufferedSingleFileUploadDb
+{
+    [Required]
+    [Display(Name="File")]
+    public IFormFile? FormFile { get; set; }
+
+    [Display(Name="Note")]
+    [StringLength(50, MinimumLength = 0)]
+    public string? Note { get; set; }
 }

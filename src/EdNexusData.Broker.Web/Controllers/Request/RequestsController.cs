@@ -44,14 +44,16 @@ public class RequestsController : AuthenticatedController<RequestsController>
         {
             // var messageType = message.MessageContents?.RootElement.GetProperty("MessageType").GetString();
             // var deseralizedMessageContent = JsonConvert.DeserializeObject(message.MessageContents.ToJsonString()!, Type.GetType(messageType!)!);
-            
             if (message.RequestStatus is not null && !statusGrid.ContainsKey(message.RequestStatus.Value))
             {
-                statusGrid[message.RequestStatus.Value] = new StatusGridViewModel()
+                if (message.SenderSentTimestamp is not null)
                 {
-                    Timestamp = TimeZoneInfo.ConvertTimeFromUtc(message.SenderSentTimestamp!.Value.DateTime, currentUserHelper.ResolvedCurrentUserTimeZone()).ToString("M/dd/yyyy h:mm tt"),
-                    Userstamp = message.Sender?.Name
-                };
+                    statusGrid[message.RequestStatus.Value] = new StatusGridViewModel()
+                    {
+                        Timestamp = TimeZoneInfo.ConvertTimeFromUtc(message.SenderSentTimestamp!.Value.DateTime, currentUserHelper.ResolvedCurrentUserTimeZone()).ToString("M/dd/yyyy h:mm tt"),
+                        Userstamp = message.Sender?.Name
+                    };
+                }
             }
         }
 

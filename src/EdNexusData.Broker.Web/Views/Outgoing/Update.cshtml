@@ -29,7 +29,8 @@
   {
     <div>@Model.RequestStatus.GetDescription()</div>
   }
-  @if (Model.RequestStatus == EdNexusData.Broker.Common.Jobs.RequestStatus.Received || Model.RequestStatus == EdNexusData.Broker.Common.Jobs.RequestStatus.Loaded)
+  @if ((Model.RequestStatus == EdNexusData.Broker.Common.Jobs.RequestStatus.Received || Model.RequestStatus == EdNexusData.Broker.Common.Jobs.RequestStatus.Loaded)
+   && Model.StudentUniqueId is not null)
   {
     <div>
     <form method="post" asp-action="Load" asp-route-id="@Model.RequestId" autocomplete="off">

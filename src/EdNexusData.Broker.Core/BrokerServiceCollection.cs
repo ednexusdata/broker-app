@@ -61,6 +61,7 @@ public static class BrokerServiceCollection
         services.AddScoped<RequestService>();
         services.AddScoped<PayloadContentService>();
         services.AddScoped<EducationOrganizationContactService>();
+        services.AddScoped<ReceiveMessageService>();
         services.AddScoped(typeof(JobStatusService<>));
 
         // Wrappers

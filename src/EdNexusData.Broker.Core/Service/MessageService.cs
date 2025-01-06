@@ -101,17 +101,21 @@ public class MessageService
         return message;
     }
 
-    public async Task<Message> CreateWithMessageContents(Request request, MessageContents messageContents)
+    public async Task<Message> CreateWithMessageContents(Request request, MessageContents messageContents, RequestResponse requestResponse, Microsoft.AspNetCore.Http.HttpResponse? httpResponseMessage = null)
     {
         var message = new Message()
         {
-            Request = request,
+            RequestId = request.Id,
             MessageTimestamp = nowWrapper.UtcNow,
             Sender = messageContents?.Sender,
             SenderSentTimestamp = messageContents?.SenderSentTimestamp,
             RequestStatus = messageContents?.RequestStatus,
-            RequestResponse = RequestResponse.Response,
-            MessageContents = messageContents
+            RequestResponse = requestResponse,
+            MessageContents = messageContents,
+            TransmissionDetails = 
+                (httpResponseMessage is not null) 
+                ? JsonSerializer.SerializeToDocument(FormatTransmissionMessage(httpResponseMessage)) 
+                : null,
         };
         await _messageRepo.AddAsync(message);
 
@@ -215,7 +219,18 @@ public class MessageService
     public async Task<MultipartContent> PrepareMultipartContent(Message message, Request request)
     {
         MultipartFormDataContent multipartContent = new();
-        var jsonContent = JsonContent.Create(await PrepareTransmission(message, request.RequestProcessUserId!.Value));
+        Guid? processUser = null;
+        switch (request.IncomingOutgoing)
+        {
+            case IncomingOutgoing.Incoming:
+                processUser = request.RequestProcessUserId!.Value;
+            break;
+            case IncomingOutgoing.Outgoing:
+                processUser = request.ResponseProcessUserId!.Value;
+            break;
+        }
+        _ = processUser ?? throw new NullReferenceException("Request or response process user missing");
+        var jsonContent = JsonContent.Create(await PrepareTransmission(message, processUser.Value));
         multipartContent.Add(jsonContent, "manifest");
         // Add on attachments
         multipartContent = await payloadContentService.AddAttachments(multipartContent, message);
@@ -223,17 +238,19 @@ public class MessageService
         return multipartContent;
     }
 
-    public async Task<MessageTransmission> PrepareTransmission(Message message, Guid fromUserId)
+    public async Task<MessageContents> PrepareTransmission(Message message, Guid fromUserId)
     {    
-        return new MessageTransmission()
+        return new MessageContents()
         {
             Sender = await educationOrganizationContactService.FromUser(fromUserId),
-            SentTimestamp = DateTimeOffset.UtcNow,
-            Contents = message.MessageContents?.Contents
+            SenderSentTimestamp = DateTimeOffset.UtcNow,
+            Contents = message.MessageContents?.Contents,
+            MessageText = $"Request sent with request id: {message.RequestId}",
+            RequestStatus = message.RequestStatus
         };
     }
 
-    public async Task<Message> MarkSent(Message message, HttpResponseMessage httpResponseMessage, Job? job = null)
+    public async Task<Message> MarkSent(Message message, HttpResponseMessage httpResponseMessage, RequestStatus? requestStatus, Job? job = null)
     {
         message.MessageTimestamp = nowWrapper.UtcNow;
         message.SenderSentTimestamp = nowWrapper.UtcNow;
@@ -248,17 +265,37 @@ public class MessageService
 
         if (job is not null)
         {
-            await _jobStatusService.UpdateMessageStatus(job, message, null, "Message marked as sent");
+            await _jobStatusService.UpdateMessageStatus(job, message, requestStatus, "Message marked as sent");
         }
 
         return message;
     }
-    
+
     private TransmissionMessage FormatTransmissionMessage(HttpResponseMessage http)
     {
         var requestContent = new TransmissionContent()
         {
-            Headers = http.RequestMessage!.Headers.ToDictionary(x => x.Key, y => y.Value)
+            StringHeaders = http.Headers.ToDictionary(x => x.Key, y => y.Value)
+        };
+
+        var responseContent = new TransmissionContent()
+        {
+            HttpStatusCode = http.StatusCode,
+            StringHeaders = http.Headers.ToDictionary(x => x.Key, y => y.Value)
+        };
+
+        return new TransmissionMessage()
+        {
+            Request = requestContent,
+            Response = responseContent
+        };
+    }
+    
+    private TransmissionMessage FormatTransmissionMessage(Microsoft.AspNetCore.Http.HttpResponse http)
+    {
+        var requestContent = new TransmissionContent()
+        {
+            Headers = http.Headers.ToDictionary(x => x.Key, y => y.Value)
         };
 
         var responseContent = new TransmissionContent()
