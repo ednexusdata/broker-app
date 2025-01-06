@@ -54,7 +54,8 @@ public class MessageService
             RequestId = request.Id,
             RequestResponse = RequestResponse.Request,
             RequestStatus = request.RequestStatus,
-            MessageContents = new MessageContents()
+            MessageContents = new MessageContents(),
+            MessageTimestamp = nowWrapper.UtcNow
         };
         
         await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "New message returned");
