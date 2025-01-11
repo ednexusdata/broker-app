@@ -1,0 +1,60 @@
+@model EdNexusData.Broker.Web.ViewModels.Requests.RequestViewModel;
+@inject EdNexusData.Broker.Web.Helpers.TimezoneHelper TimezoneHelper;
+@using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+@using EdNexusData.Broker.Core.Extensions;
+
+@if (Model.Request?.Messages != null && Model.Request.Messages.Count > 0)
+{
+    @foreach (var message in Model.Request.Messages)
+    {
+        @if (message.RequestResponse == EdNexusData.Broker.Core.RequestResponse.Response)
+        {
+            <div class="mt-4">
+            <div class="flex flex-col w-full max-w-[60%] leading-1.5 p-4 border-gray-200 bg-gray-300 rounded-b-2xl rounded-tr-2xl">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-semibold text-gray-900">@message.Sender?.Name</span>
+                    <span class="text-sm font-normal text-gray-500">@TimezoneHelper.DisplayTimeFromUtc(message.SenderSentTimestamp)</span>
+                </div>
+                @message.MessageContents?.MessageText
+                <span class="flex text-sm font-normal text-gray-500 gap-2">
+                    @message.RequestStatus?.GetDescription()
+                    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="self-center" width="3" height="4" viewBox="0 0 3 4" fill="none">
+                        <circle cx="1.5" cy="2" r="1.5" fill="#6B7280"/>
+                    </svg>
+                    <a asp-action="ViewMessage" asp-route-id="@message.Id" target="_blank">Contents</a>
+                    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="self-center" width="3" height="4" viewBox="0 0 3 4" fill="none">
+                        <circle cx="1.5" cy="2" r="1.5" fill="#6B7280"/>
+                    </svg>
+                    <a asp-action="ViewTransmission" asp-route-id="@message.Id" target="_blank">Transmission</a></span>
+            </div>
+            </div>
+        }
+        else
+        {
+            <div class="mt-4">
+            <div class="flex flex-row w-full">
+                <div class="w-full h-full max-w-[40%]">&nbsp;</div>
+                <div class="w-full leading-1.5 p-4 border-tertiary-200 bg-tertiary-500 rounded-b-2xl rounded-tl-2xl mt-2">
+                    <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                        <span class="text-sm font-semibold text-black dark:text-white">@message.Sender?.Name</span>
+                        <span class="text-sm font-normal dark:text-white">@TimezoneHelper.DisplayTimeFromUtc(message.SenderSentTimestamp)</span>
+                    </div>
+                    <div>
+                        @message.MessageContents?.MessageText
+                    </div>
+                    <span class="flex text-sm font-normal dark:text-white gap-2">
+                        @message.RequestStatus?.GetDescription()
+                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="self-center" width="3" height="4" viewBox="0 0 3 4" fill="none">
+                            <circle cx="1.5" cy="2" r="1.5" fill="#6B7280"/>
+                        </svg>
+                        <a asp-action="ViewMessage" asp-route-id="@message.Id" target="_blank">Contents</a>
+                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="self-center" width="3" height="4" viewBox="0 0 3 4" fill="none">
+                            <circle cx="1.5" cy="2" r="1.5" fill="#6B7280"/>
+                        </svg>
+                        <a asp-action="ViewTransmission" asp-route-id="@message.Id" target="_blank">Transmission</a></span>
+                </div>
+            </div>
+            </div>
+        }
+    }
+}

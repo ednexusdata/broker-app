@@ -69,7 +69,56 @@ public class RequestsController : AuthenticatedController<RequestsController>
                 Request = request, 
                 ReleasingPayloadContents = releasingPayloadContents, 
                 RequestingPayloadContents = requestingPayloadContents,
-                StatusGrid = statusGrid
+                StatusGrid = statusGrid,
+                DisplayMessagesType = RequestViewModel.DisplayMessageType.ChatMessages
+            }
+        );
+    }
+
+    public async Task<IActionResult> ViewWithTransmissions(Guid id, Guid? jobId)
+    {
+        var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdWithMessagesPayloadContents(id));
+        Guard.Against.Null(request);
+
+        var messages = await _messageRepository.ListAsync(new MessagesForRequest(request.Id));
+
+        if (request.RequestStatus.NotIn(RequestStatus.Requested, RequestStatus.Transmitted, RequestStatus.Received))
+        {
+            ViewBag.JobId = jobId;
+        }
+
+        var statusGrid = new Dictionary<RequestStatus, StatusGridViewModel>();
+        foreach(var message in messages)
+        {
+            // var messageType = message.MessageContents?.RootElement.GetProperty("MessageType").GetString();
+            // var deseralizedMessageContent = JsonConvert.DeserializeObject(message.MessageContents.ToJsonString()!, Type.GetType(messageType!)!);
+            if (message.RequestStatus is not null && !statusGrid.ContainsKey(message.RequestStatus.Value))
+            {
+                if (message.SenderSentTimestamp is not null)
+                {
+                    statusGrid[message.RequestStatus.Value] = new StatusGridViewModel()
+                    {
+                        Timestamp = TimeZoneInfo.ConvertTimeFromUtc(message.SenderSentTimestamp!.Value.DateTime, currentUserHelper.ResolvedCurrentUserTimeZone()).ToString("M/dd/yyyy h:mm tt"),
+                        Userstamp = message.Sender?.Name
+                    };
+                }
+            }
+        }
+
+        var payloadContents = request.PayloadContents;
+        var releasingFileNames = request.ResponseManifest?.Contents?.Select(x => x.FileName).ToList();
+        var releasingPayloadContents = (releasingFileNames?.Count > 0) ? request.PayloadContents?.Where(y => releasingFileNames!.Contains(y.FileName!)).ToList() : null;
+        
+        var requestingFileNames = request.ResponseManifest?.Contents?.Select(x => x.FileName).ToList();
+        var requestingPayloadContents = (requestingFileNames?.Count > 0) ? request.PayloadContents?.Where(y => requestingFileNames!.Contains(y.FileName!)).ToList() : null;
+
+        return View("View", 
+            new RequestViewModel() { 
+                Request = request, 
+                ReleasingPayloadContents = releasingPayloadContents, 
+                RequestingPayloadContents = requestingPayloadContents,
+                StatusGrid = statusGrid,
+                DisplayMessagesType = RequestViewModel.DisplayMessageType.TransmissionMessages
             }
         );
     }

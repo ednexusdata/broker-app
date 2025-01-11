@@ -1,0 +1,44 @@
+@model EdNexusData.Broker.Web.ViewModels.Requests.RequestViewModel;
+@inject EdNexusData.Broker.Web.Helpers.TimezoneHelper TimezoneHelper;
+@using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+@using EdNexusData.Broker.Core.Extensions;
+
+<table class="min-w-full divide-y divide-gray-300">
+    <tr>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Timestamp</th>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Name</th>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Request/Response</th>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Request Status</th>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Message</th>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">&nbsp;</th>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">&nbsp;</th>
+    </tr>
+    @if (Model.Request?.Messages != null && Model.Request.Messages.Count > 0)
+    @foreach(var message in Model.Request.Messages)
+    {
+        @if (message.RequestResponse == EdNexusData.Broker.Core.RequestResponse.Response)
+        {
+        <tr class="even:bg-gray-50">
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@TimezoneHelper.DisplayTimeFromUtc(message.SenderSentTimestamp)</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.Sender?.Name</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestResponse</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestStatus?.GetDescription()</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.MessageContents?.MessageText</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><a asp-action="ViewMessage" asp-route-id="@message.Id" target="_blank">Contents</a></td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><a asp-action="ViewTransmission" asp-route-id="@message.Id" target="_blank">Transmission</a></td>
+        </tr>
+        }
+        else
+        {
+        <tr class="even:bg-gray-50">
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@TimezoneHelper.DisplayTimeFromUtc(message.SenderSentTimestamp)</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.Sender?.Name</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestResponse</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestStatus?.GetDescription()</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.MessageContents?.MessageText</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><a asp-action="ViewMessage" asp-route-id="@message.Id" target="_blank">Contents</a></td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><a asp-action="ViewTransmission" asp-route-id="@message.Id" target="_blank">Transmission</a></td>
+        </tr>
+        }
+    }
+</table>

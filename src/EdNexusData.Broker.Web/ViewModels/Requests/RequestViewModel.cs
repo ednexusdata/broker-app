@@ -8,4 +8,11 @@ public class RequestViewModel
     public List<PayloadContent>? RequestingPayloadContents { get; set; }
     public List<PayloadContent>? ReleasingPayloadContents { get; set; }
     public Dictionary<RequestStatus, StatusGridViewModel> StatusGrid { get; set; } = new();
+    public DisplayMessageType DisplayMessagesType { get; set; } = DisplayMessageType.TransmissionMessages;
+
+    public enum DisplayMessageType
+    {
+        ChatMessages,
+        TransmissionMessages
+    }
 }
