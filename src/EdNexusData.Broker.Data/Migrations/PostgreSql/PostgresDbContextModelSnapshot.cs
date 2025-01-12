@@ -226,6 +226,9 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Property<DateTimeOffset?>("MessageTimestamp")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("MessageType")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
 
@@ -235,10 +238,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Property<int?>("RequestStatus")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Sender")
-                        .HasColumnType("jsonb");
-
-                    b.Property<DateTimeOffset?>("SenderSentTimestamp")
+                    b.Property<DateTimeOffset?>("SentTimestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TransmissionDetails")

@@ -12,8 +12,8 @@
             <div class="mt-4">
             <div class="flex flex-col w-full max-w-[60%] leading-1.5 p-4 border-gray-200 bg-gray-300 rounded-b-2xl rounded-tr-2xl">
                 <div class="flex items-center space-x-2">
-                    <span class="text-sm font-semibold text-gray-900">@message.Sender?.Name</span>
-                    <span class="text-sm font-normal text-gray-500">@TimezoneHelper.DisplayTimeFromUtc(message.SenderSentTimestamp)</span>
+                    <span class="text-sm font-semibold text-gray-900">@message.MessageContents?.Sender?.Name</span>
+                    <span class="text-sm font-normal text-gray-500">@TimezoneHelper.DisplayTimeFromUtc(message.SentTimestamp)</span>
                 </div>
                 @message.MessageContents?.MessageText
                 <span class="flex text-sm font-normal text-gray-500 gap-2">
@@ -36,8 +36,8 @@
                 <div class="w-full h-full max-w-[40%]">&nbsp;</div>
                 <div class="w-full leading-1.5 p-4 border-tertiary-200 bg-tertiary-500 rounded-b-2xl rounded-tl-2xl mt-2">
                     <div class="flex items-center space-x-2 rtl:space-x-reverse">
-                        <span class="text-sm font-semibold text-black dark:text-white">@message.Sender?.Name</span>
-                        <span class="text-sm font-normal dark:text-white">@TimezoneHelper.DisplayTimeFromUtc(message.SenderSentTimestamp)</span>
+                        <span class="text-sm font-semibold text-black dark:text-white">@message.MessageContents?.Sender?.Name</span>
+                        <span class="text-sm font-normal dark:text-white">@TimezoneHelper.DisplayTimeFromUtc(message.SentTimestamp)</span>
                     </div>
                     <div>
                         @message.MessageContents?.MessageText

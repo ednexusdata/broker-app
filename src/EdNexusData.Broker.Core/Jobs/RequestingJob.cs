@@ -39,6 +39,7 @@ public class RequestingJob : IJob
         // Step 2: Create message using request's manifest
         var message = await messageService.Create(jobInstance, request);
         message.MessageContents!.MessageText = $"Sent request {request.Id}";
+        message.MessageContents!.Sender = request.RequestManifest?.From?.Sender;
         var messageContent = JsonSerializer.Deserialize<Manifest>(message.MessageContents?.Contents!);
         _ = messageContent ?? throw new InvalidCastException("Message contents did not deseralize to manifest succesfully.");
 

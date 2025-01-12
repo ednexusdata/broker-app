@@ -90,9 +90,6 @@ public class MessageService
             message.MessageContents!.Contents = JsonDocument.Parse(JsonSerializer.Serialize(request.ResponseManifest));
         }
 
-        // Set sender
-        message.Sender = request.RequestManifest?.From?.Sender;
-
         await _messageRepo.UpdateAsync(message);
     
         transaction.Commit();
@@ -108,14 +105,13 @@ public class MessageService
         {
             RequestId = request.Id,
             MessageTimestamp = nowWrapper.UtcNow,
-            Sender = messageContents?.Sender,
-            SenderSentTimestamp = messageContents?.SenderSentTimestamp,
+            SentTimestamp = messageContents?.SenderSentTimestamp,
             RequestStatus = messageContents?.RequestStatus,
             RequestResponse = requestResponse,
             MessageContents = messageContents,
             TransmissionDetails = 
                 (httpResponseMessage is not null) 
-                ? JsonSerializer.SerializeToDocument(FormatTransmissionMessage(httpResponseMessage)) 
+                ? FormatTransmissionMessage(httpResponseMessage)
                 : null,
         };
         await _messageRepo.AddAsync(message);
@@ -130,8 +126,7 @@ public class MessageService
         var message = await New(job, request);
         message.MessageContents = messageContents;
         message.MessageTimestamp = nowWrapper.UtcNow;
-        message.Sender = message.MessageContents?.Sender;
-        message.SenderSentTimestamp = messageContents?.SenderSentTimestamp;
+        message.SentTimestamp = messageContents?.SenderSentTimestamp;
         message.MessageContents!.RequestId = request.RequestManifest?.RequestId;
         await _messageRepo.AddAsync(message);
 
@@ -147,8 +142,7 @@ public class MessageService
             RequestId = messageTransmission!.RequestId!.Value,
             RequestResponse = RequestResponse.Response,
             MessageTimestamp = nowWrapper.UtcNow,
-            Sender = messageTransmission.Sender,
-            SenderSentTimestamp = messageTransmission.SenderSentTimestamp,
+            SentTimestamp = messageTransmission.SenderSentTimestamp,
             MessageContents = messageTransmission,
             RequestStatus = messageTransmission.RequestStatus,
             MessageStatus = Messages.MessageStatus.Received
@@ -253,13 +247,12 @@ public class MessageService
 
     public async Task<Message> MarkSent(Message message, HttpResponseMessage httpResponseMessage, RequestStatus? requestStatus, Job? job = null)
     {
-        message.SenderSentTimestamp = nowWrapper.UtcNow;
+        message.SentTimestamp = nowWrapper.UtcNow;
         message.MessageStatus = Messages.MessageStatus.Sent;
 
         if (httpResponseMessage is not null)
         {
-            message.TransmissionDetails = 
-                JsonSerializer.SerializeToDocument(FormatTransmissionMessage(httpResponseMessage));
+            message.TransmissionDetails = FormatTransmissionMessage(httpResponseMessage);
         }
         await _messageRepo.UpdateAsync(message);
 

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 {
     [DbContext(typeof(PostgresDbContext))]
-    [Migration("20241229041021_AddMessageStatus")]
-    partial class AddMessageStatus
+    [Migration("20250112170235_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -229,6 +229,9 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Property<DateTimeOffset?>("MessageTimestamp")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("MessageType")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
 
@@ -238,10 +241,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Property<int?>("RequestStatus")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Sender")
-                        .HasColumnType("jsonb");
-
-                    b.Property<DateTimeOffset?>("SenderSentTimestamp")
+                    b.Property<DateTimeOffset?>("SentTimestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TransmissionDetails")

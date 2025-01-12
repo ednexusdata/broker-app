@@ -46,12 +46,12 @@ public class RequestsController : AuthenticatedController<RequestsController>
             // var deseralizedMessageContent = JsonConvert.DeserializeObject(message.MessageContents.ToJsonString()!, Type.GetType(messageType!)!);
             if (message.RequestStatus is not null && !statusGrid.ContainsKey(message.RequestStatus.Value))
             {
-                if (message.SenderSentTimestamp is not null)
+                if (message.SentTimestamp is not null)
                 {
                     statusGrid[message.RequestStatus.Value] = new StatusGridViewModel()
                     {
-                        Timestamp = TimeZoneInfo.ConvertTimeFromUtc(message.SenderSentTimestamp!.Value.DateTime, currentUserHelper.ResolvedCurrentUserTimeZone()).ToString("M/dd/yyyy h:mm tt"),
-                        Userstamp = message.Sender?.Name
+                        Timestamp = TimeZoneInfo.ConvertTimeFromUtc(message.SentTimestamp!.Value.DateTime, currentUserHelper.ResolvedCurrentUserTimeZone()).ToString("M/dd/yyyy h:mm tt"),
+                        Userstamp = message.MessageContents?.Sender?.Name
                     };
                 }
             }
@@ -94,12 +94,12 @@ public class RequestsController : AuthenticatedController<RequestsController>
             // var deseralizedMessageContent = JsonConvert.DeserializeObject(message.MessageContents.ToJsonString()!, Type.GetType(messageType!)!);
             if (message.RequestStatus is not null && !statusGrid.ContainsKey(message.RequestStatus.Value))
             {
-                if (message.SenderSentTimestamp is not null)
+                if (message.SentTimestamp is not null)
                 {
                     statusGrid[message.RequestStatus.Value] = new StatusGridViewModel()
                     {
-                        Timestamp = TimeZoneInfo.ConvertTimeFromUtc(message.SenderSentTimestamp!.Value.DateTime, currentUserHelper.ResolvedCurrentUserTimeZone()).ToString("M/dd/yyyy h:mm tt"),
-                        Userstamp = message.Sender?.Name
+                        Timestamp = TimeZoneInfo.ConvertTimeFromUtc(message.SentTimestamp!.Value.DateTime, currentUserHelper.ResolvedCurrentUserTimeZone()).ToString("M/dd/yyyy h:mm tt"),
+                        Userstamp = message.MessageContents?.Sender?.Name
                     };
                 }
             }
@@ -142,7 +142,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
 
         Guard.Against.Null(message);
 
-        return Ok(message.TransmissionDetails?.ToJsonString());
+        return Ok(message.TransmissionDetails?.ToJsonDocument().ToJsonString());
     }
 
     [HttpGet]

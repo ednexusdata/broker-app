@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 {
     /// <inheritdoc />
-    public partial class InitialSchema : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -395,12 +395,13 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     MessageId = table.Column<Guid>(type: "uuid", nullable: false),
                     RequestId = table.Column<Guid>(type: "uuid", nullable: false),
                     RequestResponse = table.Column<int>(type: "integer", nullable: false),
+                    MessageType = table.Column<string>(type: "text", nullable: true),
                     MessageTimestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    Sender = table.Column<string>(type: "jsonb", nullable: true),
-                    SenderSentTimestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    SentTimestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     MessageContents = table.Column<string>(type: "jsonb", nullable: true),
                     TransmissionDetails = table.Column<string>(type: "jsonb", nullable: true),
                     RequestStatus = table.Column<int>(type: "integer", nullable: true),
+                    MessageStatus = table.Column<int>(type: "integer", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),

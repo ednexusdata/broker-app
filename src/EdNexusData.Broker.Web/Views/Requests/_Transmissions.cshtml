@@ -19,8 +19,8 @@
         @if (message.RequestResponse == EdNexusData.Broker.Core.RequestResponse.Response)
         {
         <tr class="even:bg-gray-50">
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@TimezoneHelper.DisplayTimeFromUtc(message.SenderSentTimestamp)</td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.Sender?.Name</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@TimezoneHelper.DisplayTimeFromUtc(message.SentTimestamp)</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.MessageContents?.Sender?.Name</td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestResponse</td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestStatus?.GetDescription()</td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.MessageContents?.MessageText</td>
@@ -31,8 +31,8 @@
         else
         {
         <tr class="even:bg-gray-50">
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@TimezoneHelper.DisplayTimeFromUtc(message.SenderSentTimestamp)</td>
-            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.Sender?.Name</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@TimezoneHelper.DisplayTimeFromUtc(message.SentTimestamp)</td>
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.MessageContents?.Sender?.Name</td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestResponse</td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.RequestStatus?.GetDescription()</td>
             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">@message.MessageContents?.MessageText</td>
