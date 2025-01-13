@@ -64,8 +64,14 @@ public class SendMessageJob : IJob
         // Step 5: Send message to broker
         httpClient.BaseAddress = resolvedBroker.HostToUri();
         var result = await httpClient.PostAsync(resolvedBroker.Path, formContent);
-
-        // Step 6: Clean up message
-        await messageService.MarkSent(message, result, null, jobInstance);
+        if (result.IsSuccessStatusCode)
+        {
+            // Step 6: Clean up message
+            await messageService.MarkSent(message, result, null, jobInstance);
+        }
+        else
+        {
+            throw new Exception(await result.Content.ReadAsStringAsync());
+        }
     }
 }

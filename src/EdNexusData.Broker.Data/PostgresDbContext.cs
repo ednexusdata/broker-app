@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace EdNexusData.Broker.Data;
 
@@ -14,6 +15,7 @@ public class PostgresDbContext : BrokerDbContext
     {
         options.UseNpgsql(Configuration.GetConnectionString("PostgreSqlConnection"));
         options.EnableSensitiveDataLogging();
+        //options.UseLoggerFactory(LoggerFactory.Create(builder => { builder.AddConsole(); }));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -5,7 +5,6 @@ using EdNexusData.Broker.Core.Interfaces;
 using EdNexusData.Broker.Core.Messages;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Core.Worker;
-using Org.BouncyCastle.Tls;
 
 namespace EdNexusData.Broker.Core.Services;
 
@@ -150,16 +149,31 @@ public class MessageService
     public async Task<Message> CreateFromAPIRequest(string request)
     {
         var messageTransmission = JsonSerializer.Deserialize<MessageContents>(request, Defaults.JsonSerializerDefaults.PropertyNameCaseInsensitive);
+        _ = messageTransmission ?? throw new NullReferenceException("Missing message");
+        _ = messageTransmission.EducationOrganizationId ?? throw new NullReferenceException("Missing sending education organization Id");
+
+        // Verify if request exists
+        var requestId = messageTransmission.RequestId;
+        if (requestId is not null)
+        {
+            var existingRequest = await _requestRepo.FirstOrDefaultAsync(new RequestByIdNotEdOrg(requestId.Value, messageTransmission.EducationOrganizationId.Value));
+            if (existingRequest is null)
+            {
+                var inManifest = await _requestRepo.FirstOrDefaultAsync(new RequestByIdInManifest(requestId.Value, messageTransmission.EducationOrganizationId.Value));
+                requestId = inManifest?.Id;
+            }
+        }
 
         var message = new Message()
         {
-            RequestId = messageTransmission!.RequestId!.Value,
+            RequestId = requestId!.Value,
             RequestResponse = RequestResponse.Response,
             MessageTimestamp = nowWrapper.UtcNow,
             SentTimestamp = messageTransmission.SenderSentTimestamp,
             MessageContents = messageTransmission,
             RequestStatus = messageTransmission.RequestStatus,
-            MessageStatus = Messages.MessageStatus.Received
+            MessageStatus = MessageStatus.Received,
+            MessageType = messageTransmission!.MessageType
         };
         await _messageRepo.AddAsync(message);
 
@@ -254,6 +268,7 @@ public class MessageService
             Sender = await educationOrganizationContactService.FromUser(fromUserId),
             SenderSentTimestamp = nowWrapper.UtcNow,
             Contents = message.MessageContents?.Contents,
+            EducationOrganizationId = message.Request?.EducationOrganizationId,
             MessageText = $"Request sent with request id: {message.RequestId}",
             RequestStatus = message.RequestStatus
         };
@@ -271,11 +286,14 @@ public class MessageService
             RequestStatus = request.RequestStatus,
             MessageType = typeof(ChatMessage).FullName,
             MessageContents = new MessageContents() {
+                RequestId = request.RequestManifest?.RequestId,
                 MessageText = messageText,
                 Sender = await educationOrganizationContactService.FromUser(fromUserId),
                 SenderSentTimestamp = nowWrapper.UtcNow,
                 RequestStatus = request.RequestStatus,
-                Contents = null
+                EducationOrganizationId = request.EducationOrganizationId,
+                Contents = null,
+                MessageType = typeof(ChatMessage).FullName
             },
             MessageTimestamp = nowWrapper.UtcNow
         };
