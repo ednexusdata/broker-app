@@ -37,7 +37,7 @@ public class RequestingJob : IJob
         _ = request ?? throw new NullReferenceException($"Unable to find request id {jobInstance.ReferenceGuid}.");
         
         // Step 2: Create message using request's manifest
-        var message = await messageService.Create(jobInstance, request);
+        var message = await messageService.Create(jobInstance, request, typeof(Manifest));
         message.MessageContents!.MessageText = $"Sent request {request.Id}";
         message.MessageContents!.Sender = request.RequestManifest?.From?.Sender;
         var messageContent = JsonSerializer.Deserialize<Manifest>(message.MessageContents?.Contents!);

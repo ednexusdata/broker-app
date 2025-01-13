@@ -13,7 +13,13 @@ public class JobService
         _jobRepository = jobRepository;
     }
 
-    public async Task<Job> CreateJobAsync(Type jobType, Type? referenceType = null, Guid? referenceGuid = null, Guid? initiatedUser = null, JsonDocument? jobParameters = null)
+    public async Task<Job> CreateJobAsync(
+        Type jobType, 
+        Type? referenceType = null, 
+        Guid? referenceGuid = null, 
+        Guid? initiatedUser = null, 
+        JsonDocument? jobParameters = null
+    )
     {
         if (jobType.GetInterface(nameof(IJob)) == null)
         {

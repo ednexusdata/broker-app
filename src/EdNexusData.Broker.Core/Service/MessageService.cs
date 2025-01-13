@@ -2,8 +2,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Core.Interfaces;
+using EdNexusData.Broker.Core.Messages;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Core.Worker;
+using Org.BouncyCastle.Tls;
 
 namespace EdNexusData.Broker.Core.Services;
 
@@ -45,7 +47,12 @@ public class MessageService
         this.payloadContentService = payloadContentService;
     }
 
-    public async Task<Message> New(Job jobInstance, Request request)
+    public async Task<Message?> Get(Guid id)
+    {
+        return await _messageRepo.GetByIdAsync(id);
+    }
+
+    public async Task<Message> New(Job jobInstance, Request request, Type messageType)
     {
         _ = request ?? throw new ArgumentNullException("Parameter request missing.");
 
@@ -54,6 +61,7 @@ public class MessageService
             RequestId = request.Id,
             RequestResponse = RequestResponse.Request,
             RequestStatus = request.RequestStatus,
+            MessageType = messageType.FullName,
             MessageContents = new MessageContents(),
             MessageTimestamp = nowWrapper.UtcNow
         };
@@ -63,7 +71,7 @@ public class MessageService
         return message;
     }
     
-    public async Task<Message> Create(Job jobInstance, Request request)
+    public async Task<Message> Create(Job jobInstance, Request request, Type messageType)
     {
         _ = jobInstance ?? throw new ArgumentNullException("Parameter job missing.");
         _ = request ?? throw new ArgumentNullException("Parameter request missing.");
@@ -72,7 +80,7 @@ public class MessageService
 
         var transaction = _brokerDbContext.Database.BeginTransaction();
 
-        var message = await New(jobInstance, request);
+        var message = await New(jobInstance, request, messageType);
 
         await _messageRepo.AddAsync(message);
 
@@ -99,7 +107,12 @@ public class MessageService
         return message;
     }
 
-    public async Task<Message> CreateWithMessageContents(Request request, MessageContents messageContents, RequestResponse requestResponse, Microsoft.AspNetCore.Http.HttpResponse? httpResponseMessage = null)
+    public async Task<Message> CreateWithMessageContents(
+        Request request, 
+        MessageContents messageContents, 
+        RequestResponse requestResponse, 
+        Microsoft.AspNetCore.Http.HttpResponse? httpResponseMessage = null
+    )
     {
         var message = new Message()
         {
@@ -109,6 +122,7 @@ public class MessageService
             RequestStatus = messageContents?.RequestStatus,
             RequestResponse = requestResponse,
             MessageContents = messageContents,
+            MessageType = typeof(Manifest).FullName,
             TransmissionDetails = 
                 (httpResponseMessage is not null) 
                 ? FormatTransmissionMessage(httpResponseMessage)
@@ -119,11 +133,11 @@ public class MessageService
         return message;
     }
 
-    public async Task<Message> CreateFromJob(Job job, Request request)
+    public async Task<Message> CreateFromJob(Job job, Request request, Type messageType)
     {
         var messageContents = JsonSerializer.Deserialize<MessageContents>(job.JobParameters!);
         
-        var message = await New(job, request);
+        var message = await New(job, request, messageType);
         message.MessageContents = messageContents;
         message.MessageTimestamp = nowWrapper.UtcNow;
         message.SentTimestamp = messageContents?.SenderSentTimestamp;
@@ -238,17 +252,43 @@ public class MessageService
         return new MessageContents()
         {
             Sender = await educationOrganizationContactService.FromUser(fromUserId),
-            SenderSentTimestamp = DateTimeOffset.UtcNow,
+            SenderSentTimestamp = nowWrapper.UtcNow,
             Contents = message.MessageContents?.Contents,
             MessageText = $"Request sent with request id: {message.RequestId}",
             RequestStatus = message.RequestStatus
         };
     }
 
+    public async Task<Message> CreateChatMessage(Guid id, string messageText, Guid fromUserId)
+    {
+        var request = await _requestRepo.GetByIdAsync(id);
+        _ = request ?? throw new NullReferenceException($"Unable to find request {id}");
+        
+        var message = new Message()
+        {
+            RequestId = request.Id,
+            RequestResponse = RequestResponse.Request,
+            RequestStatus = request.RequestStatus,
+            MessageType = typeof(ChatMessage).FullName,
+            MessageContents = new MessageContents() {
+                MessageText = messageText,
+                Sender = await educationOrganizationContactService.FromUser(fromUserId),
+                SenderSentTimestamp = nowWrapper.UtcNow,
+                RequestStatus = request.RequestStatus,
+                Contents = null
+            },
+            MessageTimestamp = nowWrapper.UtcNow
+        };
+
+        await _messageRepo.AddAsync(message);
+
+        return message;
+    }
+
     public async Task<Message> MarkSent(Message message, HttpResponseMessage httpResponseMessage, RequestStatus? requestStatus, Job? job = null)
     {
         message.SentTimestamp = nowWrapper.UtcNow;
-        message.MessageStatus = Messages.MessageStatus.Sent;
+        message.MessageStatus = MessageStatus.Sent;
 
         if (httpResponseMessage is not null)
         {

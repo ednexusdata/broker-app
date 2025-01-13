@@ -3,6 +3,7 @@ using EdNexusData.Broker.Core.Worker;
 using EdNexusData.Broker.Core.Resolvers;
 using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Core.Interfaces;
+using EdNexusData.Broker.Core.Messages;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -32,14 +33,27 @@ public class SendMessageJob : IJob
 
     public async Task ProcessAsync(Job jobInstance)
     {
-        // Step 1: Resolve request
-        var request = await requestService.Get(jobInstance);
-        _ = request ?? throw new NullReferenceException($"Request {jobInstance.ReferenceGuid} must resolve.");
+        Request? request = null;
+        Message? message = null;
+        if (jobInstance.ReferenceType == typeof(Request).FullName)
+        {
+            // Step 1: Resolve request
+            request = await requestService.Get(jobInstance);
+            _ = request ?? throw new NullReferenceException($"Request {jobInstance.ReferenceGuid} must resolve.");
 
-        // Step 2: Create message
-        var message = await messageService.CreateFromJob(jobInstance, request);
-
+            // Step 2: Create message
+            message = await messageService.CreateFromJob(jobInstance, request, typeof(StatusUpdateMessage));
+        }
+        else if (jobInstance.ReferenceType == typeof(Message).FullName)
+        {
+            _ = jobInstance.ReferenceGuid ?? throw new ArgumentNullException("Missing message reference guid");
+            message = await messageService.Get(jobInstance.ReferenceGuid!.Value) ?? throw new NullReferenceException($"Unable to find message {jobInstance.ReferenceGuid}");
+            request = await requestService.Get(message.RequestId);
+        }
+        
         // Step 3: Prepare to send
+        _ = request ?? throw new NullReferenceException($"Request must resolve.");
+        _ = message ?? throw new InvalidOperationException($"No message to process");
         _ = message.MessageContents ?? throw new NullReferenceException($"Message contents missing from message.");
         var formContent = messageService.PrepareJsonContent(message.MessageContents);
 

@@ -1485,6 +1485,10 @@ select {
   border-radius: 0.25rem;
 }
 
+.rounded-3xl {
+  border-radius: 1.5rem;
+}
+
 .rounded-full {
   border-radius: 9999px;
 }
@@ -2091,6 +2095,10 @@ select {
 
 .normal-case {
   text-transform: none;
+}
+
+.leading-4 {
+  line-height: 1rem;
 }
 
 .leading-5 {
