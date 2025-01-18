@@ -8,6 +8,7 @@ using System.ComponentModel;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.PayloadContents;
 using EdNexusData.Broker.Core.Interfaces;
+using EdNexusData.Broker.Core.Messages;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -178,7 +179,15 @@ public class PayloadLoaderJob : IJob
         await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Finished updating request.");
 
         // Queue job to send update
-        var jobData = new MessageContents { Sender = await educationOrganizationContactService.FromUser(jobInstance.InitiatedUserId!.Value), SenderSentTimestamp = nowWrapper.UtcNow, RequestId = request.Id, RequestStatus = RequestStatus.Loaded, MessageText = "Updated request status to loaded." };
-        var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), request.Id, jobInstance.InitiatedUserId, JsonSerializer.SerializeToDocument(jobData));
+        var jobData = new MessageContents { 
+            Sender = await educationOrganizationContactService.FromUser(jobInstance.InitiatedUserId!.Value), 
+            SenderSentTimestamp = nowWrapper.UtcNow, 
+            RequestId = request.Id, 
+            RequestStatus = RequestStatus.Loaded, 
+            MessageText = "Updated request status to loaded.",
+            EducationOrganizationId = request?.EducationOrganizationId,
+            MessageType = typeof(StatusUpdateMessage).FullName
+        };
+        var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), request?.Id, jobInstance.InitiatedUserId, JsonSerializer.SerializeToDocument(jobData));
     }
 }

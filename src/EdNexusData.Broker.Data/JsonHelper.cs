@@ -12,10 +12,10 @@ public static class JsonHelper
     {
         var options = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNamingPolicy = null,
             WriteIndented = false,
             AllowTrailingCommas = true,
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = false
         };
 
         ValueConverter<T, string> converter = new ValueConverter<T, string>

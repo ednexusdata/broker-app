@@ -164,6 +164,8 @@ public class MessageService
             }
         }
 
+        _ = requestId ?? throw new NullReferenceException("Unable to resolve current request ID to send");
+
         var message = new Message()
         {
             RequestId = requestId!.Value,
