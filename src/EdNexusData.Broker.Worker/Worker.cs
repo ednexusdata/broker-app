@@ -34,7 +34,7 @@ public class Worker : BackgroundService
                 if (jobRecord is not null)
                 {
                     jobRecord.WorkerState = "Begin Job Run";
-                    jobRecord.WorkerInstance = Environment.MachineName;
+                    jobRecord.WorkerInstance = System.Environment.MachineName;
                     jobRecord.JobStatus = JobStatus.Running;
                     jobRecord.StartDateTime = DateTime.UtcNow;
 

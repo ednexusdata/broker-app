@@ -2,19 +2,23 @@ using DnsClient;
 using EdNexusData.Broker.Core.Models;
 using System.Web;
 using System.Net.Http.Json;
+using Ardalis.Result;
 
 namespace EdNexusData.Broker.Core.Lookup;
 
 public class DirectoryLookupService
 {
     private readonly ILookupClient _lookupClient;
+    private readonly Environment environment;
     private readonly HttpClient _httpClient;
 
     public DirectoryLookupService(
         ILookupClient lookupClient, 
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        Environment environment)
     {
         _lookupClient = lookupClient;
+        this.environment = environment;
         _httpClient = httpClientFactory.CreateClient("default");
     }
 
@@ -29,15 +33,22 @@ public class DirectoryLookupService
         _ = txtresult.Host ?? throw new NullReferenceException("Unable to get host from broker TXT record.");
 
         _httpClient.BaseAddress = new Uri($"https://{txtresult.Host}");
-        var path = "/" + StripPathSlashes(txtresult.Path) + "/api/v1/directory/search?domain=" + HttpUtility.UrlEncode(searchDomain);
+        var path = StripPathSlashes(txtresult.Path) + "/api/v1/directory/search?domain=" + HttpUtility.UrlEncode(searchDomain);
         var client = await _httpClient.GetAsync(path);
 
-        var result = await client.Content.ReadFromJsonAsync<District>();
-        if (result is not null)
+        if (client.IsSuccessStatusCode)
         {
-            return result;
+            var result = await client.Content.ReadFromJsonAsync<District>();
+            if (result is not null)
+            {
+                return result;
+            }
         }
-
+        else
+        {
+            throw new ArgumentException(await client.Content.ReadAsStringAsync());
+        }
+        
         return new District();
     }
 
@@ -45,17 +56,26 @@ public class DirectoryLookupService
     {
         var txtresult = new BrokerDnsTxtRecord();
         
-        var dnsresult = await _lookupClient.QueryAsync(searchDomain, QueryType.TXT);
-
-        var txtRecords = dnsresult.Answers.TxtRecords();
-        
-        if (txtRecords.Count() > 0)
+        if (environment.IsNonProductionEnvironment())
         {
-            var brokerTXTRecord = txtRecords.Where(x => x.Text.First().Contains("v=edubroker"))?.FirstOrDefault();
+            var host = environment.Addresses.FirstOrDefault(x => x.Scheme == "https")?.Host;
+            txtresult.Host = (host == "[::]") ? "localhost" : host;
+            txtresult.Version = "edubroker1";
+        }
+        else
+        {
+            var dnsresult = await _lookupClient.QueryAsync(searchDomain, QueryType.TXT);
 
-            if (brokerTXTRecord is not null)
+            var txtRecords = dnsresult.Answers.TxtRecords();
+            
+            if (txtRecords.Count() > 0)
             {
-                txtresult = ParseBrokerTXTRecord(brokerTXTRecord.Text.First());
+                var brokerTXTRecord = txtRecords.Where(x => x.Text.First().Contains("v=edubroker"))?.FirstOrDefault();
+
+                if (brokerTXTRecord is not null)
+                {
+                    txtresult = ParseBrokerTXTRecord(brokerTXTRecord.Text.First());
+                }
             }
         }
 
@@ -106,6 +126,6 @@ public class DirectoryLookupService
             text = text.Substring(input.Length -1, -1);
         }
 
-        return text;
+        return "/" + text;
     }
 }

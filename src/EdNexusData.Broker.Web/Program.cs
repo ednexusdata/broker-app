@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using EdNexusData.Broker.Web;
 using EdNexusData.Broker.Web.Services;
 using System.Reflection;
-using EdNexusData.Broker.Core;
 using Microsoft.AspNetCore.Authentication;
 using EdNexusData.Broker.Web.Extensions.Routes;
 using EdNexusData.Broker.Web.Services.PayloadContents;
@@ -20,12 +19,13 @@ using EdNexusData.Broker.Web.Exceptions;
 using Microsoft.AspNetCore.DataProtection;
 using EdNexusData.Broker.Core.Worker;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Autofac
 //builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
-
 builder.Services.AddDistributedMemoryCache();
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
@@ -58,9 +58,11 @@ builder.Services.AddScoped(typeof(IMediator), typeof(Mediator));
 
 builder.Services.AddSingleton(typeof(JobStatusStore));
 
+builder.Services.AddSingleton(typeof(EdNexusData.Broker.Core.Environment), typeof(WebEnvironment));
+
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-foreach (var assembly in Assembly.GetExecutingAssembly().GetExportedTypes().Where(t => String.Equals(t.Namespace, "EdNexusData.Broker.Web.Helpers", StringComparison.Ordinal)).ToArray())
+foreach (var assembly in Assembly.GetExecutingAssembly().GetExportedTypes().Where(t => string.Equals(t.Namespace, "EdNexusData.Broker.Web.Helpers", StringComparison.Ordinal)).ToArray())
 {
     builder.Services.AddScoped(assembly, assembly);
 }
@@ -249,4 +251,18 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.Run();
+app.Start();
+
+var server = app.Services.GetService<IServer>();
+var addressFeature = server?.Features.Get<IServerAddressesFeature>();
+if (addressFeature is not null)
+{
+    var environ = app.Services.GetService<EdNexusData.Broker.Core.Environment>();
+    foreach (var address in addressFeature.Addresses)
+    {
+        environ!.AddAddress(address);
+    }
+}
+
+app.WaitForShutdown();
+//app.Run();

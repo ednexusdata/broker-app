@@ -14,6 +14,7 @@ builder.ConfigureServices((hostContext, services) =>
     var serviceProvider = services.BuildServiceProvider();
     var logger = serviceProvider.GetService<ILogger<ApplicationLogger>>();
     services.AddSingleton(typeof(ILogger), logger!);
+    services.AddSingleton(typeof(EdNexusData.Broker.Core.Environment), typeof(WorkerEnvironment));
     
     switch (hostContext.Configuration["DatabaseProvider"])
     {

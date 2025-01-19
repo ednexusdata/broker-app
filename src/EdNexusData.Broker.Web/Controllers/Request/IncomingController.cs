@@ -25,6 +25,8 @@ using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.Payloads;
+using EdNexusData.Broker.Core.Lookup;
+using System.Net;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -40,6 +42,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
     private readonly ManifestService _manifestService;
     private readonly JobService _jobService;
     private readonly CurrentUserHelper currentUserHelper;
+    private readonly DirectoryLookupService directoryLookupService;
 
     public IncomingController(
         IReadRepository<EducationOrganization> educationOrganizationRepository,
@@ -50,7 +53,8 @@ public class IncomingController : AuthenticatedController<IncomingController>
         ICurrentUser currentUser,
         ManifestService manifestService,
         JobService jobService,
-        CurrentUserHelper currentUserHelper)
+        CurrentUserHelper currentUserHelper,
+        DirectoryLookupService directoryLookupService)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -61,6 +65,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
         _manifestService = manifestService;
         _jobService = jobService;
         this.currentUserHelper = currentUserHelper;
+        this.directoryLookupService = directoryLookupService;
     }
 
     public async Task<IActionResult> Index(
@@ -248,7 +253,8 @@ public class IncomingController : AuthenticatedController<IncomingController>
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Update(CreateIncomingRequestViewModel viewModel)
+    [Route("/incoming-requests/edit/{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, CreateIncomingRequestViewModel viewModel)
     {
         var district = JsonSerializer.Deserialize<District>(Request.Form["ToDistrict"]!, new JsonSerializerOptions(JsonSerializerDefaults.Web));
         if (district is not null)
@@ -371,6 +377,27 @@ public class IncomingController : AuthenticatedController<IncomingController>
         }
 
         return RedirectToAction(nameof(Update), new { id = requestId });
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> SearchBroker(string domain)
+    {
+        _ = domain ?? throw new ArgumentNullException("Missing domain");
+
+        try
+        {
+            var district = await directoryLookupService.SearchAsync(domain);
+            return Ok(district);
+        }
+        catch (ArgumentException e)
+        {
+            return NotFound(e.Message.ToJsonDocument());
+        }
+        catch(Exception ex)
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, $"{ex.Message}\n\n{ex.StackTrace}");
+        }
     }
 
     [HttpDelete]

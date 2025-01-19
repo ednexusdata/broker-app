@@ -64,10 +64,10 @@
                 },
                 fetchSearch() {
                     if (this.search != null && this.search != undefined && this.search != '') {
-                        fetch(`/api/v1/directory/search?domain=${encodeURIComponent(this.search)}`)
+                        fetch(`/incoming/SearchBroker?domain=${encodeURIComponent(this.search)}`)
                             .then(response => {
                                 if(!response.ok) {
-                                    this.districtForDisplay = `Broker not found for ${this.search}`
+                                    this.districtForDisplay = response.json();
                                 } else {
                                     return response.json();
                                 }

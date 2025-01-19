@@ -13,7 +13,6 @@ using System.Security.Claims;
 using EdNexusData.Broker.Core.Resolvers;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
-using System.Collections.Immutable;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -28,9 +27,7 @@ public class LoginController : AuthenticatedController<LoginController>
     private readonly FocusHelper _focusHelper;
     private readonly AuthenticationProviderResolver _authenticationProviderResolver;
     private readonly IConfiguration _configuration;
-    private readonly IWebHostEnvironment _hostingEnvironment;
-
-    private ImmutableList<string> _allowedAnonymousEnvironments => new List<string> { "Demo", "Development", "Test" }.ToImmutableList();
+    private readonly Core.Environment environment;
 
     public LoginController(
         ILogger<LoginController> logger,
@@ -41,7 +38,7 @@ public class LoginController : AuthenticatedController<LoginController>
         FocusHelper focusHelper,
         AuthenticationProviderResolver authenticationProviderResolver,
         IConfiguration configuration,
-        IWebHostEnvironment hostingEnvironment)
+        Core.Environment environment)
     {
         _logger = logger;
         _db = db;
@@ -51,7 +48,7 @@ public class LoginController : AuthenticatedController<LoginController>
         _focusHelper = focusHelper;
         _authenticationProviderResolver = authenticationProviderResolver;
         _configuration = configuration;
-        _hostingEnvironment = hostingEnvironment;
+        this.environment = environment;
     }
 
     [HttpGet]
@@ -124,7 +121,7 @@ public class LoginController : AuthenticatedController<LoginController>
     {
         if (_configuration["Authentication:Anonymous"] is null
            || _configuration["Authentication:Anonymous"] != "Yes"
-           || !_allowedAnonymousEnvironments.Contains(_hostingEnvironment.EnvironmentName))
+           || environment.IsProductionEnvironment())
         {
             return NotFound();
         }
