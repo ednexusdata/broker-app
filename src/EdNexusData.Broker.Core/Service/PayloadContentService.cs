@@ -47,6 +47,30 @@ public class PayloadContentService
         return payloadContents;
     }
 
+    public async Task<PayloadContent?> AddJsonFile(Guid requestId, JsonDocument content, string contentType, string fileName)
+    {
+        var payloadContent = new PayloadContent()
+        {
+            RequestId = requestId,
+            JsonContent = JsonSerializer.SerializeToDocument(content),
+            ContentType = contentType,
+            FileName =  fileName
+        };
+        return await payloadContentRepository.AddAsync(payloadContent);
+    }
+
+    public async Task<PayloadContent?> AddBlobFile(Guid requestId, byte[] content, string contentType, string fileName)
+    {
+        var payloadContent = new PayloadContent()
+        {
+            RequestId = requestId,
+            JsonContent = JsonSerializer.SerializeToDocument(content),
+            ContentType = contentType,
+            FileName =  fileName
+        };
+        return await payloadContentRepository.AddAsync(payloadContent);
+    }
+
     public async Task<PayloadContent?> AddFile(Message message, Models.File file)
     {
         ManifestContent? fileContentType;

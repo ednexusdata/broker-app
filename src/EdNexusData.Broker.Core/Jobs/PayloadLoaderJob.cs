@@ -1,8 +1,6 @@
 using System.Text.Json;
 using EdNexusData.Broker.Core.Worker;
 using EdNexusData.Broker.Core.Resolvers;
-using Ardalis.GuardClauses;
-using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Core.Services;
 using System.ComponentModel;
 using EdNexusData.Broker.Common.Jobs;
@@ -17,71 +15,66 @@ public class PayloadLoaderJob : IJob
 {
     private readonly PayloadResolver _payloadResolver;
     private readonly PayloadJobResolver _payloadJobResolver;
-    private readonly JobStatusService<PayloadLoaderJob> _jobStatusService;
-    private readonly IRepository<Request> _requestRepository;
-    private readonly IRepository<PayloadContent> _payloadContentRepository;
-    private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
-    private readonly JobStatusService<PayloadLoaderJob> _jobStatusServiceForLoader;
+    private readonly JobStatusService<PayloadLoaderJob> jobStatusService;
+    private readonly PayloadContentService payloadContentService;
+    private readonly FocusEducationOrganizationResolver focusEducationOrganizationResolver;
+    private readonly RequestService requestService;
     private readonly JobService jobService;
     private readonly EducationOrganizationContactService educationOrganizationContactService;
     private readonly INowWrapper nowWrapper;
 
     public PayloadLoaderJob(
-            PayloadResolver payloadResolver,
-            PayloadJobResolver payloadJobResolver,
-            JobStatusService<PayloadLoaderJob> jobStatusService,
-            IRepository<Request> requestRepository,
-            IRepository<PayloadContent> payloadContentRepository,
-            FocusEducationOrganizationResolver focusEducationOrganizationResolver,
-            JobStatusService<PayloadLoaderJob> jobStatusServiceForLoader,
-            JobService jobService,
-            EducationOrganizationContactService educationOrganizationContactService,
-            INowWrapper nowWrapper)
+        PayloadResolver payloadResolver,
+        PayloadJobResolver payloadJobResolver,
+        JobStatusService<PayloadLoaderJob> jobStatusService,
+        PayloadContentService payloadContentService,
+        FocusEducationOrganizationResolver focusEducationOrganizationResolver,
+        RequestService requestService,
+        JobService jobService,
+        EducationOrganizationContactService educationOrganizationContactService,
+        INowWrapper nowWrapper
+    )
     {
         _payloadResolver = payloadResolver;
         _payloadJobResolver = payloadJobResolver;
-        _jobStatusService = jobStatusService;
-        _requestRepository = requestRepository;
-        _payloadContentRepository = payloadContentRepository;
-        _focusEducationOrganizationResolver = focusEducationOrganizationResolver;
-        _jobStatusServiceForLoader = jobStatusServiceForLoader;
+        this.jobStatusService = jobStatusService;
+        this.payloadContentService = payloadContentService;
+        this.focusEducationOrganizationResolver = focusEducationOrganizationResolver;
+        this.requestService = requestService;
         this.jobService = jobService;
         this.educationOrganizationContactService = educationOrganizationContactService;
         this.nowWrapper = nowWrapper;
     }
     
     public async Task ProcessAsync(Job jobInstance)
-    {
-        Guard.Against.Null(jobInstance.ReferenceGuid, "referenceGuid", $"Unable to find request Id {jobInstance.ReferenceGuid}");
-        
-        var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(jobInstance.ReferenceGuid.Value));
-        
-        Guard.Against.Null(request, "request", $"Unable to find request id {jobInstance.ReferenceGuid}");
+    {   
+        // Step 1: Get Request
+        var request = await requestService.Get(jobInstance);
+        _ = request ?? throw new ArgumentNullException($"Unable to find request Id {jobInstance.ReferenceGuid}");
 
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Begin outgoing jobs loading for: {0}", request.Payload);
+        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Begin outgoing jobs loading for: {0}", request.Payload);
+        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Begin fetching payload contents for: {0}", request.EducationOrganization?.ParentOrganizationId);
 
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Begin fetching payload contents for: {0}", request.EducationOrganization?.ParentOrganizationId);
-
-        // Get outgoing payload settings
+        // Step 2: Get outgoing payload settings
         var outgoingPayloadSettings = await _payloadResolver.FetchOutgoingPayloadSettingsAsync(request.Payload, request.EducationOrganization!.ParentOrganizationId!.Value);
         var outgoingPayloadContents = outgoingPayloadSettings.PayloadContents;
 
         if (outgoingPayloadContents is null || outgoingPayloadContents.Count <= 0)
         {
-            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "No payload contents");
+            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "No payload contents");
             return;
         }
 
-        // Determine which jobs to execute based on outgoing payload config
+        // Step 3: Determine which jobs to execute based on outgoing payload config
         foreach(var outgoingPayloadContent in outgoingPayloadContents)
         {
             // Set the ed org
-            _focusEducationOrganizationResolver.EducationOrganizationId = request.EducationOrganization!.ParentOrganizationId!.Value;
+            focusEducationOrganizationResolver.EducationOrganizationId = request.EducationOrganization!.ParentOrganizationId!.Value;
 
             // Resolve job to execute
-            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolving job to execute for payload content type: {0}", outgoingPayloadContent.PayloadContentType);
+            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolving job to execute for payload content type: {0}", outgoingPayloadContent.PayloadContentType);
             var jobToExecute = _payloadJobResolver.Resolve(outgoingPayloadContent.PayloadContentType);
-            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
+            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
 
             // Attach job status info
             jobToExecute.JobStatusService = new JobStatusServiceProxy(jobToExecute, jobInstance, request);
@@ -126,57 +119,50 @@ public class PayloadLoaderJob : IJob
             }
             catch (Exception e)
             {
-                await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Errored with: {0}.", e.Message);
+                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Errored with: {0}.", e.Message);
                 throw;
             }
             
 
-            await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Received result: {0}", (result is null) ? "No data" : result.GetType().FullName);
+            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Received result: {0}", (result is null) ? "No data" : result.GetType().FullName);
             
             // check if there is a result and if it is of type DataPayloadContent
             if (result is not null && result.GetType().IsAssignableTo(typeof(DataPayloadContent)))
             {
                 var payloadContentResult = (DataPayloadContent)result;
-
-                Guard.Against.Null(payloadContentResult, "payloadContentResult", "Unable to cast result to DataPayloadContent type.");
+                _ = payloadContentResult ?? throw new InvalidCastException("Unable to cast result to DataPayloadContent type.");
                 
                 var payloadContentTypeType = AppDomain.CurrentDomain.GetAssemblies()
                         .SelectMany(s => s.GetExportedTypes())
                         .Where(p => p.FullName == outgoingPayloadContent.PayloadContentType).FirstOrDefault();
 
                 // Save the result
-                var payloadContent = new PayloadContent()
-                {
-                    RequestId = request.Id,
-                    JsonContent = JsonSerializer.SerializeToDocument(result), // JsonDocument.Parse(result.Content),
-                    ContentType = payloadContentResult.Schema.ContentType,
-                    FileName =  $"{result?.GetType().Name}.json"
-                };
-                await _payloadContentRepository.AddAsync(payloadContent);
-                await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
+                var payloadContent = await payloadContentService.AddJsonFile(
+                    request.Id, 
+                    JsonSerializer.SerializeToDocument(result), 
+                    payloadContentResult.Schema.ContentType, 
+                    $"{result?.GetType().Name}.json"
+                );
+                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
             }
 
             // check if there is a result and if it is of type DataPayloadContent
             if (result is not null && result.GetType().IsAssignableTo(typeof(DocumentPayloadContent)))
             {
                 var payloadContentResult = (DocumentPayloadContent)result;
+                _ = payloadContentResult ?? throw new NullReferenceException("Unable to cast result to DocumentPayloadContent type.");
 
-                Guard.Against.Null(payloadContentResult, "payloadContentResult", "Unable to cast result to DocumentPayloadContent type.");
-
-                // Save the result
-                var payloadContent = new PayloadContent()
-                {
-                    RequestId = request.Id,
-                    BlobContent = payloadContentResult.Content,
-                    ContentType = payloadContentResult.ContentType,
-                    FileName =  payloadContentResult.FileName
-                };
-                await _payloadContentRepository.AddAsync(payloadContent);
-                await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved document payload content: {0}", jobToExecute.GetType().FullName);
+                var payloadContent = await payloadContentService.AddBlobFile(
+                    request.Id, 
+                    payloadContentResult.Content, 
+                    payloadContentResult.ContentType, 
+                    payloadContentResult.FileName
+                );
+                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved document payload content: {0}", jobToExecute.GetType().FullName);
             }
         }
 
-        await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Finished updating request.");
+        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Finished updating request.");
 
         // Queue job to send update
         var jobData = new MessageContents { 
