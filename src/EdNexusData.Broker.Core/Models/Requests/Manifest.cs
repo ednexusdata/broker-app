@@ -12,4 +12,11 @@ public class Manifest
     public RequestAddress? To { get; set; }
     public string? Note { get; set; }
     public List<ManifestContent>? Contents { get; set; } = new List<ManifestContent>();
+
+    public Common.Importer.Manifest ToCommon()
+    {
+        return new Common.Importer.Manifest()
+        {
+        };
+    }
 }

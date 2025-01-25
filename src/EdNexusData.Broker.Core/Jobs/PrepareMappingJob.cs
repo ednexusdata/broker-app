@@ -127,9 +127,9 @@ public class PrepareMappingJob : IJob
             dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, transformerType);
             var result = methodInfo!.Invoke(transformer, new object[] { 
                 correctRecordType, 
-                payloadContent.Request.RequestManifest?.Student!, 
-                payloadContent.Request.EducationOrganization, 
-                payloadContent.Request.ResponseManifest!
+                payloadContent.Request.RequestManifest?.Student?.ToCommon()!, 
+                payloadContent.Request.EducationOrganization?.ToCommon()!, 
+                payloadContent.Request.ResponseManifest?.ToCommon()!
             });
             
             recordType = result.GetType();
@@ -140,9 +140,9 @@ public class PrepareMappingJob : IJob
             {
                 transformResult = transformMethodInfo!.Invoke(transformer, new object[] { 
                     correctRecordType, 
-                    payloadContent.Request.RequestManifest?.Student!, 
-                    payloadContent.Request.EducationOrganization, 
-                    payloadContent.Request.ResponseManifest!
+                    payloadContent.Request.RequestManifest?.Student?.ToCommon()!, 
+                    payloadContent.Request.EducationOrganization?.ToCommon()!, 
+                    payloadContent.Request.ResponseManifest?.ToCommon()!
                 });
                 transformResult.BrokerId = result.BrokerId;
             }

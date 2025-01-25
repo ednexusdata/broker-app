@@ -6,6 +6,7 @@ using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Core.Interfaces;
 using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Core.Services;
+using EdNexusData.Broker.Core.Worker;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.ViewModels.Preparing;
@@ -26,7 +27,9 @@ public class PreparingController : AuthenticatedController<RequestsController>
     private readonly JobService _jobService;
     private readonly CurrentUserHelper currentUserHelper;
     private readonly EducationOrganizationContactService educationOrganizationContactService;
+    private readonly ICurrentUser currentUser;
     private readonly INowWrapper nowWrapper;
+    private readonly JobStatusService<PreparingController> jobStatusService;
     private readonly ConnectorLoader _connectorLoader;
 
     public PreparingController(
@@ -38,7 +41,9 @@ public class PreparingController : AuthenticatedController<RequestsController>
         JobService jobService,
         CurrentUserHelper currentUserHelper,
         EducationOrganizationContactService educationOrganizationContactService,
-        INowWrapper nowWrapper)
+        ICurrentUser currentUser,
+        INowWrapper nowWrapper,
+        JobStatusService<PreparingController> jobStatusService)
     {
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -49,7 +54,9 @@ public class PreparingController : AuthenticatedController<RequestsController>
         _jobService = jobService;
         this.currentUserHelper = currentUserHelper;
         this.educationOrganizationContactService = educationOrganizationContactService;
+        this.currentUser = currentUser;
         this.nowWrapper = nowWrapper;
+        this.jobStatusService = jobStatusService;
     }
 
     [Route("/Preparing/{id:guid}")]
@@ -184,7 +191,10 @@ public class PreparingController : AuthenticatedController<RequestsController>
                 }
             }
 
-            if (payloadContent is not null)
+            // Get request
+            var request = await _requestRepository.GetByIdAsync(id);
+
+            if (payloadContent is not null && request is not null && request.RequestStatus!= RequestStatus.InProgress)
             {
                 TempData[VoiceTone.Positive] = $"Updated payload actions.";
                 // Queue job to send update
@@ -193,9 +203,18 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     SenderSentTimestamp = nowWrapper.UtcNow, 
                     RequestId = payloadContent.RequestId, 
                     RequestStatus = RequestStatus.InProgress, 
+                    EducationOrganizationId = request.EducationOrganizationId,
                     MessageText = "Updated request status to in progress."
                 };
-                var job = await _jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), payloadContent.RequestId, currentUserHelper.CurrentUserId()!.Value, JsonSerializer.SerializeToDocument(jobData));
+                var job = await _jobService.CreateJobAsync(
+                    typeof(SendMessageJob), 
+                    typeof(Request), 
+                    payloadContent.RequestId, 
+                    currentUserHelper.CurrentUserId()!.Value, 
+                    JsonSerializer.SerializeToDocument(jobData)
+                );
+
+                await jobStatusService.UpdateRequestStatus(job, request, RequestStatus.InProgress, "Started setting payload content actions");
             }
         }
         

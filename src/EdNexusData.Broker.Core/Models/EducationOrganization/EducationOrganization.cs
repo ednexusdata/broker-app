@@ -18,4 +18,19 @@ public class EducationOrganization : BaseEntity, IAggregateRoot
     public List<EducationOrganizationContact>? Contacts { get; set; }
 
     public virtual ICollection<EducationOrganization>? EducationOrganizations { get; set; }
+
+    public Common.EducationOrganizations.EducationOrganization ToCommon()
+    {
+        var educationOrganization = new Common.EducationOrganizations.EducationOrganization()
+        {
+            Id = Id,
+            ParentOrganizationId = ParentOrganizationId,
+            Name = Name,
+            ShortName = ShortName,
+            Number = Number,
+            EducationOrganizationType = EducationOrganizationType
+        };
+
+        return educationOrganization;
+    }
 }

@@ -9,6 +9,7 @@ using EdNexusData.Broker.Core.Lookup;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Web.Helpers;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -22,6 +23,7 @@ public class MappingController : AuthenticatedController<MappingController>
     private readonly IRepository<PayloadContentAction> _actionRepository;
     private readonly JobService _jobService;
     private readonly IServiceProvider _serviceProvider;
+    private readonly CurrentUserHelper currentUserHelper;
 
     public MappingController(
         IReadRepository<EducationOrganization> educationOrganizationRepository,
@@ -30,7 +32,8 @@ public class MappingController : AuthenticatedController<MappingController>
         IRepository<PayloadContent> payloadContentRepository,
         IRepository<PayloadContentAction> actionRepository,
         JobService jobService,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        CurrentUserHelper currentUserHelper)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
         _incomingRequestRepository = incomingRequestRepository;
@@ -39,6 +42,7 @@ public class MappingController : AuthenticatedController<MappingController>
         _jobService = jobService;
         _actionRepository = actionRepository;
         _serviceProvider = serviceProvider;
+        this.currentUserHelper = currentUserHelper;
     }
 
     public async Task<IActionResult> Index(Guid id, Guid? jobId)
@@ -63,7 +67,7 @@ public class MappingController : AuthenticatedController<MappingController>
         Guard.Against.Null(action.PayloadContent, "action.PayloadContent", "Invalid payload content to action");
 
         // Prepare mapping
-        var createdJob = await _jobService.CreateJobAsync(typeof(PrepareMappingJob), typeof(PayloadContentAction), action.Id);
+        var createdJob = await _jobService.CreateJobAsync(typeof(PrepareMappingJob), typeof(PayloadContentAction), action.Id, currentUserHelper.CurrentUserId()!.Value);
 
         action.PayloadContentActionStatus = PayloadContentActionStatus.WaitingToPrepare;
         await _actionRepository.UpdateAsync(action);
@@ -181,7 +185,7 @@ public class MappingController : AuthenticatedController<MappingController>
         Guard.Against.Null(payloadContentAction, "payloadContentAction", "Unable to find payload content action.");
 
         // Create job
-        var createdJob = await _jobService.CreateJobAsync(typeof(PayloadContentActionJob), typeof(PayloadContentAction), payloadContentAction.Id);
+        var createdJob = await _jobService.CreateJobAsync(typeof(PayloadContentActionJob), typeof(PayloadContentAction), payloadContentAction.Id, currentUserHelper.CurrentUserId()!.Value);
 
         payloadContentAction.PayloadContentActionStatus = PayloadContentActionStatus.WaitingToImport;
         await _actionRepository.UpdateAsync(payloadContentAction);

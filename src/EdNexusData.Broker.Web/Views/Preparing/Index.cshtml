@@ -137,9 +137,9 @@
     </div>
     } else
     {
-        <div>@Model.RequestStatus.ToString()</div>
+        <div>@Model.RequestStatus.GetDescription()</div>
     }
-  @if (Model.RequestStatus == EdNexusData.Broker.Common.Jobs.RequestStatus.InProgress)
+  @* @if (Model.RequestStatus == EdNexusData.Broker.Common.Jobs.RequestStatus.InProgress)
   {
     <div>
     <form method="post" asp-action="ImportRequest" asp-route-id="@Model.RequestId" autocomplete="off">
@@ -151,7 +151,7 @@
     </form>
     </div>
   } 
-  </div>
+  </div> *@
 }
 
 
