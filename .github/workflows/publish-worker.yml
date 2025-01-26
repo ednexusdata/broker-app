@@ -16,6 +16,13 @@ jobs:
             target: linux-x64
     runs-on: ${{ matrix.os }}
     steps:
+
+      - name: Checkout broker-common
+        uses: actions/checkout@v4
+        with:
+          repository: ednexusdata/broker-common
+          fetch-depth: 0
+
       - name: Checkout broker-app
         uses: actions/checkout@v4
       - run: |
