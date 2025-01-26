@@ -17,16 +17,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
 
+      - name: Print current working directory
+        run: pwd
+
       - name: Checkout broker-common
         uses: actions/checkout@v4
         with:
           repository: ednexusdata/broker-common
           fetch-depth: 0
+          
+      - name: Print current working directory
+        run: pwd
 
       - name: Checkout broker-app
         uses: actions/checkout@v4
       - run: |
           git fetch --prune --unshallow --tags
+
+      - name: Print current working directory
+        run: pwd
+
+      - name: Print current working directory
+        run: ls -la
         
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
