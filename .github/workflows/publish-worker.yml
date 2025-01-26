@@ -6,7 +6,7 @@ on:
 
 jobs:
   release:
-    name: Release
+    name: Release EdNexusData.Broker.Worker
     strategy:
       matrix:
         kind: ['linux']
