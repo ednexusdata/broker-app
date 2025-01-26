@@ -25,9 +25,13 @@ jobs:
         with:
           repository: ednexusdata/broker-common
           fetch-depth: 0
+          path: broker-common
           
       - name: Print current working directory
         run: pwd
+
+      - name: Print current working directory
+        run: ls -la
 
       - name: Checkout broker-app
         uses: actions/checkout@v4
