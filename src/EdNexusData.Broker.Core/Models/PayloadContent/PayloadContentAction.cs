@@ -13,5 +13,18 @@ public class PayloadContentAction : BaseEntity, IAggregateRoot
     public bool Process { get; set; } = false;
     public List<Mapping>? Mappings { get; set; }
     public PayloadContentActionStatus PayloadContentActionStatus { get; set; } = PayloadContentActionStatus.Ready;
-    public string? ProcessState {get; set; }
+    public string? ProcessState { get; set; }
+
+    public Common.PayloadContentActions.PayloadContentAction ToCommon()
+    {
+        return new Common.PayloadContentActions.PayloadContentAction()
+        {
+            Id = Id,
+            PayloadContentId = PayloadContentId,
+            PayloadContentActionType = PayloadContentActionType,
+            ActiveMappingId = ActiveMappingId,
+            Process = Process,
+            ProcessState = ProcessState
+        };
+    }
 }

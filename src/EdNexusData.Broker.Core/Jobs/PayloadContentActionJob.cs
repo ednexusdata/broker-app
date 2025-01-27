@@ -144,13 +144,13 @@ public class PayloadContentActionJob : IJob
             // EducationOrganization educationOrganization
             var result = await methodInfo!.Invoke(payloadContentActionObject, new object[] { 
                 mappingObjectsToImport, 
-                payloadContentAction,
+                payloadContentAction.ToCommon(),
                 connectorStudent!, 
-                payloadContentAction.PayloadContent.Request.Student!.Student!, 
-                payloadContentAction.PayloadContent.Request.EducationOrganization
+                payloadContentAction.PayloadContent.Request.Student!.Student!.ToCommon(), 
+                payloadContentAction.PayloadContent.Request.EducationOrganization.ToCommon()
             });
 
-            await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, Core.PayloadContentActionStatus.Imported, result.ToString());
+            await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Imported, result.ToString());
             await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.InProgress, "Imported.");
         }
 
