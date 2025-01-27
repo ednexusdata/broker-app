@@ -1,4 +1,4 @@
-name: Publish
+name: Publish EdNexusData.Broker.Worker
 
 on:
   release:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   release:
-    name: Release
+    name: Release EdNexusData.Broker.Worker
     strategy:
       matrix:
         kind: ['linux']
@@ -17,17 +17,34 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
 
+      - name: Print current working directory
+        run: pwd
+
       - name: Checkout broker-common
         uses: actions/checkout@v4
         with:
           repository: ednexusdata/broker-common
           fetch-depth: 0
-    
+          path: broker-common
+          
+      - name: Print current working directory
+        run: pwd
+
+      - name: Print current working directory
+        run: ls -la
+
       - name: Checkout broker-app
         uses: actions/checkout@v4
       - run: |
+          mkdir broker-app && cd broker-app
           git fetch --prune --unshallow --tags
 
+      - name: Print current working directory
+        run: pwd
+
+      - name: Print current working directory
+        run: ls -la
+        
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
@@ -37,10 +54,10 @@ jobs:
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          release_name="EdNexusData.Broker.Web-$tag-${{ matrix.target }}"
+          release_name="EdNexusData.Broker.Worker-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish src/EdNexusData.Broker.Worker/EdNexusData.Broker.Worker.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
