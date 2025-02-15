@@ -21,6 +21,7 @@ using EdNexusData.Broker.Core.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -193,6 +194,13 @@ builder.Services.Configure<IISServerOptions>(options =>
 
 builder.Services.AddHostedService<BrokerDbContextInitializationService>();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
+
+
 var app = builder.Build();
 
 using (var service = app.Services.CreateAsyncScope())
@@ -209,9 +217,20 @@ app.UseExceptionHandler(o => { });
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseForwardedHeaders();
     app.UseHsts();
     app.UseHttpsRedirection();
+
+    app.Use((context, next) =>
+    {
+        context.Request.Scheme = "https";
+        return next(context);
+    });
+}
+else
+{
+    app.UseDeveloperExceptionPage();
+    app.UseForwardedHeaders();
 }
 
 app.UseStaticFiles();
