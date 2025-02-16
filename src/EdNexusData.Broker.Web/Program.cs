@@ -229,7 +229,7 @@ if (!app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseDeveloperExceptionPage();
+    //app.UseDeveloperExceptionPage();
     app.UseForwardedHeaders();
 }
 
@@ -259,6 +259,7 @@ app.MapControllerRoutes("outgoing-requests", "Outgoing");
 app.MapControllerRoutes("requests", "Requests");
 app.MapControllerRoutes("system/users", "Users");
 app.MapControllerRoute("systemjobs", "system/jobs", new { controller = "Jobs", action = "SystemIndex" });
+app.MapControllerRoute("store-connectors", "store/connectors", new { controller = "Connectors", action = "Index" });
 app.MapControllerRoute("userjobs", "jobs", new { controller = "Jobs", action = "Index"});
 app.MapControllerRoutes("roles", "UserRoles");
 app.MapControllerRoutes("settings", "Settings");
