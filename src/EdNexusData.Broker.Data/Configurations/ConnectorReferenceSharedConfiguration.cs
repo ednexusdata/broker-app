@@ -12,5 +12,7 @@ internal class ConnectorReferenceSharedConfiguration : IEntityTypeConfiguration<
     {   
         // Rename ID to UserId
         builder.Property(i => i.Id).HasColumnName("ConnectorReferenceId");
+
+        builder.HasIndex(x => new { x.Reference } ).IsUnique();
     }
 }

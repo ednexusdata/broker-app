@@ -20,7 +20,7 @@ public class StoreConnector
         return new ConnectorReference()
         {
             Reference = ReferenceName!,
-            Version = LatestRelease()!.Version!
+            Version = "*"
         };
     }
 }

@@ -34,7 +34,7 @@ public class ConnectorsController : AuthenticatedController<ConnectorsController
 
         var savedConnector = await connectorService.AddConnectorReference(connector);
 
-        TempData[VoiceTone.Positive] = $"Added connector ({savedConnector.Reference}) ({savedConnector.Id}).";
+        TempData[VoiceTone.Positive] = $"Added connector {savedConnector.Reference} ({savedConnector.Id}).";
         return RedirectToAction(nameof(Index));
     }
 
@@ -47,7 +47,7 @@ public class ConnectorsController : AuthenticatedController<ConnectorsController
 
         await connectorService.RemoveConnectorReference(connector);
 
-        TempData[VoiceTone.Positive] = $"Removed connector ({connector.Reference}) ({connector.Id}).";
+        TempData[VoiceTone.Positive] = $"Removed connector {connector.Reference} ({connector.Id}).";
         return RedirectToAction(nameof(Index));
     }
     
