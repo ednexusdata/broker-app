@@ -16,46 +16,16 @@ jobs:
             target: linux-x64
     runs-on: ${{ matrix.os }}
     steps:
-
-      - name: Checkout broker-common
-        uses: actions/checkout@v4
-        with:
-          repository: ednexusdata/broker-common
-          fetch-depth: 0
-    
-      - name: Checkout broker-app
-        uses: actions/checkout@v4
-      - run: |
-          git fetch --prune --unshallow --tags
-
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x
 
-      - name: Build
-        shell: bash
+      - uses: actions/checkout@v2
+      - name: Build & upload files to release
         run: |
-          tag=$(git describe --tags --abbrev=0)
-          release_name="EdNexusData.Broker.Web-$tag-${{ matrix.target }}"
-
-          # Build everything
-          dotnet publish src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
-
-          # Pack files
-          if [ "${{ matrix.target }}" == "win-x64" ]; then
-            # Pack to zip for Windows
-            7z a -tzip "${release_name}.zip" "./${release_name}/*"
-          else
-          tar czvf "${release_name}.tar.gz" "$release_name"
-          fi
-
-          # Delete output directory
-          rm -r "$release_name"
-
-      - name: Publish
-        uses: softprops/action-gh-release@v1
-        with:
-          files: "App*"
+          chmod +x ./scripts/build.sh
+          ./build.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
