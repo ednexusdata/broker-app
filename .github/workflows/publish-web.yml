@@ -25,7 +25,7 @@ jobs:
       - name: Build & upload files to release
         run: |
           chmod +x ./scripts/build.sh
-          ./build.sh
+          ./scripts/build.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.ref_name }}
