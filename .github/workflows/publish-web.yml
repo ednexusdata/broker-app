@@ -16,20 +16,23 @@ jobs:
             target: linux-x64
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout broker-app
+        uses: actions/checkout@v4
+        with:
+          repository: 'user/broker-app'
+
+      - name: Clone broker-common into same level
+        run: |
+          git clone https://github.com/ednexusdata/broker-common.git
+
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x
-          
-      - name: Clone broker-app
-        uses: actions/checkout@v4
-        with:
-          repository: ednexusdata/broker-app
-          path: ${{ github.workspace }}/
 
-      - name: Clone broker-common
-        uses: actions/checkout@v4
-        with:
-          repository: ednexusdata/broker-common
-          path: ${{ github.workspace }}/
+      - name: Restore dependencies
+        run: dotnet restore broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj
 
+      - name: Build
+        run: dotnet build broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --configuration Release
+ 
