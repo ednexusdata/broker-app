@@ -35,7 +35,7 @@ jobs:
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          release_name="EdNexusData.Broker.Web-$tag-${{ matrix.target }}"
+          release_name="EdNexusData.Broker.Worker-$tag-${{ matrix.target }}"
 
           # Build everything
           dotnet publish /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Worker/EdNexusData.Broker.Worker.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
