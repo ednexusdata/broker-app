@@ -26,10 +26,12 @@ jobs:
         with:
           repository: ednexusdata/broker-app
           path: ${{ github.workspace }}/
+          clean: false
 
       - name: Clone broker-common
         uses: actions/checkout@v4
         with:
           repository: ednexusdata/broker-common
           path: ${{ github.workspace }}/
+          clean: false
 
