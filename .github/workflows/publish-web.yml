@@ -20,12 +20,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x
+          
+      - name: Clone broker-app
+        uses: actions/checkout@v2
 
-      - uses: actions/checkout@v2
-      - name: Build & upload files to release
-        run: |
-          chmod +x ./scripts/build.sh
-          ./scripts/build.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.ref_name }}
+      - name: Clone broker-common
+        uses: actions/checkout@v2
+        with:
+          repository: ednexusdata/broker-common
+          path: /home/runner/work/broker-app
+
