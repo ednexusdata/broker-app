@@ -52,12 +52,8 @@ jobs:
           dotnet publish /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
 
           # Pack files
-          if [ "${{ matrix.target }}" == "win-x64" ]; then
-            # Pack to zip for Windows
-            7z a -tzip "${release_name}.zip" "./${release_name}/*"
-          else
+          7z a -tzip "${release_name}.zip" "./${release_name}/*"
           tar czvf "${release_name}.tar.gz" "$release_name"
-          fi
 
           # Delete output directory
           rm -r "$release_name"
@@ -65,6 +61,6 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "App*"
+          files: "${release_name}*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
