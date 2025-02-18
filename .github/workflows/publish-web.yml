@@ -32,4 +32,5 @@ jobs:
         with:
           repository: ednexusdata/broker-common
           path: ${{ github.workspace }}/
+          clean: false
 
