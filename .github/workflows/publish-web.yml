@@ -21,7 +21,7 @@ jobs:
 
       - name: Clone broker-common into same level
         run: |
-          git clone https://github.com/ednexusdata/broker-common.git /tmp
+          git clone https://github.com/ednexusdata/broker-common.git /tmp/broker-common
           mv /tmp/broker-common /home/runner/work/broker-app
 
       - name: Setup dotnet
