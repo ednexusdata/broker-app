@@ -27,7 +27,7 @@
     <Fixture_Files Include="..\..\..\broker-connector-fixture\src\bin\**\*.dll" />
   </ItemGroup>
 
-  <Target Name="BuildCopyConnectorsSynergy" BeforeTargets="Build">
+  <Target Name="BuildCopyConnectorsSynergy" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug'">
     <MSBuild Projects="..\..\..\broker-connector-edupointsynergy\src\EdNexusData.Broker.Connector.Edupoint.Synergy.csproj" Properties="Configuration=$(Configuration)">
     </MSBuild>
     <Message Text="Executing BuildCopyConnectors Synergy task" Importance="High" />
@@ -37,7 +37,7 @@
     <Message Text="Copied Synergy build files" Importance="High" />
   </Target>
 
-  <Target Name="BuildCopyConnectorsEdFi" BeforeTargets="Build">
+  <Target Name="BuildCopyConnectorsEdFi" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug'">
     <MSBuild Projects="..\..\..\broker-connector-edfi\src\EdNexusData.Broker.Connector.EdFiAlliance.EdFi.csproj" Properties="Configuration=$(Configuration)">
     </MSBuild>
     <Message Text="Executing BuildCopyConnectors EdFi task" Importance="High" />
@@ -47,7 +47,7 @@
     <Message Text="Copied EdFi build files" Importance="High" />
   </Target>
 
-  <Target Name="BuildCopyConnectorsFixture" BeforeTargets="Build">
+  <Target Name="BuildCopyConnectorsFixture" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug'">
     <MSBuild Projects="..\..\..\broker-connector-fixture\src\EdNexusData.Broker.Connector.Fixture.csproj" Properties="Configuration=$(Configuration)">
     </MSBuild>
     <Message Text="Executing BuildCopyConnectors Fixture task" Importance="High" />
