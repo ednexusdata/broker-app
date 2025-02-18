@@ -29,8 +29,8 @@ jobs:
           dotnet-version: 8.x
 
       - name: Restore dependencies
-        run: dotnet restore broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj
+        run: dotnet restore /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj
 
       - name: Build
-        run: dotnet build broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --configuration Release
+        run: dotnet build /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --configuration Release
  
