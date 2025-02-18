@@ -18,8 +18,6 @@ jobs:
     steps:
       - name: Checkout broker-app
         uses: actions/checkout@v4
-        with:
-          repository: 'user/broker-app'
 
       - name: Clone broker-common into same level
         run: |
