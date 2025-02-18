@@ -22,15 +22,14 @@ jobs:
           dotnet-version: 8.x
           
       - name: Clone broker-app
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: ednexusdata/broker-app
           path: ${{ github.workspace }}/
 
       - name: Clone broker-common
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: ednexusdata/broker-common
           path: ${{ github.workspace }}/
-          clean: false
 
