@@ -61,6 +61,6 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "${release_name}*"
+          files: "EdNexusData.Broker.Web*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
