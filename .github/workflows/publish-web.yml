@@ -29,9 +29,40 @@ jobs:
         with:
           dotnet-version: 8.x
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install npm
+        run: npm install
+
       - name: Restore dependencies
         run: dotnet restore /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj
 
       - name: Build
-        run: dotnet build /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --configuration Release
- 
+        shell: bash
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          release_name="EdNexusData.Broker.Web-$tag-${{ matrix.target }}"
+
+          # Build everything
+          dotnet publish /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+
+          # Pack files
+          if [ "${{ matrix.target }}" == "win-x64" ]; then
+            # Pack to zip for Windows
+            7z a -tzip "${release_name}.zip" "./${release_name}/*"
+          else
+          tar czvf "${release_name}.tar.gz" "$release_name"
+          fi
+
+          # Delete output directory
+          rm -r "$release_name"
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "App*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
