@@ -23,10 +23,13 @@ jobs:
           
       - name: Clone broker-app
         uses: actions/checkout@v2
+        with:
+          repository: ednexusdata/broker-app
+          path: ${{ github.workspace }}/
 
       - name: Clone broker-common
         uses: actions/checkout@v2
         with:
           repository: ednexusdata/broker-common
-          path: /home/runner/work/broker-app
+          path: ${{ github.workspace }}/
 
