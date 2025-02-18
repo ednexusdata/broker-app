@@ -23,13 +23,13 @@ if [ "$RELEASE_ID" == "null" ]; then
 fi
 
 # Clone the first repository
-git clone https://github.com/ednexusdata/broker-app.git /app
+git clone https://github.com/ednexusdata/broker-app.git /home/runner/work/app
 
 # Clone the second repository
-git clone https://github.com/ednexusdata/broker-common.git /app
+git clone https://github.com/ednexusdata/broker-common.git /home/runner/work/app
 
 # Navigate to the web application
-cd "/app/broker-app/src/EdNexusData.Broker.Web"
+cd "/home/runner/work/app/broker-app/src/EdNexusData.Broker.Web"
 
 # Restore dependencies
 dotnet restore
@@ -38,13 +38,13 @@ dotnet restore
 dotnet build --configuration Release
 
 # Navigate to the web application release
-cd "/app/broker-app/src/EdNexusData.Broker.Web/bin/Release/net8.0"
+cd "/home/runner/work/app/broker-app/src/EdNexusData.Broker.Web/bin/Release/net8.0"
 
 # Compress Release
-zip -r "/app/EdNexusData.Broker.Web.zip"
+zip -r "/home/runner/work/app/EdNexusData.Broker.Web.zip"
 
 # Navigate to the web application
-cd "/app/broker-app/src/EdNexusData.Broker.Worker"
+cd "/home/runner/work/app/broker-app/src/EdNexusData.Broker.Worker"
 
 # Restore dependencies
 dotnet restore
@@ -53,13 +53,13 @@ dotnet restore
 dotnet build --configuration Release
 
 # Navigate to the worker release
-cd "/app/broker-app/src/EdNexusData.Broker.Worker/bin/Release/net8.0"
+cd "/home/runner/work/app/broker-app/src/EdNexusData.Broker.Worker/bin/Release/net8.0"
 
 # Compress Release
-zip -r "/app/EdNexusData.Broker.Worker.zip"
+zip -r "/home/runner/work/app/EdNexusData.Broker.Worker.zip"
 
 # Change directory 
-cd "/app"
+cd "/home/runner/work/app"
 
 # Loop through files and upload each one
 FILES_TO_UPLOAD=("EdNexusData.Broker.Web.zip" "EdNexusData.Broker.Worker.zip") # add your files here
