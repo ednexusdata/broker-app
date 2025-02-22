@@ -6,7 +6,7 @@ on:
 
 jobs:
   release:
-    name: Release EdNexusData.Broker.Worker
+    name: Release
     strategy:
       matrix:
         kind: ['linux']
@@ -16,40 +16,20 @@ jobs:
             target: linux-x64
     runs-on: ${{ matrix.os }}
     steps:
-
-      - name: Print current working directory
-        run: pwd
-
-      - name: Checkout broker-common
-        uses: actions/checkout@v4
-        with:
-          repository: ednexusdata/broker-common
-          fetch-depth: 0
-          path: broker-common
-          
-      - name: Print current working directory
-        run: pwd
-
-      - name: Print current working directory
-        run: ls -la
-
       - name: Checkout broker-app
         uses: actions/checkout@v4
-        with:
-          path: broker-app
-      - run: |
-          git fetch --prune --unshallow --tags
 
-      - name: Print current working directory
-        run: pwd
+      - name: Clone broker-common into same level
+        run: |
+          git clone https://github.com/ednexusdata/broker-common.git /home/runner/work/broker-app/broker-common
 
-      - name: Print current working directory
-        run: ls -la
-        
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x
+
+      - name: Restore dependencies
+        run: dotnet restore /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Worker/EdNexusData.Broker.Worker.csproj
 
       - name: Build
         shell: bash
@@ -58,14 +38,14 @@ jobs:
           release_name="EdNexusData.Broker.Worker-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish src/EdNexusData.Broker.Worker/EdNexusData.Broker.Worker.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Worker/EdNexusData.Broker.Worker.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
             # Pack to zip for Windows
             7z a -tzip "${release_name}.zip" "./${release_name}/*"
           else
-          tar czvf "${release_name}.tar.gz" "$release_name"
+            tar czvf "${release_name}.tar.gz" "$release_name"
           fi
 
           # Delete output directory
@@ -74,6 +54,6 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "App*"
+          files: "EdNexusData.Broker.Worker*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

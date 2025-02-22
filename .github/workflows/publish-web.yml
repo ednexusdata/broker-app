@@ -1,4 +1,4 @@
-name: Publish
+name: Publish EdNexusData.Broker.Web
 
 on:
   release:
@@ -16,16 +16,54 @@ jobs:
             target: linux-x64
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout broker-app
+        uses: actions/checkout@v4
+
+      - name: Clone broker-common into same level
+        run: |
+          git clone https://github.com/ednexusdata/broker-common.git /home/runner/work/broker-app/broker-common
+
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x
 
-      - uses: actions/checkout@v2
-      - name: Build & upload files to release
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install npm
+        run: | 
+          cd /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web
+          npm install
+
+      - name: Restore dependencies
+        run: dotnet restore /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj
+
+      - name: Build
+        shell: bash
         run: |
-          chmod +x ./scripts/build.sh
-          ./scripts/build.sh
+          tag=$(git describe --tags --abbrev=0)
+          release_name="EdNexusData.Broker.Web-$tag-${{ matrix.target }}"
+
+          # Build everything
+          dotnet publish /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+
+          # Pack files
+          if [ "${{ matrix.target }}" == "win-x64" ]; then
+            # Pack to zip for Windows
+            7z a -tzip "${release_name}.zip" "./${release_name}/*"
+          else
+            tar czvf "${release_name}.tar.gz" "$release_name"
+          fi
+
+          # Delete output directory
+          rm -r "$release_name"
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "EdNexusData.Broker.Web*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.ref_name }}
