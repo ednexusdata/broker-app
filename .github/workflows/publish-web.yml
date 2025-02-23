@@ -9,11 +9,14 @@ jobs:
     name: Release
     strategy:
       matrix:
-        kind: ['linux']
+        kind: ['linux-x64','linux-arm64']
         include:
-          - kind: linux
+          - kind: linux-x64
             os: ubuntu-latest
             target: linux-x64
+          - kind: linux-arm64
+            os: ubuntu-latest
+            target: linux-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout broker-app
