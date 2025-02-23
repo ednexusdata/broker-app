@@ -13,10 +13,10 @@ jobs:
         include:
           - kind: linux-x64
             os: ubuntu-latest
-            target: x64
+            target: linux-x64
           - kind: linux-arm64
             os: ubuntu-latest
-            target: arm64
+            target: linux-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout broker-app
