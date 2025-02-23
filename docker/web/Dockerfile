@@ -5,7 +5,7 @@ EXPOSE 443
 
 # Set environment variables
 ENV GITHUB_RELEASE_TAG="v1.0.0"
-ARG ASSET_NAME="EdNexusData.Broker.Web-${GITHUB_RELEASE_TAG}-linux-x64"
+ARG ASSET_NAME="EdNexusData.Broker.Web-${GITHUB_RELEASE_TAG}-${BUILDOS}-${BUILDARCH}"
 
 # Update required dependencies
 RUN apt-get update && \

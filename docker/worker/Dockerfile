@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/runtime:8.0 AS runtime
 
 # Set environment variables
 ENV GITHUB_RELEASE_TAG="v1.0.0"
-ARG ASSET_NAME="EdNexusData.Broker.Worker-${GITHUB_RELEASE_TAG}-linux-x64"
+ARG ASSET_NAME="EdNexusData.Broker.Worker-${GITHUB_RELEASE_TAG}-${BUILDOS}-${BUILDARCH}"
 
 # Update required dependencies
 RUN apt-get update && \
