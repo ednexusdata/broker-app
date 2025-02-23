@@ -1,11 +1,14 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
+ARG TARGETOS
+ARG TARGETARCH
+
 EXPOSE 80
 EXPOSE 443
 
 # Set environment variables
 ENV GITHUB_RELEASE_TAG="v1.0.0"
-ARG ASSET_NAME="EdNexusData.Broker.Web-${GITHUB_RELEASE_TAG}-${BUILDOS}-${BUILDARCH}"
+ARG ASSET_NAME="EdNexusData.Broker.Web-${GITHUB_RELEASE_TAG}-${TARGETOS}-${TARGETARCH}"
 
 # Update required dependencies
 RUN apt-get update && \
