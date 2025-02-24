@@ -9,11 +9,11 @@ jobs:
     name: Release
     strategy:
       matrix:
-        kind: ['linux-x64','linux-arm64']
+        kind: ['linux-amd64','linux-arm64']
         include:
-          - kind: linux-x64
+          - kind: linux-amd64
             os: ubuntu-latest
-            target: linux-x64
+            target: linux-amd64
           - kind: linux-arm64
             os: ubuntu-latest
             target: linux-arm64
