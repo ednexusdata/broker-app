@@ -284,9 +284,12 @@ if (addressFeature is not null)
     }
 }
 
-// Verify database connection is up
-var dbConnectionService = app.Services.GetService<DbConnectionService>()!;
-await dbConnectionService.ThrowIfDatabaseConnectionNotUpAsync();
+using (var scoped = app.Services.CreateScope())
+{
+    // Verify database connection is up
+    var dbConnectionService = scoped.ServiceProvider.GetService<DbConnectionService>()!;
+    await dbConnectionService.ThrowIfDatabaseConnectionNotUpAsync();
+}
 
 app.WaitForShutdown();
 //app.Run();
