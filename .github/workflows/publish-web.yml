@@ -79,7 +79,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          cd /home/runner/work/broker-app/broker-app/src/docker/web
+          cd /home/runner/work/broker-app/broker-app/docker/web
           tag=$(git describe --tags --abbrev=0)
           docker buildx build --build-arg GITHUB_RELEASE_TAG="$tag" --platform ${{ matrix.target }} -t ghcr.io/ednexusdata/broker-web:latest .
           docker push ghcr.io/ednexusdata/broker-web:latest
