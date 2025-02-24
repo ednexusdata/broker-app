@@ -102,11 +102,25 @@ public class ConnectorLoader
         }
     }
 
+    private bool VerifyOrCreateDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+            _logger.LogInformation("Directory created: " + path);
+        }
+        
+        return true;
+    }
+
     private void LoadConnectorAssemblies()
     {
         IsLoaded = true;
 
-        var connectorAssemblyPaths = Directory.GetDirectories($"{AppDomain.CurrentDomain.BaseDirectory}connectors");
+        var path = $"{AppDomain.CurrentDomain.BaseDirectory}connectors";
+
+        VerifyOrCreateDirectory(path);
+        var connectorAssemblyPaths = Directory.GetDirectories(path);
         if (connectorAssemblyPaths.Length == 0)
         {
             _logger.LogInformation($"No connectors loaded from paths: {connectorAssemblyPaths}");
