@@ -284,5 +284,9 @@ if (addressFeature is not null)
     }
 }
 
+// Verify database connection is up
+var dbConnectionService = app.Services.GetService<DbConnectionService>()!;
+await dbConnectionService.ThrowIfDatabaseConnectionNotUpAsync();
+
 app.WaitForShutdown();
 //app.Run();

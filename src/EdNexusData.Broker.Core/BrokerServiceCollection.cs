@@ -64,6 +64,7 @@ public static class BrokerServiceCollection
         services.AddScoped<ReceiveMessageService>();
         services.AddScoped<ConnectorService>();
         services.AddScoped(typeof(JobStatusService<>));
+        services.AddScoped<DbConnectionService>();
 
         // Wrappers
         services.AddSingleton<INowWrapper, NowWrapper>();
@@ -84,6 +85,7 @@ public static class BrokerServiceCollection
         services.AddScoped<PayloadContentService>();
         services.AddScoped<JobService>();
         services.AddScoped<EducationOrganizationContactService>();
+        services.AddScoped<DbConnectionService>();
         
         // Resolvers
         services.AddScoped<IConfigurationResolver, ConfigurationResolver>();

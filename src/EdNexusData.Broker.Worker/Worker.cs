@@ -3,6 +3,8 @@ using Ardalis.GuardClauses;
 using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdNexusData.Broker.Worker;
 
@@ -26,6 +28,9 @@ public class Worker : BackgroundService
 
             using (var scoped = _serviceProvider.CreateScope())
             {
+                var dbConnectionService = (DbConnectionService)scoped.ServiceProvider.GetService(typeof(DbConnectionService))!;
+                await dbConnectionService.ThrowIfDatabaseConnectionNotUpAsync();
+                
                 var _jobsRepository = (IRepository<Job>)scoped.ServiceProvider.GetService(typeof(IRepository<Job>))!;
                 var _jobStatusService = (JobStatusService<Worker>)scoped.ServiceProvider.GetService(typeof(JobStatusService<Worker>))!;
 
