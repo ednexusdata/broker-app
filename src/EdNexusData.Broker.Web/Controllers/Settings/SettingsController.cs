@@ -114,7 +114,10 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         // Loop through properties and set from form
         foreach(var prop in iconfigModel.GetType().GetProperties())
         {
-            prop.SetValue(iconfigModel, collection[prop.Name].ToString());
+            if (collection[prop.Name].ToString() != "ValueSet")
+            {
+                prop.SetValue(iconfigModel, collection[prop.Name].ToString());
+            }
         }
 
         await _configurationSerializer.SerializeAndSaveAsync(iconfigModel, _focusedDistrictEdOrg!.Value);
