@@ -6,6 +6,9 @@ using EdNexusData.Broker.Core.Specifications;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using EdNexusData.Broker.Common.Jobs;
+using Newtonsoft.Json;
+using System.Text.Json.Nodes;
+using EdNexusData.Broker.Core.Serializers;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -17,7 +20,7 @@ public class PrepareMappingJob : IJob
     private readonly PayloadResolver _payloadResolver;
     private readonly JobStatusService<PrepareMappingJob> _jobStatusService;
     private readonly IRepository<Request> _requestRepository;
-    private readonly IRepository<Core.PayloadContent> _payloadContentRepository;
+    private readonly IRepository<PayloadContent> _payloadContentRepository;
     private readonly IRepository<PayloadContentAction> _actionRepository;
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<Mapping> _mappingRepository;
@@ -73,20 +76,35 @@ public class PrepareMappingJob : IJob
 
         Guard.Against.Null(payloadContent.JsonContent, null, "No Json content in retrieved content payload.");
 
-        // Get Schema
-        var payloadContentSchemaJson = payloadContent.JsonContent?.RootElement.GetProperty("Schema");
-        Guard.Against.Null(payloadContentSchemaJson, null, "Missing schema element.");
-        var payloadContentSchema = JsonSerializer.Deserialize<PayloadContentSchema>(payloadContentSchemaJson.ToString()!);
-        Guard.Against.Null(payloadContentSchema?.ObjectType, null, "Schema missing");
+        var payloadContentObject = DataPayloadContentSerializer.Deseralize(payloadContent.JsonContent.ToJsonString()!);
+        var payloadContentSchema = payloadContentObject.Schema;
 
-        // Deseralize object to the type
-        await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Will deseralize object of type: {0}.", payloadContentSchema.ObjectType);
-        var payloadContentSchemaType = AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(s => s.GetExportedTypes())
-                    .Where(p => p.FullName == payloadContentSchema.ObjectType).FirstOrDefault();
-        Guard.Against.Null(payloadContentSchemaType, null, $"Unable to find concrete type {payloadContentSchema?.ObjectType}");
+        // // Get Schema
+        // var payloadContentSchemaJson = payloadContent.JsonContent?.RootElement.GetProperty("Schema");
+        // Guard.Against.Null(payloadContentSchemaJson, null, "Missing schema element.");
+        // var payloadContentSchema = System.Text.Json.JsonSerializer.Deserialize<PayloadContentSchema>(payloadContentSchemaJson.ToString()!);
+        // Guard.Against.Null(payloadContentSchema?.ObjectType, null, "Schema missing");
+
+        // // Deseralize object to the type
+        // await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Will deseralize object of type: {0}.", payloadContentSchema.ObjectType);
+        // var payloadContentSchemaType = AppDomain.CurrentDomain.GetAssemblies()
+        //             .SelectMany(s => s.GetExportedTypes())
+        //             .Where(p => p.FullName == payloadContentSchema.ObjectType).FirstOrDefault();
+        // Guard.Against.Null(payloadContentSchemaType, null, $"Unable to find concrete type {payloadContentSchema?.ObjectType}");
         
-        dynamic payloadContentObject = Convert.ChangeType(JsonSerializer.Deserialize(payloadContent.JsonContent!, payloadContentSchemaType), payloadContentSchemaType)!;
+        // // Extract the "Attributes" node
+        // JsonElement root = payloadContent.JsonContent!.RootElement;
+        // JsonElement additionalNode = root.GetProperty("AdditionalContents");
+
+        // // Reconstruct the JSON without the "Attributes" node
+        // JsonNode rootNode = JsonNode.Parse(payloadContent.JsonContent!.ToJsonString()!)!;
+        // JsonNode additionalRootNode = rootNode["AdditionalContents"]!;
+        // rootNode["AdditionalContents"] = null;
+
+        // var test = rootNode.ToJsonString();
+
+        // var jsondeserialize = JsonConvert.DeserializeObject(test, payloadContentSchemaType); // JsonSerializer.Deserialize(payloadContent.JsonContent!, payloadContentSchemaType);
+        // dynamic payloadContentObject = Convert.ChangeType(jsondeserialize, payloadContentSchemaType)!;
 
         // Find appropriate transformer
         var transformerType = _connectorLoader.Transformers.Where(x => x.Key == $"{sisConnectorType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}").FirstOrDefault().Value;
@@ -111,14 +129,14 @@ public class PrepareMappingJob : IJob
         var records = new List<dynamic>();
         var transformedRecords = new List<dynamic>();
 
-        var contentRecords = JsonSerializer.Deserialize<List<dynamic>>(payloadContentObject.Content);
+        var contentRecords = System.Text.Json.JsonSerializer.Deserialize<List<dynamic>>(payloadContentObject.Content.ToString());
 
         Type? recordType = null;
 
         foreach(var record in contentRecords)
         {
 
-            var correctRecordType = Convert.ChangeType(JsonSerializer.Deserialize(record, transformerContentType, new JsonSerializerOptions
+            var correctRecordType = Convert.ChangeType(System.Text.Json.JsonSerializer.Deserialize(record, transformerContentType, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 }), transformerContentType);
@@ -129,7 +147,8 @@ public class PrepareMappingJob : IJob
                 correctRecordType, 
                 payloadContent.Request.RequestManifest?.Student?.ToCommon()!, 
                 payloadContent.Request.EducationOrganization?.ToCommon()!, 
-                payloadContent.Request.ResponseManifest?.ToCommon()!
+                payloadContent.Request.ResponseManifest?.ToCommon()!,
+                payloadContentObject.AdditionalContents!
             });
             
             recordType = result.GetType();
@@ -142,7 +161,8 @@ public class PrepareMappingJob : IJob
                     correctRecordType, 
                     payloadContent.Request.RequestManifest?.Student?.ToCommon()!, 
                     payloadContent.Request.EducationOrganization?.ToCommon()!, 
-                    payloadContent.Request.ResponseManifest?.ToCommon()!
+                    payloadContent.Request.ResponseManifest?.ToCommon()!,
+                    payloadContentObject.AdditionalContents!
                 });
                 transformResult.BrokerId = result.BrokerId;
             }
@@ -158,13 +178,13 @@ public class PrepareMappingJob : IJob
         outRecords = (List<dynamic>)transformerType.GetMethod("Sort")?.Invoke(null, [records])!;
         outTransformedRecords = (List<dynamic>)transformerType.GetMethod("Sort")?.Invoke(null, [transformedRecords])!;
         
-        var recordsSerialized = JsonSerializer.SerializeToDocument((outRecords is null) ? records : outRecords);
-        var transformedRecordsSerialized = JsonSerializer.SerializeToDocument((outTransformedRecords is null) ? transformedRecords : outTransformedRecords);
+        var recordsSerialized = System.Text.Json.JsonSerializer.SerializeToDocument((outRecords is null) ? records : outRecords);
+        var transformedRecordsSerialized = System.Text.Json.JsonSerializer.SerializeToDocument((outTransformedRecords is null) ? transformedRecords : outTransformedRecords);
 
         var newMapping = new Mapping()
         {
             PayloadContentActionId = action.Id,
-            OriginalSchema = payloadContentSchema,
+            OriginalSchema = PayloadContentSchema.ToCore(payloadContentSchema!),
             MappingType = recordType?.FullName,
             StudentAttributes = null,
             JsonSourceMapping = recordsSerialized,

@@ -7,6 +7,7 @@ using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.PayloadContents;
 using EdNexusData.Broker.Core.Interfaces;
 using EdNexusData.Broker.Core.Messages;
+using System.Text.Json.Serialization;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -132,14 +133,16 @@ public class PayloadLoaderJob : IJob
                 var payloadContentResult = (DataPayloadContent)result;
                 _ = payloadContentResult ?? throw new InvalidCastException("Unable to cast result to DataPayloadContent type.");
                 
-                var payloadContentTypeType = AppDomain.CurrentDomain.GetAssemblies()
-                        .SelectMany(s => s.GetExportedTypes())
-                        .Where(p => p.FullName == outgoingPayloadContent.PayloadContentType).FirstOrDefault();
+                // var payloadContentTypeType = AppDomain.CurrentDomain.GetAssemblies()
+                //         .SelectMany(s => s.GetExportedTypes())
+                //         .Where(p => p.FullName == outgoingPayloadContent.PayloadContentType).FirstOrDefault();
+
+                var json = JsonSerializer.SerializeToDocument(result);
 
                 // Save the result
                 var payloadContent = await payloadContentService.AddJsonFile(
                     request.Id, 
-                    JsonSerializer.SerializeToDocument(result), 
+                    json, 
                     payloadContentResult.Schema.ContentType, 
                     $"{result?.GetType().Name}.json"
                 );
