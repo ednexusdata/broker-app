@@ -21,7 +21,6 @@ using EdNexusData.Broker.Web.Constants.DesignSystems;
 using System.Text.Json;
 using EdNexusData.Broker.Web.Utilities;
 using System.ComponentModel.DataAnnotations;
-using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.Payloads;
@@ -43,6 +42,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
     private readonly JobService _jobService;
     private readonly CurrentUserHelper currentUserHelper;
     private readonly DirectoryLookupService directoryLookupService;
+    private readonly StudentLookupService studentLookupService;
 
     public IncomingController(
         IReadRepository<EducationOrganization> educationOrganizationRepository,
@@ -54,7 +54,8 @@ public class IncomingController : AuthenticatedController<IncomingController>
         ManifestService manifestService,
         JobService jobService,
         CurrentUserHelper currentUserHelper,
-        DirectoryLookupService directoryLookupService)
+        DirectoryLookupService directoryLookupService,
+        StudentLookupService studentLookupService)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -66,6 +67,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
         _jobService = jobService;
         this.currentUserHelper = currentUserHelper;
         this.directoryLookupService = directoryLookupService;
+        this.studentLookupService = studentLookupService;
     }
 
     public async Task<IActionResult> Index(
@@ -127,7 +129,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
         return View(result);
     }
 
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(string? studentUniqueId = null)
     {
         var viewModel = new CreateIncomingRequestViewModel
         {
@@ -135,6 +137,27 @@ public class IncomingController : AuthenticatedController<IncomingController>
             States = States.GetSelectList(),
             Genders = Genders.GetSelectList()
         };
+
+        if (studentUniqueId is not null)
+        {
+            var students = await studentLookupService.SearchAsync(PayloadDirection.Incoming, studentUniqueId);
+            if (students is not null && students.Count > 0)
+            {
+                var student = students.First();
+                viewModel.StudentUniqueId = student.StudentId;
+                viewModel.FirstName = student.FirstName;
+                viewModel.MiddleName = student.MiddleName;
+                viewModel.LastSurname = student.LastName;
+                viewModel.BirthDate = student.BirthDate?.ToString("yyyy-MM-dd");
+                viewModel.Gender = student.Gender;
+                viewModel.Grade = student.Grade;
+            }
+            else
+            {
+                viewModel.StudentUniqueId = null;
+                TempData[VoiceTone.Critical] = $"Unable to find student with id {studentUniqueId}";
+            }
+        }
 
         return View(viewModel);
     }
