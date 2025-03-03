@@ -52,8 +52,9 @@ public class LoginController : AuthenticatedController<LoginController>
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? returnUrl = null)
     {
+        ViewData["ReturnUrl"] = returnUrl;
         var loginViewModel = new LogInViewModel()
         {
             ExternalLogins = await _signInManager.GetExternalAuthenticationSchemesAsync()
@@ -104,7 +105,15 @@ public class LoginController : AuthenticatedController<LoginController>
                     await _focusHelper.SetInitialFocus();
                     HttpContext?.Session?.SetString(LastAccessedKey, $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}");
 
-                    return LocalRedirect("~/");
+                    // Redirect to ReturnUrl if it's valid, otherwise go to default
+                    if (!string.IsNullOrEmpty(loginViewModel.ReturnUrl) && Url.IsLocalUrl(loginViewModel.ReturnUrl))
+                    {
+                        return Redirect(loginViewModel.ReturnUrl);
+                    }
+                    else
+                    {
+                        return LocalRedirect("~/");
+                    }
                 }
             }
         }
