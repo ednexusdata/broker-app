@@ -66,7 +66,9 @@ public class FocusHelper
         {
             var userRoleSpec = new UserWithUserRolesByUserSpec(currentUser.Id);
             var user = await _userRepo.FirstOrDefaultAsync(userRoleSpec);
-            var userRoles = user.UserRoles;
+            var userRoles = user?.UserRoles;
+
+            _ = userRoles ?? throw new NullReferenceException("No user roles assigned");
 
             foreach(var userRole in userRoles.Where(role => role.EducationOrganization?.ParentOrganizationId is not null))
             {
