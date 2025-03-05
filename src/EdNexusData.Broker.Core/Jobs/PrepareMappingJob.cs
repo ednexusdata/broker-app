@@ -150,10 +150,13 @@ public class PrepareMappingJob : IJob
                 payloadContent.Request.ResponseManifest?.ToCommon()!,
                 payloadContentObject.AdditionalContents!
             });
-            
-            recordType = result.GetType();
 
-            var transformResult = result;
+            var awaitedResult = await result;
+            
+            recordType = awaitedResult.GetType();
+
+            var transformResult = awaitedResult;
+            dynamic awaitedTransformedResult = transformResult;
 
             if (transformMethodInfo is not null)
             {
@@ -164,12 +167,15 @@ public class PrepareMappingJob : IJob
                     payloadContent.Request.ResponseManifest?.ToCommon()!,
                     payloadContentObject.AdditionalContents!
                 });
-                transformResult.BrokerId = result.BrokerId;
+
+                awaitedTransformedResult = await transformResult;
+
+                awaitedTransformedResult.BrokerId = awaitedResult.BrokerId;
             }
             
             // Save each
-            records.Add(result);
-            transformedRecords.Add(transformResult);
+            records.Add(awaitedResult);
+            transformedRecords.Add(awaitedTransformedResult);
         }
 
         List<dynamic>? outRecords = null;
