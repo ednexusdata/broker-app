@@ -32,4 +32,22 @@ public class Mapping : BaseEntity, IAggregateRoot
         }
     }
     public int? RemainingCount { get { return ReceviedCount - IgnoredCount - MappedCount; } }
+
+    public Common.Mappings.Mapping ToCommon()
+    {
+        return new Common.Mappings.Mapping()
+        {
+            Id = Id,
+            PayloadContentActionId = PayloadContentActionId,
+            // PayloadContentAction = PayloadContentAction?.ToCommon(),
+            // PrimaryPayloadContentAction = PayloadContentAction?.ToCommon(),
+            OriginalSchema = OriginalSchema?.ToCommon(),
+            MappingType = MappingType,
+            StudentAttributes = StudentAttributes?.ToCommon(),
+            JsonSourceMapping = JsonSourceMapping,
+            JsonInitialMapping = JsonInitialMapping,
+            JsonDestinationMapping = JsonDestinationMapping,
+            Version = Version
+        };
+    }
 }

@@ -13,4 +13,15 @@ public class District
     public string TimeZone { get; set; } = TimeZoneInfo.Local.Id;
     
     public ICollection<School>? Schools { get; set; }
+
+    public Common.EducationOrganizations.EducationOrganization ToCommonEducationOrganization()
+    {
+        return new Common.EducationOrganizations.EducationOrganization()
+        {
+            Id = Id,
+            Name = Name,
+            ShortName = ShortName,
+            Number = Number
+        };
+    }
 }

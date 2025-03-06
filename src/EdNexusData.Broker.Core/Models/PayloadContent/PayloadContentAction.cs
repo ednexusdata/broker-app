@@ -23,6 +23,8 @@ public class PayloadContentAction : BaseEntity, IAggregateRoot
             PayloadContentId = PayloadContentId,
             PayloadContentActionType = PayloadContentActionType,
             ActiveMappingId = ActiveMappingId,
+            ActiveMapping = ActiveMapping?.ToCommon(),
+            Settings = Settings,
             Process = Process,
             ProcessState = ProcessState
         };

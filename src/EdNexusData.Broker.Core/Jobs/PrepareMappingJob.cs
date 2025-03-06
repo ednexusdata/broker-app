@@ -24,6 +24,7 @@ public class PrepareMappingJob : IJob
     private readonly IRepository<PayloadContentAction> _actionRepository;
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<Mapping> _mappingRepository;
+    private readonly FocusEducationOrganizationResolver focusEducationOrganizationResolver;
 
     public PrepareMappingJob(
             ConnectorLoader connectorLoader,
@@ -34,7 +35,8 @@ public class PrepareMappingJob : IJob
             IRepository<Core.PayloadContent> payloadContentRepository,
             IRepository<PayloadContentAction> actionRepository,
             IServiceProvider serviceProvider,
-            IRepository<Mapping> mappingRepository)
+            IRepository<Mapping> mappingRepository,
+            FocusEducationOrganizationResolver focusEducationOrganizationResolver)
     {
         _connectorLoader = connectorLoader;
         _connectorResolver = connectorResolver;
@@ -45,6 +47,7 @@ public class PrepareMappingJob : IJob
         _actionRepository = actionRepository;
         _serviceProvider = serviceProvider;
         _mappingRepository = mappingRepository;
+        this.focusEducationOrganizationResolver = focusEducationOrganizationResolver;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -55,7 +58,7 @@ public class PrepareMappingJob : IJob
 
         Guard.Against.Null(action, "action", "Unable to find action.");
         Guard.Against.Null(action.PayloadContentId, "action.PayloadContentId", "Action missing payload content ID.");
-        
+
         var payloadContent = await _payloadContentRepository.FirstOrDefaultAsync(new PayloadContentsWithRequest(action.PayloadContentId.Value));
         
         Guard.Against.Null(payloadContent, "payloadContent", $"Unable to find payload content id {jobInstance.ReferenceGuid}");
@@ -65,6 +68,9 @@ public class PrepareMappingJob : IJob
 
         // Get incoming payload settings
         var payloadSettings = await _payloadResolver.FetchIncomingPayloadSettingsAsync(payloadContent.Request.RequestManifest!.RequestType, payloadContent.Request.EducationOrganization!.ParentOrganizationId!.Value);
+
+        // Set the ed org
+        focusEducationOrganizationResolver.EducationOrganizationId = payloadContent.Request.EducationOrganization!.ParentOrganizationId!.Value;
 
         // Resolve the SIS connector
         Guard.Against.Null(payloadSettings.StudentInformationSystem, null, "No SIS incoming connector set.");

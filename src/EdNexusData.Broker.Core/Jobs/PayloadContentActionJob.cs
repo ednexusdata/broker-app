@@ -126,7 +126,7 @@ public class PayloadContentActionJob : IJob
 
         dynamic? mappingObjectsToImport = ActivatorUtilities.CreateInstance(_serviceProvider, listMappingType);
 
-        // keep objects that are not to imported
+        // keep objects that are not to be imported
         foreach(dynamic map in mappingObject)
         {
             if (map.BrokerMappingRecordAction == MappingRecordAction.Import)
@@ -151,7 +151,7 @@ public class PayloadContentActionJob : IJob
             });
 
             await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Imported, result.ToString());
-            await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.InProgress, "Imported.");
+            await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.InProgress, "Finished payload content action.");
         }
 
     }

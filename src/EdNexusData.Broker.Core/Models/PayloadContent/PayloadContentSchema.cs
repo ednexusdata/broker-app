@@ -21,4 +21,17 @@ public class PayloadContentSchema
             ContentType = payloadContentSchema.ContentType
         };
     }
+
+    public Common.PayloadContents.PayloadContentSchema ToCommon()
+    {
+        return new Common.PayloadContents.PayloadContentSchema()
+        {
+            Owner = Owner,
+            Schema = Schema,
+            SchemaVersion = SchemaVersion,
+            ObjectType = ObjectType,
+            ContentObjectType = ContentObjectType,
+            ContentType = ContentType
+        };
+    }
 }
