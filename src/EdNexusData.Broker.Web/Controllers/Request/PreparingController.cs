@@ -112,41 +112,37 @@ public class PreparingController : AuthenticatedController<RequestsController>
         {
             foreach (var file in request.PayloadContents)
             {
-                if (file.JsonContent is not null)
-                {
-                    string contentActionType = "Ignore";
+                string contentActionType = "Ignore";
                     
-                    if (file.PayloadContentActions?.FirstOrDefault()?.Process == true)
-                    {
-                        contentActionType = file.PayloadContentActions?.FirstOrDefault()?.PayloadContentActionType!;
-                    } 
+                if (file.PayloadContentActions?.FirstOrDefault()?.Process == true)
+                {
+                    contentActionType = file.PayloadContentActions?.FirstOrDefault()?.PayloadContentActionType!;
+                } 
 
-                    // Get mapping if exists
-                    var activeMappingId = file.PayloadContentActions?.Where(x => x.PayloadContentActionType == contentActionType).Select(x => x.ActiveMappingId).FirstOrDefault();
-                    Mapping? mapping = null;
-                    if (activeMappingId != null)
-                    {
-                        mapping = await _mappingRepository.GetByIdAsync(activeMappingId.Value);
-                    }
-
-                    var test = new RequestManifestViewModel() {
-                        timeZoneInfo = currentUserHelper.ResolvedCurrentUserTimeZone(),
-                        PayloadContentId = file.Id,
-                        Action = file.PayloadContentActions?.FirstOrDefault(),
-                        ReceivedDate = file.CreatedAt,
-                        FileName = file.FileName!,
-                        ContentCategory = (file.XmlContent is not null || file.JsonContent is not null) ? "Data" : "File",
-                        ContentType = file.ContentType!,
-                        ReceviedCount = mapping?.ReceviedCount,
-                        MappedCount = mapping?.MappedCount,
-                        IgnoredCount = mapping?.IgnoredCount, 
-                        PayloadContentActionType = contentActionType
-                    };
-                    viewModel.PayloadContents.Add(test);
+                // Get mapping if exists
+                var activeMappingId = file.PayloadContentActions?.Where(x => x.PayloadContentActionType == contentActionType).Select(x => x.ActiveMappingId).FirstOrDefault();
+                Mapping? mapping = null;
+                if (activeMappingId != null)
+                {
+                    mapping = await _mappingRepository.GetByIdAsync(activeMappingId.Value);
                 }
-                
-                
+
+                var test = new RequestManifestViewModel() {
+                    timeZoneInfo = currentUserHelper.ResolvedCurrentUserTimeZone(),
+                    PayloadContentId = file.Id,
+                    Action = file.PayloadContentActions?.FirstOrDefault(),
+                    ReceivedDate = file.CreatedAt,
+                    FileName = file.FileName!,
+                    ContentCategory = (file.XmlContent is not null || file.JsonContent is not null) ? "Data" : "File",
+                    ContentType = file.ContentType!,
+                    ReceviedCount = mapping?.ReceviedCount,
+                    MappedCount = mapping?.MappedCount,
+                    IgnoredCount = mapping?.IgnoredCount, 
+                    PayloadContentActionType = contentActionType
+                };
+                viewModel.PayloadContents.Add(test);
             }
+            viewModel.PayloadContents = viewModel.PayloadContents.OrderBy(x => x.ContentCategory).ThenBy(x => x.FileName).ToList();
         }
 
         return View(viewModel);
