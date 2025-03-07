@@ -64,7 +64,7 @@ public class PayloadContentService
         var payloadContent = new PayloadContent()
         {
             RequestId = requestId,
-            JsonContent = JsonSerializer.SerializeToDocument(content),
+            BlobContent = content,
             ContentType = contentType,
             FileName =  fileName
         };
