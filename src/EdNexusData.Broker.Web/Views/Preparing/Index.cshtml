@@ -62,13 +62,25 @@
                                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.ReceivedDateDisplay</td>
                                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.FileName
                                     <div class="flex flex-row">
-                                        <!--<div class="mr-2 text-xs text-gray-500">View</div>-->
-                                        <div class="mr-2 text-xs text-gray-500"><a asp-controller="Requests" asp-action="ViewAttachment" asp-route-id="@file.PayloadContentId" target="_blank">Raw</a></div>
-                                        <div class="mx-2 text-xs text-gray-500"><a asp-controller="Requests" asp-action="ViewAttachment" asp-route-id="@file.PayloadContentId" asp-route-attachmentContentDisposition="true" target="_blank">Download</a></div>
+                                        @if(file.ContentCategory == "Data")
+                                        {
+                                        <div class="mr-2 text-xs text-gray-500">
+                                            <a asp-controller="Requests" asp-action="ViewAttachment" asp-route-id="@file.PayloadContentId" target="_blank">Raw</a>
+                                        </div>
+                                        }
+                                        else
+                                        {
+                                        <div class="mr-2 text-xs text-gray-500">
+                                            <a asp-controller="Requests" asp-action="ViewAttachment" asp-route-id="@file.PayloadContentId" target="_blank">View</a>
+                                        </div>
+                                        }
+                                        <div class="mx-2 text-xs text-gray-500">
+                                            <a asp-controller="Requests" asp-action="ViewAttachment" asp-route-id="@file.PayloadContentId" asp-route-attachmentContentDisposition="true" target="_blank">Download</a>
+                                        </div>
                                     </div>
                                 </td>
-                                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.ContentCategory <div
-                                        class="text-xs text-gray-500">@file.ContentType</div>
+                                <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.ContentCategory
+                                    <div class="text-xs text-gray-500">@file.ContentType</div>
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.ReceviedCount</td>
                                 <td class="whitespace-nowrap px-3 py-2 text-sm text-gray-600">@file.MappedCount</td>
