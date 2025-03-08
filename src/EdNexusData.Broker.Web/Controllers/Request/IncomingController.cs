@@ -151,6 +151,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
                 viewModel.BirthDate = student.BirthDate?.ToString("yyyy-MM-dd");
                 viewModel.Gender = student.Gender;
                 viewModel.Grade = student.Grade;
+                viewModel.Additional = JsonSerializer.Serialize(student.Additional);
             }
             else
             {
