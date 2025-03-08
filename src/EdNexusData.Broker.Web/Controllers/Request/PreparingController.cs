@@ -190,7 +190,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
             // Get request
             var request = await _requestRepository.GetByIdAsync(id);
 
-            if (payloadContent is not null && request is not null && request.RequestStatus!= RequestStatus.InProgress)
+            if (payloadContent is not null && request is not null && request.RequestStatus != RequestStatus.InProgress)
             {
                 TempData[VoiceTone.Positive] = $"Updated payload actions.";
                 // Queue job to send update
@@ -210,7 +210,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     JsonSerializer.SerializeToDocument(jobData)
                 );
 
-                await jobStatusService.UpdateRequestStatus(job, request, RequestStatus.InProgress, "Started setting payload content actions");
+                await jobStatusService.UpdateRequestStatus(request, RequestStatus.InProgress, "Started setting payload content actions");
             }
         }
         

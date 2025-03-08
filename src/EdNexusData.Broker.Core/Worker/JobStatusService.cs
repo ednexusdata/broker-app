@@ -79,6 +79,14 @@ public class JobStatusService<T>
         _logger.LogInformation($"{jobRecord.Id} / {request.Id}: {message}", messagePlaceholders);
     }
 
+    public async Task UpdateRequestStatus(Request request, RequestStatus? newRequestStatus, string? message, params object?[] messagePlaceholders)
+    {
+        if (newRequestStatus is not null) { request.RequestStatus = newRequestStatus.Value; }
+        await _requestRepo.UpdateAsync(request);
+
+        _logger.LogInformation($"{request.Id}: {message}", messagePlaceholders);
+    }
+
     public async Task UpdateMessageStatus(Job jobRecord, Message message, RequestStatus? newRequestStatus, string? messageText, params object?[] messagePlaceholders)
     {
         if (newRequestStatus is not null) { message.RequestStatus = newRequestStatus.Value; }
