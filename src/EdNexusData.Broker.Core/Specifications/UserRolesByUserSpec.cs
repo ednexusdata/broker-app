@@ -8,6 +8,7 @@ public class UserRolesByUserSpec : Specification<UserRole>
   {
     Query
         .Include(x => x.EducationOrganization)
+        .ThenInclude(x => x.ParentOrganization)
         .Where(user => user.UserId == UserId);
   }
 }
