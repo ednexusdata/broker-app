@@ -53,7 +53,7 @@ builder.ConfigureServices((hostContext, services) =>
         options.User.RequireUniqueEmail = false;
     })
     .AddEntityFrameworkStores<BrokerDbContext>()
-    .AddDefaultTokenProviders();
+    .AddTokenProvider<DataProtectorTokenProvider<IdentityUser<Guid>>>(TokenOptions.DefaultProvider);
     
     if (hostContext.HostingEnvironment.IsDevelopment())
     {
