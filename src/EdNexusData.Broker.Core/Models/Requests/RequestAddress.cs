@@ -9,4 +9,15 @@ public class RequestAddress
     public EducationOrganizationContact? Sender { get; set; }
 
     public string? BrokerAddress { get; set; }
+
+    public Common.Requests.RequestAddress ToCommon()
+    {
+        return new Common.Requests.RequestAddress()
+        {
+            District = District?.ToCommon(),
+            School = School?.ToCommon(),
+            Sender = Sender?.ToCommon(),
+            BrokerAddress = BrokerAddress
+        };
+    }
 }

@@ -14,6 +14,21 @@ public class District
     
     public ICollection<School>? Schools { get; set; }
 
+    public Common.EducationOrganizations.District ToCommon()
+    {
+        return new Common.EducationOrganizations.District()
+        {
+            Id = Id,
+            Name = Name,
+            ShortName = ShortName,
+            Number = Number,
+            Address = Address?.ToCommon(),
+            Domain = Domain,
+            TimeZone = TimeZone,
+            Schools = Schools?.Select(s => s.ToCommon()).ToList()
+        };
+    }
+
     public Common.EducationOrganizations.EducationOrganization ToCommonEducationOrganization()
     {
         return new Common.EducationOrganizations.EducationOrganization()

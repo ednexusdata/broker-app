@@ -10,5 +10,14 @@ public class EducationOrganizationContact
     public string? Phone { get; set; }
     public string? Email { get; set; }
 
+    public Common.EducationOrganizations.EducationOrganizationContact ToCommon()
+    {
+        return new Common.EducationOrganizations.EducationOrganizationContact()
+        {
+            Name = Name,
+            JobTitle = JobTitle,
+            Phone = Phone,
+            Email = Email
+        };
+    }
 }
-

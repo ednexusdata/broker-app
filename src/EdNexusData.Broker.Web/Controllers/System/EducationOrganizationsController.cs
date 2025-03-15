@@ -137,7 +137,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
             ShortName = data.ShortName,
             Number = data.Number,
             EducationOrganizationType = data.EducationOrganizationType,
-            Address = new Address()
+            Address = new Core.Address()
             {
                 StreetNumberName = data.StreetNumberName,
                 City = data.City,
@@ -146,9 +146,9 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
             },
             Domain = data.Domain,
             TimeZone = data.TimeZone!,
-            Contacts = new List<EducationOrganizationContact>()
+            Contacts = new List<Core.EducationOrganizationContact>()
             {
-                new EducationOrganizationContact {
+                new Core.EducationOrganizationContact {
                     Name = data.ContactName,
                     Email = data.ContacEmail,
                     Phone = data.ContactPhone,
@@ -242,7 +242,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
         }
         organization.Number = data.Number;
         organization.EducationOrganizationType = data.EducationOrganizationType;
-        organization.Address = new Address()
+        organization.Address = new Core.Address()
         {
             StreetNumberName = data.StreetNumberName,
             City = data.City,
@@ -252,9 +252,9 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
         organization.Domain = data.Domain;
         organization.TimeZone = data.TimeZone!;
 
-        organization.Contacts = new List<EducationOrganizationContact>()
+        organization.Contacts = new List<Core.EducationOrganizationContact>()
             {
-                new EducationOrganizationContact {
+                new Core.EducationOrganizationContact {
                     Name = data.ContactName,
                     Email = data.ContacEmail,
                     Phone = data.ContactPhone,

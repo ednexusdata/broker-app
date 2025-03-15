@@ -13,10 +13,16 @@ public class Manifest
     public string? Note { get; set; }
     public List<ManifestContent>? Contents { get; set; } = new List<ManifestContent>();
 
-    public Common.Importer.Manifest ToCommon()
+    public Common.Requests.Manifest ToCommon()
     {
-        return new Common.Importer.Manifest()
+        return new Common.Requests.Manifest()
         {
+            RequestType = RequestType,
+            MessageType = MessageType,
+            Note = Note,
+            From = From?.ToCommon(),
+            To = To?.ToCommon(),
+            Contents = Contents?.Select(x => x.ToCommon()).ToList()
         };
     }
 }
