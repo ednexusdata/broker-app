@@ -77,7 +77,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
         var viewModel = new RequestManifestListViewModel
         {
             RequestId = id,
-            RequestStatus = request.RequestStatus
+            RequestStatus = request.RequestStatus,
+            Open = request.Open
         };
 
         foreach (var contentPayloadAction in _connectorLoader.GetPayloadContentActions()!)

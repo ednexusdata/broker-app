@@ -105,4 +105,28 @@ public class RequestService
         
         return request;
     }
+
+    public async Task<bool> Close(Guid requestId)
+    {
+        var request = await requestRepository.GetByIdAsync(requestId);
+        _ = request ?? throw new NullReferenceException($"Unable to find request Id {requestId}");
+
+        request.Open = false;
+        await requestRepository.UpdateAsync(request);
+
+        await jobStatusService.UpdateRequestStatus(request, RequestStatus.Finished, "Request closed from requester");
+
+        return true;
+    }
+
+    public async Task<bool> Open(Guid requestId)
+    {
+        var request = await requestRepository.GetByIdAsync(requestId);
+        _ = request ?? throw new NullReferenceException($"Unable to find request Id {requestId}");
+
+        request.Open = true;
+        await requestRepository.UpdateAsync(request);
+
+        return true;
+    }
 }

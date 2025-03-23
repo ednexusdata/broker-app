@@ -7,6 +7,7 @@ public class RequestManifestListViewModel
 {
     public Guid RequestId { get; set; }
     public RequestStatus RequestStatus { get; set; }
+    public bool Open { get; set; }
     
     public List<RequestManifestViewModel> PayloadContents { get; set; } = new List<RequestManifestViewModel>();
 

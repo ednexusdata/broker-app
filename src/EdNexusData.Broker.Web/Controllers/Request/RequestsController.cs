@@ -21,6 +21,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
     private readonly ICurrentUser currentUser;
     private readonly CurrentUserHelper currentUserHelper;
     private readonly MessageService messageService;
+    private readonly RequestService requestService;
 
     public RequestsController(IReadRepository<Request> requestRepository,
         IReadRepository<Message> messageRepository,
@@ -28,7 +29,8 @@ public class RequestsController : AuthenticatedController<RequestsController>
         JobService jobService,
         ICurrentUser currentUser,
         CurrentUserHelper currentUserHelper,
-        MessageService messageService)
+        MessageService messageService,
+        RequestService requestService)
     {
         _requestRepository = requestRepository;
         _messageRepository = messageRepository;
@@ -37,6 +39,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
         this.currentUser = currentUser;
         this.currentUserHelper = currentUserHelper;
         this.messageService = messageService;
+        this.requestService = requestService;
     }
 
     public async Task<IActionResult> View(Guid id, Guid? jobId)
@@ -170,5 +173,23 @@ public class RequestsController : AuthenticatedController<RequestsController>
         
         TempData[VoiceTone.Positive] = $"Message submitted to send.";
         return RedirectToAction(nameof(View), "Requests", new { id = id, jobId = job.Id });
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> Open(Guid id)
+    {
+        var request = await requestService.Open(id);
+
+        TempData[VoiceTone.Positive] = $"Request opened.";
+        return RedirectToAction("Index", "Preparing", new { id = id });
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> Close(Guid id)
+    {
+        var request = await requestService.Close(id);
+
+        TempData[VoiceTone.Positive] = $"Request closed.";
+        return RedirectToAction(nameof(View), "Requests", new { id = id });
     }
 }
