@@ -58,8 +58,17 @@ public class DirectoryLookupService
         
         if (environment.IsNonProductionToLocalEnvironment())
         {
-            var host = environment.Addresses.FirstOrDefault(x => x.Scheme == "https")?.Host;
-            txtresult.Host = (host == "[::]") ? "localhost" : host;
+            var uri = environment.Addresses.FirstOrDefault(x => x.Scheme == "https");
+
+            _ = uri ?? throw new ArgumentException("Unable to parse address to URI.");
+            
+            txtresult.Host = (uri.Host == "[::]") ? "localhost" : uri.Host;
+
+            if (uri.Port != 443)
+            {
+                txtresult.Host = $"{txtresult.Host}:{uri.Port}";
+            }
+
             txtresult.Version = "edubroker1";
             txtresult.Environment = environment.EnvironmentName.ToLower();
         }
