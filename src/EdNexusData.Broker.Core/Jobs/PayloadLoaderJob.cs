@@ -149,6 +149,30 @@ public class PayloadLoaderJob : IJob
                 await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
             }
 
+            if (result is not null && result.GetType().IsAssignableTo(typeof(List<DataPayloadContent>))) 
+            {
+                var payloadContentResults = (List<DataPayloadContent>)result;
+                _ = payloadContentResults ?? throw new InvalidCastException("Unable to cast result to List<DataPayloadContent> type.");
+                
+                if (payloadContentResults.Count > 0)
+                {
+                    foreach(var payloadContentResult in payloadContentResults)
+                    {
+                        var json = JsonSerializer.SerializeToDocument(payloadContentResult);
+
+                        // Save the result
+                        var payloadContent = await payloadContentService.AddJsonFile(
+                            request.Id, 
+                            json, 
+                            payloadContentResult.Schema.ContentType, 
+                            $"{payloadContentResult?.GetType().Name}.json"
+                        );
+                    }
+                }
+
+                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
+            }
+
             // check if there is a result and if it is of type DataPayloadContent
             if (result is not null && result.GetType().IsAssignableTo(typeof(DocumentPayloadContent)))
             {
