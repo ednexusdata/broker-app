@@ -7,12 +7,18 @@ public abstract class Environment
     public string EnvironmentName = default!;
     public List<Uri> Addresses = new List<Uri>();
 
-    public static ImmutableList<string> NonProductionEnvironments => new List<string> { "demo", "development", "test" }.ToImmutableList();
-    public static ImmutableList<string> ProductionEnvironments => new List<string> { "production", "live" }.ToImmutableList();
+    public static ImmutableList<string> NonProductionToLocalEnvironments => new List<string> { "demo", "development", "dev" }.ToImmutableList();
+    public static ImmutableList<string> NonProductionEnvironments => new List<string> { "train", "test" }.ToImmutableList();
+    public static ImmutableList<string> ProductionEnvironments => new List<string> { "production", "live", "prod" }.ToImmutableList();
 
     public bool IsNonProductionEnvironment()
     {
-        return !ProductionEnvironments.Contains(EnvironmentName.ToLower());
+        return NonProductionEnvironments.Contains(EnvironmentName.ToLower());
+    }
+
+    public bool IsNonProductionToLocalEnvironment()
+    {
+        return NonProductionToLocalEnvironments.Contains(EnvironmentName.ToLower());
     }
 
     public bool IsProductionEnvironment()

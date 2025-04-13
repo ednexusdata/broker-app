@@ -8,4 +8,5 @@ public class BrokerDnsTxtRecord
     public string? Path { get; set; }
     public string? KeyAlgorithim { get; set; }
     public string? PublicKey { get; set; }
+    public string? Environment { get; set; }
 }

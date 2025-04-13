@@ -56,11 +56,28 @@ public class DirectoryLookupService
     {
         var txtresult = new BrokerDnsTxtRecord();
         
-        if (environment.IsNonProductionEnvironment())
+        if (environment.IsNonProductionToLocalEnvironment())
         {
             var host = environment.Addresses.FirstOrDefault(x => x.Scheme == "https")?.Host;
             txtresult.Host = (host == "[::]") ? "localhost" : host;
             txtresult.Version = "edubroker1";
+            txtresult.Environment = environment.EnvironmentName.ToLower();
+        }
+        else if (environment.IsNonProductionEnvironment())
+        {
+            var dnsresult = await _lookupClient.QueryAsync(searchDomain, QueryType.TXT);
+
+            var txtRecords = dnsresult.Answers.TxtRecords();
+            
+            if (txtRecords.Count() > 0)
+            {
+                var brokerTXTRecord = txtRecords.Where(x => x.Text.Contains("v=edubroker") && x.Text.Contains($"env={environment.EnvironmentName.ToLower()}"))?.FirstOrDefault();
+
+                if (brokerTXTRecord is not null)
+                {
+                    txtresult = ParseBrokerTXTRecord(brokerTXTRecord.Text.First());
+                }
+            }
         }
         else
         {
@@ -84,7 +101,7 @@ public class DirectoryLookupService
 
     public BrokerDnsTxtRecord ParseBrokerTXTRecord(string txtRecord)
     {
-        // v=edubroker1; a=broker.host.org; href=/broker
+        // v=edubroker1; a=broker.host.org; href=/broker; env=train
 
         string[] parts = txtRecord.Trim().Split(";");
         var values = new Dictionary<string, string>();
@@ -101,7 +118,8 @@ public class DirectoryLookupService
             Host = values.TryGetValue("a", out var a) ? a : null,
             Path = values.TryGetValue("href", out var href) ? href : null,
             KeyAlgorithim = values.TryGetValue("k", out var k) ? k : null,
-            PublicKey = values.TryGetValue("p", out var p) ? p : null
+            PublicKey = values.TryGetValue("p", out var p) ? p : null,
+            Environment = values.TryGetValue("env", out var env) ? env : null
         };
     }
 
