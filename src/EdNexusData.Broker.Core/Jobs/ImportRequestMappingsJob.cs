@@ -64,7 +64,7 @@ public class ImportRequestMappingsJob : IJob
 
         // Resolve the SIS connector
         Guard.Against.Null(payloadSettings.StudentInformationSystem, null, "No SIS incoming connector set.");
-        var sisConnectorType = _connectorResolver.Resolve(payloadSettings.StudentInformationSystem);
+        var sisConnectorType = _connectorResolver.ResolveConnector(payloadSettings.StudentInformationSystem);
         Guard.Against.Null(sisConnectorType, null, "Unable to load connector.");
 
         // Get mappings

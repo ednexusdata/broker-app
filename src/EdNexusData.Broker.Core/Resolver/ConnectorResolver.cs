@@ -1,6 +1,3 @@
-using EdNexusData.Broker.Core;
-using EdNexusData.Broker.Common;
-
 namespace EdNexusData.Broker.Core.Resolvers;
 
 public class ConnectorResolver
@@ -23,8 +20,13 @@ public class ConnectorResolver
         _serviceProvider = serviceProvider;
     }
     
-    public Type? Resolve(string connectorTypeName)
+    public Type? ResolveConnector(string connectorTypeName)
     {
         return  _connectorLoader.Connectors.Where(x => x.FullName == connectorTypeName).FirstOrDefault();
+    }
+
+    public Type? ResolvePayloadContentAction(string payloadContentActionType)
+    {
+        return  _connectorLoader.PayloadContentActions.Where(x => x.FullName == payloadContentActionType).FirstOrDefault();
     }
 }

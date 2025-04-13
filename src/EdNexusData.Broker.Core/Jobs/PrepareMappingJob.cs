@@ -73,9 +73,14 @@ public class PrepareMappingJob : IJob
         focusEducationOrganizationResolver.EducationOrganizationId = payloadContent.Request.EducationOrganization!.ParentOrganizationId!.Value;
 
         // Resolve the SIS connector
-        Guard.Against.Null(payloadSettings.StudentInformationSystem, null, "No SIS incoming connector set.");
-        var sisConnectorType = _connectorResolver.Resolve(payloadSettings.StudentInformationSystem);
-        Guard.Against.Null(sisConnectorType, null, "Unable to load connector.");
+        // Guard.Against.Null(payloadSettings.StudentInformationSystem, null, "No SIS incoming connector set.");
+        // var sisConnectorType = _connectorResolver.Resolve(payloadSettings.StudentInformationSystem);
+        // Guard.Against.Null(sisConnectorType, null, "Unable to load connector.");
+
+        // Resolve the selected payload content action
+        _ = action.PayloadContentActionType ?? throw new NullReferenceException($"Missing payload content action type.");
+        var payloadContentActionType = _connectorResolver.ResolvePayloadContentAction(action.PayloadContentActionType);
+        _ = payloadContentActionType ?? throw new NullReferenceException($"Unable to resolve payload content action type: {action.PayloadContentActionType}");
 
         // Extract contents and collapse to distinct types
         await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Begin processing file {0} with schema {1}.", payloadContent.FileName, payloadContent.ContentType);
@@ -113,18 +118,15 @@ public class PrepareMappingJob : IJob
         // dynamic payloadContentObject = Convert.ChangeType(jsondeserialize, payloadContentSchemaType)!;
 
         // Find appropriate transformer
-        var transformerType = _connectorLoader.Transformers.Where(x => x.Key == $"{sisConnectorType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}").FirstOrDefault().Value;
-        
+        var transformerType = _connectorLoader.Transformers.Where(x => x.Key == $"{payloadContentActionType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}").FirstOrDefault().Value;
         if (transformerType is null)
         { 
-            Guard.Against.Null(transformerType, null, $"Unable to resolve transformer type: {sisConnectorType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}");
+            await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, action, PayloadContentActionStatus.Error, "Error");
+            throw new NullReferenceException($"Unable to resolve transformer type: {payloadContentActionType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}");
         }
-        var methodInfo = transformerType.GetMethod("Map");
 
-        if (methodInfo is null)
-        { 
-            Guard.Against.Null(transformerType, null, $"Unable to find method map on transformerType: {transformerType.FullName}");
-        }
+        var methodInfo = transformerType.GetMethod("Map");
+        _ = methodInfo ?? throw new MissingMethodException($"Unable to find method map on transformerType: {transformerType.FullName}");
 
         var transformMethodInfo = transformerType.GetMethod("Transform");
 
@@ -135,11 +137,14 @@ public class PrepareMappingJob : IJob
         var records = new List<dynamic>();
         var transformedRecords = new List<dynamic>();
 
-        var contentRecords = System.Text.Json.JsonSerializer.Deserialize<List<dynamic>>(payloadContentObject.Content.ToString());
+        var contentRecords = System.Text.Json.JsonSerializer.Deserialize<List<dynamic>>(payloadContentObject!.Content!.ToString()!);
 
         Type? recordType = null;
 
-        foreach(var record in contentRecords)
+        // Create transformer object
+        dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, transformerType);
+
+        foreach(var record in contentRecords!)
         {
 
             var correctRecordType = Convert.ChangeType(System.Text.Json.JsonSerializer.Deserialize(record, transformerContentType, new JsonSerializerOptions
@@ -147,8 +152,7 @@ public class PrepareMappingJob : IJob
                     PropertyNameCaseInsensitive = true
                 }), transformerContentType);
 
-            // Run through connector's transformer
-            dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, transformerType);
+            // Call transformer's map method
             var result = methodInfo!.Invoke(transformer, new object[] { 
                 correctRecordType, 
                 payloadContent.Request.RequestManifest?.Student?.ToCommon()!, 
