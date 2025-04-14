@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.HttpOverrides;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +47,11 @@ switch (builder.Configuration["DatabaseProvider"])
         break;
 }
 
-builder.Services.AddDataProtection().PersistKeysToDbContext<BrokerDbContext>().SetApplicationName("EdNexusData.Broker");
+var certificate = new X509Certificate2(builder.Configuration["DataProtection:PfxCertPath"]!, builder.Configuration["DataProtection:PfxCertPassword"]!);
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<BrokerDbContext>()
+    .ProtectKeysWithCertificate(certificate)
+    .SetApplicationName("EdNexusData.Broker");
 
 builder.Services.AddScoped(typeof(EfRepository<>));
 builder.Services.AddScoped(typeof(CachedRepository<>));

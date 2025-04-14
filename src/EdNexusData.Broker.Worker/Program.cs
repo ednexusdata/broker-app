@@ -7,6 +7,7 @@ using EdNexusData.Broker.Core.Worker;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = Host.CreateDefaultBuilder(args);
 
@@ -49,7 +50,11 @@ builder.ConfigureServices((hostContext, services) =>
         services.AddSingleton<ICurrentUser, CurrentUserService>();
     }
 
-    services.AddDataProtection().PersistKeysToDbContext<BrokerDbContext>().SetApplicationName("EdNexusData.Broker");
+    var certificate = new X509Certificate2(hostContext.Configuration["DataProtection:PfxCertPath"]!, hostContext.Configuration["DataProtection:PfxCertPassword"]!);
+    services.AddDataProtection()
+        .PersistKeysToDbContext<BrokerDbContext>()
+        .ProtectKeysWithCertificate(certificate)
+        .SetApplicationName("EdNexusData.Broker");
     
     services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
     {
