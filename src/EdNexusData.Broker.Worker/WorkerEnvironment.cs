@@ -6,7 +6,7 @@ public class WorkerEnvironment : Core.Environment
     {
         EnvironmentName = configuration.GetValue<string>("Environment") ?? throw new ArgumentNullException("Missing environment");
 
-        if (IsNonProductionEnvironment())
+        if (IsNonProductionToLocalEnvironment())
         {
             var urls = configuration.GetValue<string>("EnvironmentUrls") ?? throw new ArgumentNullException("Missing environment urls");
             var splitUrls = urls.Split(",");
