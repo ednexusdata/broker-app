@@ -46,7 +46,7 @@ switch (builder.Configuration["DatabaseProvider"])
         break;
 }
 
-builder.Services.AddDataProtection().PersistKeysToDbContext<BrokerDbContext>();
+builder.Services.AddDataProtection().PersistKeysToDbContext<BrokerDbContext>().SetApplicationName("EdNexusData.Broker");
 
 builder.Services.AddScoped(typeof(EfRepository<>));
 builder.Services.AddScoped(typeof(CachedRepository<>));

@@ -4,17 +4,24 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using System.Dynamic;
 using EdNexusData.Broker.Common.Configuration;
+using Microsoft.AspNetCore.DataProtection;
+using System.Buffers.Text;
 
 namespace EdNexusData.Broker.Core.Serializers;
 
 public class ConfigurationSerializer
 {
     private readonly IRepository<EducationOrganizationConnectorSettings> _repo;
+    private readonly IDataProtectionProvider dataProtectionProvider;
     private readonly IServiceProvider _serviceProvider;
     
-    public ConfigurationSerializer(IRepository<EducationOrganizationConnectorSettings> repo, IServiceProvider serviceProvider)
+    public ConfigurationSerializer(
+        IRepository<EducationOrganizationConnectorSettings> repo,
+        IDataProtectionProvider dataProtectionProvider, 
+        IServiceProvider serviceProvider)
     {
         _repo = repo;
+        this.dataProtectionProvider = dataProtectionProvider;
         _serviceProvider = serviceProvider;
     }
 
@@ -30,16 +37,23 @@ public class ConfigurationSerializer
             if (repoConnectorSettings is not null)
             {
                 var configSettings = Newtonsoft.Json.Linq.JObject.Parse(repoConnectorSettings?.Settings?.RootElement.GetRawText());
+                var encconfigSettingsObj = configSettings[objTypeName].ToString();
 
-                var configSettingsObj = configSettings[objTypeName];
-
-                foreach(var prop in iconfigModel!.GetType().GetProperties())
+                if (!encconfigSettingsObj.Contains("{"))
                 {
-                    // Check if prop in configSettings
-                    var value = configSettingsObj.Value<string>(prop.Name);
-                    if (value is not null)
+                    var dp = dataProtectionProvider.CreateProtector("SecureConnectionString");
+                    var decryptedSerializedConfig = dp.Unprotect(encconfigSettingsObj);
+
+                    var configSettingsObj = Newtonsoft.Json.Linq.JObject.Parse(decryptedSerializedConfig);
+
+                    foreach(var prop in iconfigModel!.GetType().GetProperties())
                     {
-                        prop.SetValue(iconfigModel, value);
+                        // Check if prop in configSettings
+                        var value = configSettingsObj.Value<string>(prop.Name);
+                        if (value is not null)
+                        {
+                            prop.SetValue(iconfigModel, value);
+                        }
                     }
                 }
             }
@@ -80,9 +94,18 @@ public class ConfigurationSerializer
         //     }
         //     obj = deseralizedSettings;
         // }
+
+        // Encrypt object
+        var dp = dataProtectionProvider.CreateProtector("SecureConnectionString");
+        var seralizedConfig = JsonSerializer.SerializeToDocument<dynamic>(obj);
+        var encryptedSerializedConfig = dp.Protect(seralizedConfig.ToJsonString());
+
         // Serialize settings object
-        dynamic objWrapper = new ExpandoObject();
-        ((IDictionary<String, Object>)objWrapper)[objTypeName!] = obj;
+        //dynamic objWrapper = new ExpandoObject();
+        //((IDictionary<String, String>)objWrapper)[objTypeName!] = encryptedSerializedConfig;
+
+        var objWrapper = new Dictionary<string, string>();
+        objWrapper[objTypeName!] = encryptedSerializedConfig;
 
         var seralizedIConfigModel = JsonSerializer.SerializeToDocument<dynamic>(objWrapper);
         repoConnectorSettings.Settings = seralizedIConfigModel;

@@ -6,6 +6,7 @@ using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Worker;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = Host.CreateDefaultBuilder(args);
 
@@ -47,6 +48,8 @@ builder.ConfigureServices((hostContext, services) =>
     {
         services.AddSingleton<ICurrentUser, CurrentUserService>();
     }
+
+    services.AddDataProtection().PersistKeysToDbContext<BrokerDbContext>().SetApplicationName("EdNexusData.Broker");
     
     services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
     {
