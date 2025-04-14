@@ -8,7 +8,7 @@ public abstract class Environment
     public List<Uri> Addresses = new List<Uri>();
 
     public static ImmutableList<string> NonProductionToLocalEnvironments => new List<string> { "demo", "development", "dev" }.ToImmutableList();
-    public static ImmutableList<string> NonProductionEnvironments => new List<string> { "train", "test" }.ToImmutableList();
+    public static ImmutableList<string> NonProductionEnvironments => new List<string> { "train", "training", "test", "testing" }.ToImmutableList();
     public static ImmutableList<string> ProductionEnvironments => new List<string> { "production", "live", "prod" }.ToImmutableList();
 
     public bool IsNonProductionEnvironment()
