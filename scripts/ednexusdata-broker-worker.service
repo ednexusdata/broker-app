@@ -3,8 +3,8 @@ Description=Broker Worker Service
 After=network.target
 
 [Service]
-WorkingDirectory=/data/app/EdNexusData.Broker.Worker
-ExecStart=/usr/bin/dotnet /data/app/EdNexusData.Broker.Worker/EdNexusData.Broker.Worker.dll
+WorkingDirectory=/app/EdNexusData.Broker.Worker
+ExecStart=/usr/bin/dotnet /app/EdNexusData.Broker.Worker/EdNexusData.Broker.Worker.dll
 Restart=always
 # Restart service after 10 seconds if the dotnet service crashes:
 RestartSec=10
