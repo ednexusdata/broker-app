@@ -69,7 +69,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     [HttpGet("/Settings/Configuration/{assembly}")]
     public async Task<IActionResult> Configuration(string assembly)
     {
-        if (await FocusedToDistrict() is not null) return await FocusedToDistrict()!;
+        var result = await FocusedToDistrict();
+        if (result != null) return result;
 
         var connectorDictionary = _connectorLoader.Assemblies.Where(x => x.Key == assembly).FirstOrDefault();
         ArgumentException.ThrowIfNullOrEmpty(assembly);
@@ -85,6 +86,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
             foreach(var configType in configurations)
             {
                 var configModel = await _configurationSerializer.DeseralizeAsync(configType, _focusedDistrictEdOrg!.Value);
+
                 var displayName = (DisplayNameAttribute)configType.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault()!;
 
                 forms.Add(
@@ -102,7 +104,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     [HttpPost("/Settings/Configuration/{assembly}")]
     public async Task<IActionResult> Update(IFormCollection collection)
     {
-        if (await FocusedToDistrict() is not null) return await FocusedToDistrict()!;
+        var result = await FocusedToDistrict();
+        if (result != null) return result;
 
         var assemblyQualifiedName = collection["ConnectorConfigurationType"];
 
@@ -130,7 +133,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     [HttpGet("/Settings/Mapping")]
     public async Task<IActionResult> Mapping()
     {
-        if (await FocusedToDistrict() is not null) return await FocusedToDistrict()!;
+        var result = await FocusedToDistrict();
+        if (result != null) return result;
         
         return View(new {});
     }
