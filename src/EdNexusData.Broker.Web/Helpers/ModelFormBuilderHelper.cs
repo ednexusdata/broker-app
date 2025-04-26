@@ -65,13 +65,14 @@ public class ModelFormBuilderHelper
 
             if (modelTypePropAttrsDataType.DataType == DataType.Password)
             {
-                var passwordValue = (!string.IsNullOrEmpty(modelTypeProp.GetValue(model)?.ToString())) ? "Password is set" : "";
+                var passwordPlaceholder = (!string.IsNullOrEmpty(modelTypeProp.GetValue(model)?.ToString())) ? "Password is set" : "";
+                var passwordValue = (!string.IsNullOrEmpty(modelTypeProp.GetValue(model)?.ToString())) ? "ValueSet" : "";
                 formHTML += $"""
                 <div class="sm:col-span-4 my-4">
               <label for="{modelTypeProp.Name}" class="block text-sm font-medium leading-6 text-gray-900">{displayNameToUse}</label>
               <div class="mt-2">
                 <div class="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-tertiary-700 sm:max-w-md">
-                  <input type="password" autocomplete="off" name="{modelTypeProp.Name}" id="{modelTypeProp.Name}" placeholder="{passwordValue}" class="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
+                  <input type="password" autocomplete="off" name="{modelTypeProp.Name}" id="{modelTypeProp.Name}" value="{passwordValue}" placeholder="{passwordPlaceholder}" class="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6">
                 </div>
                 {modelTypePropAttrsDescription?.Description}
               </div>
