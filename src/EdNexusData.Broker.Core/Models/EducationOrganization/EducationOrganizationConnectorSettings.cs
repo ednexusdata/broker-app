@@ -10,5 +10,6 @@ public class EducationOrganizationConnectorSettings : BaseEntity, IAggregateRoot
     public EducationOrganization? EducationOrganization { get; set; }
     public Guid? EducationOrganizationId { get; set; }
     public string Connector { get; set; } = default!;
+    public bool Enabled { get; set; } = false;
     public JsonDocument? Settings { get; set; }
 }

@@ -11,17 +11,32 @@
   <h2 class="text-base font-semibold leading-7 text-gray-900">Connectors</h2>
   <p class="mt-1 text-sm leading-6 text-gray-600">List of loaded connectors.</p>
 
+  <form asp-action="Update" method="Post" class="mb-4">
   <ul role="list" class="m-3 text-sm leading-6">
     @if(Model.ConnectorTypes is not null)
     {
       @foreach(var connector in Model.ConnectorTypes)
       {
       <li class="flex justify-between p-2">
-        <div class="font-medium text-gray-900">@ConnectorHelper.DisplayName(connector) <br /><span class="text-gray-500">@connector.AssemblyQualifiedName</span></div>
+        <div class="font-medium text-gray-900">
+          @if(Model.ConnectorSettings?.Where(x => x.Connector == connector.Assembly.GetName().Name && x.Enabled == true).FirstOrDefault() is not null)
+          {
+            <input type="checkbox" name="connectorsEnabled" value="@connector.Assembly.GetName().Name" checked="checked" />
+          }
+          else
+          {
+            <input type="checkbox" name="connectorsEnabled" value="@connector.Assembly.GetName().Name" />
+          }
+          @ConnectorHelper.DisplayName(connector) <br /><span class="text-gray-500">@connector.AssemblyQualifiedName</span></div>
       </li>
       }
     }
   </ul>
+  <button
+      type="submit"
+      class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10"
+  >Save</button>
+  </form>
 
   <h2 class="text-base font-semibold leading-7 text-gray-900">Payloads</h2>
   <p class="mt-1 text-sm leading-6 text-gray-600">List of loaded payloads.</p>

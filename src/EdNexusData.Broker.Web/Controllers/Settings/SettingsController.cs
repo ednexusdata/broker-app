@@ -58,12 +58,52 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         var connectors = _connectorLoader.Connectors;
         var payloads = _connectorLoader.Payloads;
 
+        var connectorSettings = await _repo.ListAsync(new ConnectorByEdOrgIdSpec(_focusedDistrictEdOrg!.Value));
+
         var settingsViewModel = new SettingsViewModel() {
             ConnectorTypes = connectors,
-            PayloadTypes = payloads
+            PayloadTypes = payloads,
+            ConnectorSettings = connectorSettings,
         };
 
         return View(settingsViewModel);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Update(IEnumerable<string> connectorsEnabled)
+    {
+        if (await FocusedToDistrict() is not null) return View();
+
+        var connectors = _connectorLoader.Connectors;
+
+        if (connectorsEnabled is not null && connectorsEnabled.Count() > 0)
+        {
+            foreach(var connector in connectors)
+            {
+                var existingRecord = await _repo.FirstOrDefaultAsync(new ConnectorByNameAndEdOrgIdSpec(connector.Assembly.GetName().Name!, _focusedDistrictEdOrg!.Value));
+                if (existingRecord is not null)
+                {
+                    existingRecord.Enabled = connectorsEnabled.Contains(connector.Assembly.GetName().Name!);
+                    await _repo.UpdateAsync(existingRecord);
+                }
+                else
+                {
+                    if (connectorsEnabled.Contains(connector.Assembly.GetName().Name!))
+                    {
+                        var newRecord = new EducationOrganizationConnectorSettings()
+                        {
+                            Connector = connector.Assembly.GetName().Name!,
+                            EducationOrganizationId = _focusedDistrictEdOrg!.Value,
+                            Enabled = connectorsEnabled.Contains(connector.Assembly.GetName().Name!)
+                        };
+                        await _repo.AddAsync(newRecord);
+                    }
+                    
+                }
+            }
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpGet("/Settings/Configuration/{assembly}")]
@@ -102,7 +142,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     }
 
     [HttpPost("/Settings/Configuration/{assembly}")]
-    public async Task<IActionResult> Update(IFormCollection collection)
+    public async Task<IActionResult> UpdateConfiguration(IFormCollection collection)
     {
         var result = await FocusedToDistrict();
         if (result != null) return result;
