@@ -12,7 +12,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     [HttpGet("/Settings/IncomingPayload/{payload}")]
     public async Task<IActionResult> IncomingPayload(string payload)
     {
-        if (await FocusedToDistrict() is not null) return await FocusedToDistrict();
+        var result = await FocusedToDistrict();
+        if (result != null) return result;
 
         var payloadAssembly = _connectorLoader.Payloads.Where(x => x.FullName == payload).First();
 
@@ -38,7 +39,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     [HttpPost("/Settings/IncomingPayload/{payload}")]
     public async Task<IActionResult> UpdateIncomingPayload([FromRoute] string payload)
     {
-        if (await FocusedToDistrict() is not null) return await FocusedToDistrict();
+        var result = await FocusedToDistrict();
+        if (result != null) return result;
         
         var currentPayload = await _educationOrganizationPayloadSettings
             .FirstOrDefaultAsync(new PayloadSettingsByNameAndEdOrgIdSpec(payload, _focusedDistrictEdOrg!.Value));

@@ -16,7 +16,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     [HttpGet("/Settings/OutgoingPayload/{payload}")]
     public async Task<IActionResult> OutgoingPayload(string payload)
     {
-        if (await FocusedToDistrict() is not null) return await FocusedToDistrict();
+        var result = await FocusedToDistrict();
+        if (result != null) return result;
 
         var payloadAssembly = _connectorLoader.Payloads.Where(x => x.FullName == payload).First();
 
@@ -66,7 +67,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     [HttpPost("/Settings/OutgoingPayload/{payload}")]
     public async Task<IActionResult> UpdateOutgoingPayload([FromRoute] string payload, [FromForm] CreateOutgoingPayloadSettingsViewModel input)
     {
-        if (await FocusedToDistrict() is not null) return await FocusedToDistrict();
+        var result = await FocusedToDistrict();
+        if (result != null) return result;
 
         var currentPayload = await _educationOrganizationPayloadSettings
             .FirstOrDefaultAsync(new PayloadSettingsByNameAndEdOrgIdSpec(payload, _focusedDistrictEdOrg!.Value));
@@ -107,7 +109,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     [HttpPost("/Settings/OutgoingPayloadContents/{payload}")]
     public async Task<IActionResult> UpdateOutgoingPayloadContents([FromRoute] string payload, [FromForm] string settings)
     {
-        if (await FocusedToDistrict() is not null) return await FocusedToDistrict();
+        var result = await FocusedToDistrict();
+        if (result != null) return result;
 
         // Transform incoming form json data to jsonnode
         var jsonSettings = JsonNode.Parse(settings)!.AsArray();
@@ -122,7 +125,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
             if (jsonSetting!["configuration"] is not null && !string.IsNullOrEmpty(jsonSetting!["configuration"]!.ToString()))
             {
                 var options = new JsonSerializerOptions { WriteIndented = false };
-                var jsonDoc = JsonDocument.Parse(jsonSetting["configuration"].ToString()!);
+                var jsonDoc = JsonDocument.Parse(jsonSetting!["configuration"]?.ToString()!);
                 settingsToSave = JsonSerializer.Serialize(jsonDoc, options);
             }
 
