@@ -8,6 +8,9 @@ using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Core.Services;
+using System.Text.Json;
+using EdNexusData.Broker.Core.Messages;
+using EdNexusData.Broker.Core.Interfaces;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -20,17 +23,22 @@ public class RequestsController : AuthenticatedController<RequestsController>
     private readonly JobService jobService;
     private readonly ICurrentUser currentUser;
     private readonly CurrentUserHelper currentUserHelper;
+    private readonly INowWrapper nowWrapper;
     private readonly MessageService messageService;
     private readonly RequestService requestService;
+    private readonly EducationOrganizationContactService educationOrganizationContactService;
 
+    // Constructor
     public RequestsController(IReadRepository<Request> requestRepository,
         IReadRepository<Message> messageRepository,
         IReadRepository<PayloadContent> payloadContentRepository,
         JobService jobService,
         ICurrentUser currentUser,
         CurrentUserHelper currentUserHelper,
+        INowWrapper nowWrapper,
         MessageService messageService,
-        RequestService requestService)
+        RequestService requestService,
+        EducationOrganizationContactService educationOrganizationContactService)
     {
         _requestRepository = requestRepository;
         _messageRepository = messageRepository;
@@ -38,8 +46,10 @@ public class RequestsController : AuthenticatedController<RequestsController>
         this.jobService = jobService;
         this.currentUser = currentUser;
         this.currentUserHelper = currentUserHelper;
+        this.nowWrapper = nowWrapper;
         this.messageService = messageService;
         this.requestService = requestService;
+        this.educationOrganizationContactService = educationOrganizationContactService;
     }
 
     public async Task<IActionResult> View(Guid id, Guid? jobId)
@@ -180,14 +190,81 @@ public class RequestsController : AuthenticatedController<RequestsController>
     {
         var request = await requestService.Open(id);
 
-        TempData[VoiceTone.Positive] = $"Request opened.";
-        return RedirectToAction("Index", "Preparing", new { id = id });
+        // Queue job to send update
+        var jobData = new MessageContents { 
+            Sender = await educationOrganizationContactService.FromUser(currentUser.AuthenticatedUserId()!.Value), 
+            SenderSentTimestamp = nowWrapper.UtcNow, 
+            RequestId = request.Id, 
+            RequestStatus = RequestStatus.Reopened, 
+            MessageText = "Reopened request.",
+            EducationOrganizationId = request?.EducationOrganizationId,
+            MessageType = typeof(StatusUpdateMessage).FullName
+        };
+
+        var job = await jobService.CreateJobAsync(
+            typeof(SendMessageJob), 
+            typeof(Request), 
+            id, 
+            currentUserHelper.CurrentUserId()!.Value, 
+            JsonSerializer.SerializeToDocument(jobData)
+        );
+
+        TempData[VoiceTone.Positive] = $"Request reopened.";
+        //return RedirectToAction("Index", "Preparing", new { id = id, jobId = job.Id });
+        return RedirectToAction(nameof(View), "Requests", new { id = id });
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> Finish(Guid id)
+    {
+        var request = await requestService.Close(id, RequestStatus.Finished);
+
+        // Queue job to send update
+        var jobData = new MessageContents { 
+            Sender = await educationOrganizationContactService.FromUser(currentUser.AuthenticatedUserId()!.Value), 
+            SenderSentTimestamp = nowWrapper.UtcNow, 
+            RequestId = request.Id, 
+            RequestStatus = RequestStatus.Finished, 
+            MessageText = "Request finished.",
+            EducationOrganizationId = request?.EducationOrganizationId,
+            MessageType = typeof(StatusUpdateMessage).FullName
+        };
+
+        var job = await jobService.CreateJobAsync(
+            typeof(SendMessageJob), 
+            typeof(Request), 
+            id, 
+            currentUserHelper.CurrentUserId()!.Value, 
+            JsonSerializer.SerializeToDocument(jobData)
+        );
+
+        TempData[VoiceTone.Positive] = $"Request finished.";
+        return RedirectToAction(nameof(View), "Requests", new { id = id });
     }
 
     [HttpPut]
     public async Task<IActionResult> Close(Guid id)
     {
-        var request = await requestService.Close(id);
+        var request = await requestService.Close(id, RequestStatus.Closed);
+
+        // Queue job to send update
+        var jobData = new MessageContents { 
+            Sender = await educationOrganizationContactService.FromUser(currentUser.AuthenticatedUserId()!.Value), 
+            SenderSentTimestamp = nowWrapper.UtcNow, 
+            RequestId = request.Id, 
+            RequestStatus = RequestStatus.Closed, 
+            MessageText = "Request closed.",
+            EducationOrganizationId = request?.EducationOrganizationId,
+            MessageType = typeof(StatusUpdateMessage).FullName
+        };
+
+        var job = await jobService.CreateJobAsync(
+            typeof(SendMessageJob), 
+            typeof(Request), 
+            id, 
+            currentUserHelper.CurrentUserId()!.Value, 
+            JsonSerializer.SerializeToDocument(jobData)
+        );
 
         TempData[VoiceTone.Positive] = $"Request closed.";
         return RedirectToAction(nameof(View), "Requests", new { id = id });

@@ -3,6 +3,7 @@ using EdNexusData.Broker.Core.Interfaces;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Core.Worker;
 using Microsoft.EntityFrameworkCore.Storage.Json;
+using Org.BouncyCastle.Ocsp;
 
 namespace EdNexusData.Broker.Core.Services;
 
@@ -106,7 +107,7 @@ public class RequestService
         return request;
     }
 
-    public async Task<bool> Close(Guid requestId)
+    public async Task<Request> Close(Guid requestId, RequestStatus requestStatus)
     {
         var request = await requestRepository.GetByIdAsync(requestId);
         _ = request ?? throw new NullReferenceException($"Unable to find request Id {requestId}");
@@ -114,12 +115,12 @@ public class RequestService
         request.Open = false;
         await requestRepository.UpdateAsync(request);
 
-        await jobStatusService.UpdateRequestStatus(request, RequestStatus.Finished, "Request closed from requester");
+        await jobStatusService.UpdateRequestStatus(request, requestStatus, $"Request status set to: {requestStatus}");
 
-        return true;
+        return request;
     }
 
-    public async Task<bool> Open(Guid requestId)
+    public async Task<Request> Open(Guid requestId)
     {
         var request = await requestRepository.GetByIdAsync(requestId);
         _ = request ?? throw new NullReferenceException($"Unable to find request Id {requestId}");
@@ -127,6 +128,8 @@ public class RequestService
         request.Open = true;
         await requestRepository.UpdateAsync(request);
 
-        return true;
+        await jobStatusService.UpdateRequestStatus(request, RequestStatus.Reopened, "Request reopened");
+
+        return request;
     }
 }

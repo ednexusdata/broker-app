@@ -69,7 +69,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
             return NotFound();
         }
 
-        if (request.RequestStatus.NotIn(RequestStatus.InProgress))
+        if (request.RequestStatus.NotIn(RequestStatus.InProgress, RequestStatus.Reopened))
         {
             ViewBag.JobId = jobId;
         }

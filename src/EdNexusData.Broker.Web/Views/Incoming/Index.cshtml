@@ -181,7 +181,8 @@
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-sm font-medium sm:pr-3">
                                         <div class="flex justify-end gap-2">
                                             @if (@incomingRequest.Status == EdNexusData.Broker.Common.Jobs.RequestStatus.Transmitted.GetDescription() || 
-                                                @incomingRequest.Status == EdNexusData.Broker.Common.Jobs.RequestStatus.InProgress.GetDescription())
+                                                @incomingRequest.Status == EdNexusData.Broker.Common.Jobs.RequestStatus.InProgress.GetDescription() || 
+                                                @incomingRequest.Status == EdNexusData.Broker.Common.Jobs.RequestStatus.Reopened.GetDescription())
                                             {
                                                 <a
                                                     asp-controller="Preparing"
@@ -191,7 +192,7 @@
                                                     asp-policy="@TransferIncomingRecords"
                                                     class="text-tertiary-700 hover:text-tertiary-900"
                                                 >
-                                                    Edit
+                                                    Process
                                                 </a>
                                             }
                                             @if (incomingRequest.Status == EdNexusData.Broker.Common.Jobs.RequestStatus.Draft.GetDescription())

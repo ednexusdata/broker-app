@@ -48,8 +48,8 @@
                 </div>
                 <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Finished</div>
-                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Finished)?.Timestamp</div>
-                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Finished)?.Userstamp</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Closed)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Closed)?.Userstamp</div>
                 </div>
             </div>
             <div class="grid grid-cols-5 bg-@outgoingBgColor-700 p-1">
@@ -58,21 +58,25 @@
                     <div>@Model.Request?.RequestManifest?.To?.District?.ShortName / @Model.Request?.RequestManifest?.To?.District?.Number</div>
                     <div>@Model.Request?.RequestManifest?.To?.School?.ShortName / @Model.Request?.RequestManifest?.To?.School?.Number</div>
                 </div>
-                <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">&nbsp;</div>
                 <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Received</div>
                     <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Received)?.Timestamp</div>
                     <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Received)?.Userstamp</div>
                 </div>
                 <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
-                    <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Loaded</div>
-                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Loaded)?.Timestamp</div>
-                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Loaded)?.Userstamp</div>
+                    <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Extracted</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Extracted)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Extracted)?.Userstamp</div>
                 </div>
                 <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Transmitted</div>
                     <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Transmitted)?.Timestamp</div>
                     <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Transmitted)?.Userstamp</div>
+                </div>
+                <div class="border-4 border-@outgoingBgColor-400 bg-@outgoingBgColor-500 p-1.5 m-0.5 rounded">
+                    <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Closed</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Closed)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Closed)?.Userstamp</div>
                 </div>
             </div>
             <div class="m-5 flex flex-row justify-center items-center">
@@ -128,7 +132,7 @@
         @if (Model.Request?.Open == false)
         {
             <div>
-            <form method="post" asp-controller="Requests" asp-action="Open" asp-route-id="@Model.Request.Id" autocomplete="off">
+            <form method="post" asp-controller="Requests" asp-action="Open" asp-route-id="@Model.Request?.Id" autocomplete="off">
             <input type="hidden" name="_METHOD" value="PUT" />
             <button
                 type="submit"
@@ -137,7 +141,34 @@
             </form>
             </div>
         }
-
+        else
+        {
+            @if(Model.Request?.IncomingOutgoing == EdNexusData.Broker.Core.IncomingOutgoing.Outgoing)
+            {
+                <div>
+                <form method="post" asp-controller="Requests" asp-action="Close" asp-route-id="@Model.Request?.Id" autocomplete="off">
+                <input type="hidden" name="_METHOD" value="PUT" />
+                <button
+                    type="submit"
+                    class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10"
+                >Close</button>
+                </form>
+                </div>
+            }
+            @if(Model.Request?.IncomingOutgoing == EdNexusData.Broker.Core.IncomingOutgoing.Incoming)
+            {
+                <div>
+                <form method="post" asp-controller="Requests" asp-action="Finish" asp-route-id="@Model.Request?.Id" autocomplete="off">
+                <input type="hidden" name="_METHOD" value="PUT" />
+                <button
+                    type="submit"
+                    class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10"
+                >Finish</button>
+                </form>
+                </div>
+            }
+            
+        }
     </div>
     }
     

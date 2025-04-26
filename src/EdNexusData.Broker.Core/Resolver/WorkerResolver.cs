@@ -32,7 +32,7 @@
 //                     var sendRequest = (SendRequest)scoped.ServiceProvider.GetService(typeof(SendRequest))!;
 //                     await sendRequest.Process(request);
 //                     break;
-//                 case RequestStatus.WaitingToLoad:
+//                 case RequestStatus.WaitingToExtract:
 //                     var payloadJobLoader = (PayloadJobLoader)scoped.ServiceProvider.GetService(typeof(PayloadJobLoader))!;
 //                     await payloadJobLoader.Process(request);
 //                     break;

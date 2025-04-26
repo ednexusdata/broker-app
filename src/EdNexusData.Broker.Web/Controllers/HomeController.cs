@@ -68,7 +68,7 @@ public class HomeController : AuthenticatedController<HomeController>
         // Need the total count as well
         var inProgressOutgoingRequests = requests
             .Where(request => request.IncomingOutgoing == IncomingOutgoing.Outgoing
-            && request.RequestStatus == RequestStatus.Loaded);
+            && request.RequestStatus == RequestStatus.Extracted);
 
         // Only take 5, displaying latest outgoing requests
         // Need the total count as well

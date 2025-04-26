@@ -122,7 +122,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         var outgoingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdWithPayloadContents(requestId));
         if (outgoingRequest is null) return NotFound();
 
-        if (outgoingRequest.RequestStatus != RequestStatus.Loaded)
+        if (outgoingRequest.RequestStatus != RequestStatus.Extracted)
         {
             ViewBag.JobId = jobId;
         }
@@ -309,7 +309,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
 
         Guard.Against.Null(outgoingRequest);
 
-        outgoingRequest.RequestStatus = RequestStatus.WaitingToLoad;
+        outgoingRequest.RequestStatus = RequestStatus.WaitingToExtract;
 
         await _outgoingRequestRepository.UpdateAsync(outgoingRequest);
 

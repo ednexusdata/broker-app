@@ -53,8 +53,8 @@ public class PayloadLoaderJob : IJob
         var request = await requestService.Get(jobInstance);
         _ = request ?? throw new ArgumentNullException($"Unable to find request Id {jobInstance.ReferenceGuid}");
 
-        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Begin outgoing jobs loading for: {0}", request.Payload);
-        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Begin fetching payload contents for: {0}", request.EducationOrganization?.ParentOrganizationId);
+        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Begin outgoing jobs extracting for: {0}", request.Payload);
+        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Begin fetching payload contents for: {0}", request.EducationOrganization?.ParentOrganizationId);
 
         // Step 2: Get outgoing payload settings
         var outgoingPayloadSettings = await _payloadResolver.FetchOutgoingPayloadSettingsAsync(request.Payload, request.EducationOrganization!.ParentOrganizationId!.Value);
@@ -62,7 +62,7 @@ public class PayloadLoaderJob : IJob
 
         if (outgoingPayloadContents is null || outgoingPayloadContents.Count <= 0)
         {
-            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "No payload contents");
+            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracted, "No payload contents");
             return;
         }
 
@@ -73,9 +73,9 @@ public class PayloadLoaderJob : IJob
             focusEducationOrganizationResolver.EducationOrganizationId = request.EducationOrganization!.ParentOrganizationId!.Value;
 
             // Resolve job to execute
-            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolving job to execute for payload content type: {0}", outgoingPayloadContent.PayloadContentType);
+            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Resolving job to execute for payload content type: {0}", outgoingPayloadContent.PayloadContentType);
             var jobToExecute = _payloadJobResolver.Resolve(outgoingPayloadContent.PayloadContentType);
-            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
+            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
 
             // Attach job status info
             jobToExecute.JobStatusService = new JobStatusServiceProxy(jobToExecute, jobInstance, request);
@@ -120,12 +120,12 @@ public class PayloadLoaderJob : IJob
             }
             catch (Exception e)
             {
-                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Errored with: {0}.", e.Message);
+                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracted, "Errored with: {0}.", e.Message);
                 throw;
             }
             
 
-            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Received result: {0}", (result is null) ? "No data" : result.GetType().FullName);
+            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Received result: {0}", (result is null) ? "No data" : result.GetType().FullName);
             
             // check if there is a result and if it is of type DataPayloadContent
             if (result is not null && result.GetType().IsAssignableTo(typeof(DataPayloadContent)))
@@ -146,7 +146,7 @@ public class PayloadLoaderJob : IJob
                     payloadContentResult.Schema.ContentType, 
                     $"{result?.GetType().Name}.json"
                 );
-                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
+                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
             }
 
             if (result is not null && result.GetType().IsAssignableTo(typeof(List<DataPayloadContent>))) 
@@ -170,7 +170,7 @@ public class PayloadLoaderJob : IJob
                     }
                 }
 
-                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
+                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Saved data payload content: {0}", jobToExecute.GetType().FullName);
             }
 
             // check if there is a result and if it is of type DataPayloadContent
@@ -185,19 +185,19 @@ public class PayloadLoaderJob : IJob
                     payloadContentResult.ContentType, 
                     payloadContentResult.FileName
                 );
-                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loading, "Saved document payload content: {0}", jobToExecute.GetType().FullName);
+                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Saved document payload content: {0}", jobToExecute.GetType().FullName);
             }
         }
 
-        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Loaded, "Finished updating request.");
+        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracted, "Finished updating request.");
 
         // Queue job to send update
         var jobData = new MessageContents { 
             Sender = await educationOrganizationContactService.FromUser(jobInstance.InitiatedUserId!.Value), 
             SenderSentTimestamp = nowWrapper.UtcNow, 
             RequestId = request.Id, 
-            RequestStatus = RequestStatus.Loaded, 
-            MessageText = "Updated request status to loaded.",
+            RequestStatus = RequestStatus.Extracted, 
+            MessageText = "Updated request status to extracted.",
             EducationOrganizationId = request?.EducationOrganizationId,
             MessageType = typeof(StatusUpdateMessage).FullName
         };
