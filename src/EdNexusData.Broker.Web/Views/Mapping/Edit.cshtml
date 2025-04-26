@@ -57,13 +57,13 @@
           <div class="grid gap-6">
             <div class="grid gap-6 rounded-lg shadow-sm ring-1 ring-gray-900/5">
               <div class="border border-gray-200">
-                <div class="flex flex-col">
+                <div class="flex flex-col" x-data="mappingActionAll">
                   <div class="flex bg-gray-100">
                     <div class="flex-2 px-6 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900 ">
                       <div class="flex space-x-1 justify-evenly">
-                      <span>🚫</span>
-                      <span>📝</span>
-                      <span>✅</span>
+                        <span><a href="#" @@click="setAllTo('Ignore')" class="inline">🚫</a></span>
+                        <span><a href="#" @@click="setAllTo('None')" class="inline">📝</a></span>
+                        <span><a href="#" @@click="setAllTo('Import')" class="inline">✅</a></span>
                       </div>
                     </div>
                     @foreach(var property in Model.EditingProperties!)
@@ -81,9 +81,9 @@
                         <div class="flex space-x-2 justify-evenly">
                         <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerId")" value="@record.BrokerId">
                         <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerOriginalId")" value="@record.BrokerOriginalId">
-                        <input type="radio" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" value="@MappingRecordAction.Ignore" checked="@(record.BrokerMappingRecordAction == MappingRecordAction.Ignore)">
-                        <input type="radio" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" value="@MappingRecordAction.None" checked="@(record.BrokerMappingRecordAction == MappingRecordAction.None)">
-                        <input type="radio" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" value="@MappingRecordAction.Import" checked="@(record.BrokerMappingRecordAction == MappingRecordAction.Import)">
+                        <input type="radio" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" value="@MappingRecordAction.Ignore" checked="@(record.BrokerMappingRecordAction == MappingRecordAction.Ignore)" data-mappingrecord-action="Ignore">
+                        <input type="radio" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" value="@MappingRecordAction.None" checked="@(record.BrokerMappingRecordAction == MappingRecordAction.None)" data-mappingrecord-action="None">
+                        <input type="radio" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerMappingRecordAction")" value="@MappingRecordAction.Import" checked="@(record.BrokerMappingRecordAction == MappingRecordAction.Import)" data-mappingrecord-action="Import">
                         </div>
                       </div>
                       @foreach(var property in Model.EditingProperties!)
@@ -191,6 +191,15 @@
           // Detach the handler, avoiding memory and side-effect leakage
           clearInterval(this.interval);
       },
+    }));
+
+    Alpine.data('mappingActionAll', () => ({
+      setAllTo(action) {
+        const radios = document.querySelectorAll(`input[type="radio"][data-mappingrecord-action="${action}"]`);
+        radios.forEach(radio => {
+          radio.checked = true;
+        });
+      }
     }));
   });
 </script>
