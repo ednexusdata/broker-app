@@ -37,6 +37,16 @@ public class MappingDetailViewModel
         return (DisplayNameAttribute)property?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault()!;
     }
 
+    public bool PropertyRequired(PropertyInfo property)
+    {
+        var required = property?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(RequiredAttribute));
+        if (required is not null && required.Count() > 0)
+        {
+            return true;
+        }
+        return false;
+    }
+
     public DataTypeAttribute? GetPropertyDataType(PropertyInfo property)
     {
         var dataType = property?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DataTypeAttribute));

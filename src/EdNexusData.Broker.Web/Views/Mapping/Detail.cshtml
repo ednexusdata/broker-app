@@ -19,7 +19,7 @@
       var bgColorDetail = "";
       if (counter % 2 == 0) { bgColorDetail = bgColorEven; } else { bgColorDetail = bgColorOdd; } 
     <div class="flex @bgColorDetail">
-      <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.GetPropertyDisplayName(property)?.DisplayName</div>
+      <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.GetPropertyDisplayName(property)?.DisplayName @if(Model.PropertyRequired(property)) { <span>*</span> }</div>
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.OriginalValueForProperty(property)</div>
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.InitialValueForProperty(property)</div>
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">

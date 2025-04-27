@@ -65,6 +65,7 @@ public static class BrokerServiceCollection
         services.AddScoped<ConnectorService>();
         services.AddScoped(typeof(JobStatusService<>));
         services.AddScoped<DbConnectionService>();
+        services.AddScoped<MappingRecordValidatorService>();
 
         // Wrappers
         services.AddSingleton<INowWrapper, NowWrapper>();

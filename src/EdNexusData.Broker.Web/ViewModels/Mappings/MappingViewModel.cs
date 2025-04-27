@@ -15,6 +15,8 @@ public class MappingViewModel
 
     public Guid? RequestId { get; set; }
 
+    public bool IsValid = true;
+
     public List<Core.Mapping>? RequestMappings { get; set; }
 
     public Core.Mapping? Mapping { get; set; }
@@ -37,6 +39,16 @@ public class MappingViewModel
     public DisplayNameAttribute? GetPropertyDisplayName(PropertyInfo property)
     {
         return (DisplayNameAttribute)property?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault()!;
+    }
+
+    public bool PropertyRequired(PropertyInfo property)
+    {
+        var required = property?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(RequiredAttribute));
+        if (required is not null && required.Count() > 0)
+        {
+            return true;
+        }
+        return false;
     }
 
     public DataTypeAttribute? GetPropertyDataType(PropertyInfo property)

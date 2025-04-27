@@ -7,9 +7,9 @@ using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.ViewModels.Mappings;
 using EdNexusData.Broker.Core.Lookup;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
-using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Web.Helpers;
+using EdNexusData.Broker.Core.Services;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -24,8 +24,9 @@ public class MappingController : AuthenticatedController<MappingController>
     private readonly JobService _jobService;
     private readonly IServiceProvider _serviceProvider;
     private readonly CurrentUserHelper currentUserHelper;
+    private readonly MappingRecordValidatorService mappingRecordValidatorService;
 
-    public MappingController(
+  public MappingController(
         IReadRepository<EducationOrganization> educationOrganizationRepository,
         IRepository<Request> incomingRequestRepository,
         IRepository<Mapping> mappingRepository,
@@ -33,7 +34,8 @@ public class MappingController : AuthenticatedController<MappingController>
         IRepository<PayloadContentAction> actionRepository,
         JobService jobService,
         IServiceProvider serviceProvider,
-        CurrentUserHelper currentUserHelper)
+        CurrentUserHelper currentUserHelper,
+        MappingRecordValidatorService mappingRecordValidatorService)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
         _incomingRequestRepository = incomingRequestRepository;
@@ -43,7 +45,8 @@ public class MappingController : AuthenticatedController<MappingController>
         _actionRepository = actionRepository;
         _serviceProvider = serviceProvider;
         this.currentUserHelper = currentUserHelper;
-    }
+        this.mappingRecordValidatorService = mappingRecordValidatorService;
+  }
 
     public async Task<IActionResult> Index(Guid id, Guid? jobId)
     {
@@ -108,6 +111,8 @@ public class MappingController : AuthenticatedController<MappingController>
 
         viewModel.SetProperties(mapping.MappingType!);
 
+        viewModel.IsValid = mappingRecordValidatorService.IsValidRecords(viewModel.MappingDestinationRecords);
+
         return View(viewModel);
     }
 
@@ -148,7 +153,7 @@ public class MappingController : AuthenticatedController<MappingController>
             if (originalRecord != null)
             {
                 // Loop through properties
-                foreach(var property in properties.Where(x => x.Name != "BrokerId"))
+                foreach(var property in properties.Where(x => x.Name != "BrokerId" && x.Name != "IsValid"))
                 {
                     // Update property value not null
                     if (property.GetValue(record) != null)
@@ -163,12 +168,15 @@ public class MappingController : AuthenticatedController<MappingController>
                     }
                 }
             }
-            // TODO: Add the ability to add a record
             
+            // TODO: Add the ability to add a record
         }
 
+        // Validate the records
+        var validatedRecords = mappingRecordValidatorService.ValidateRecords(originalMappedForm);
+
         // Persist the data
-        mapping.JsonDestinationMapping = originalMappedForm.ToJsonDocument();
+        mapping.JsonDestinationMapping = validatedRecords.ToJsonDocument();
 
         await _mappingRepository.UpdateAsync(mapping);
         

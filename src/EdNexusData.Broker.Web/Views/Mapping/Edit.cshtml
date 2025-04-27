@@ -27,7 +27,7 @@
   {
     <div>@Model.Mapping?.PayloadContentAction?.PayloadContentActionStatus</div>
   }
-  @if (Model.Mapping?.RemainingCount is not null && Model.Mapping.RemainingCount == 0)
+  @if (Model.Mapping?.RemainingCount is not null && Model.Mapping.RemainingCount == 0 && Model.IsValid)
   {
     <div>
     <form method="post" asp-action="Import" asp-route-id="@Model.Mapping?.PayloadContentAction?.Id" autocomplete="off">
@@ -68,16 +68,18 @@
                     </div>
                     @foreach(var property in Model.EditingProperties!)
                     {
-                      <div class="flex-1 px-4 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900 ">@Model.GetPropertyDisplayName(property)?.DisplayName</div>
+                      <div class="flex-1 px-4 py-2 border-r border-gray-200 text-center text-sm align-middle font-semibold text-gray-900 ">@Model.GetPropertyDisplayName(property)?.DisplayName @if(Model.PropertyRequired(property)) { <span>*</span> }</div>
                     }
                   </div>
                   @foreach(var record in Model.MappingDestinationRecords!)
                   {
                     var bgColor = "";
+                    var textColor = "text-gray-600";
                     @if(propertyCounter % 2 == 0) { bgColor = "bg-gray-50"; } else { bgColor = "bg-white"; }
+                    @if(record.IsValid == false) { textColor = "bg-red-50"; } else { textColor = "text-gray-600"; }
                   <div class="@bgColor" x-data="dataTable" data-detailLoaded="no" data-brokerid="@record.BrokerId" data-brokerCounter="@propertyCounter">
                     <div class="flex">
-                      <div class="flex-2 px-4 py-2 text-sm text-center text-gray-600 border-r border-b border-gray-200">
+                      <div class="flex-2 px-4 py-2 text-sm text-center @textColor border-r border-b border-gray-200">
                         <div class="flex space-x-2 justify-evenly">
                         <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerId")" value="@record.BrokerId">
                         <input type="hidden" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, propertyCounter, "BrokerOriginalId")" value="@record.BrokerOriginalId">
@@ -88,7 +90,7 @@
                       </div>
                       @foreach(var property in Model.EditingProperties!)
                       {
-                      <div class="flex-1 px-4 py-2 text-sm text-center text-gray-600 border-r border-b border-gray-200" x-on:click="loadDetail">@MappingViewModel.ValueForProperty(record, property)</div>
+                      <div class="flex-1 px-4 py-2 text-sm text-center @textColor border-r border-b border-gray-200" x-on:click="loadDetail">@MappingViewModel.ValueForProperty(record, property)</div>
                       }
                     </div>
                     <!-- Detail Table -->
