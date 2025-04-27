@@ -31,4 +31,5 @@ public class RequestManifestViewModel
     public Guid PayloadContentId { get; set; }
     public PayloadContentAction? Action { get; set; }
     public string? PayloadContentActionType { get; set; }
+    public List<SelectListItem> PayloadContentActions { get; set; } = new List<SelectListItem>();
 }

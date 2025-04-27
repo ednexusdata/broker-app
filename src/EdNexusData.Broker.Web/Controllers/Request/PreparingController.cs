@@ -5,6 +5,7 @@ using EdNexusData.Broker.Common.Connector;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Core.Interfaces;
 using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Core.Serializers;
 using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Core.Worker;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
@@ -30,6 +31,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
     private readonly ICurrentUser currentUser;
     private readonly INowWrapper nowWrapper;
     private readonly JobStatusService<PreparingController> jobStatusService;
+    private readonly IRepository<EducationOrganizationConnectorSettings> edOrgConnectorSettingsRepo;
+    private readonly FocusHelper focusHelper;
     private readonly ConnectorLoader _connectorLoader;
 
     public PreparingController(
@@ -43,7 +46,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
         EducationOrganizationContactService educationOrganizationContactService,
         ICurrentUser currentUser,
         INowWrapper nowWrapper,
-        JobStatusService<PreparingController> jobStatusService)
+        JobStatusService<PreparingController> jobStatusService,
+        IRepository<EducationOrganizationConnectorSettings> edOrgConnectorSettingsRepo)
     {
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -57,6 +61,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
         this.currentUser = currentUser;
         this.nowWrapper = nowWrapper;
         this.jobStatusService = jobStatusService;
+        this.edOrgConnectorSettingsRepo = edOrgConnectorSettingsRepo;
     }
 
     [Route("/Preparing/{id:guid}")]
@@ -81,39 +86,13 @@ public class PreparingController : AuthenticatedController<RequestsController>
             Open = request.Open
         };
 
-        foreach (var contentPayloadAction in _connectorLoader.GetPayloadContentActions()!)
-        {
-            var connectorType = contentPayloadAction.Assembly.GetExportedTypes().Where(p => p.IsAssignableTo(typeof(IConnector))).FirstOrDefault();
-
-            var displayNameType = connectorType?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault();
-            var displayName = "";
-            if (displayNameType is not null)
-            {
-                displayName = ((DisplayNameAttribute)displayNameType).DisplayName + " / ";
-            }
-
-            viewModel.PayloadContentActions.Add(
-                new SelectListItem() {
-                    Text = displayName + contentPayloadAction.GetProperty("DisplayName")?.GetValue(null, null)?.ToString(),
-                    Value = contentPayloadAction.FullName
-                }
-            );
-        }
-
-        viewModel.PayloadContentActions = viewModel.PayloadContentActions.OrderBy(x => x.Text).ToList();
-
-        viewModel.PayloadContentActions.Insert(0, 
-            new SelectListItem() {
-                Text = "Ignore",
-                Value = "Ignore"
-            }
-        );
-
         if (request.PayloadContents is not null)
         {
+            
             foreach (var file in request.PayloadContents)
             {
                 string contentActionType = "Ignore";
+                var resolvedPayloadContentActions = new List<SelectListItem>();
                     
                 if (file.PayloadContentActions?.FirstOrDefault()?.Process == true)
                 {
@@ -128,6 +107,57 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     mapping = await _mappingRepository.GetByIdAsync(activeMappingId.Value);
                 }
 
+                // Determine payload content actions that can respond to this payload content
+                foreach (var contentPayloadAction in _connectorLoader.GetPayloadContentActions()!)
+                {
+                    var connectorNameForPayloadAction = contentPayloadAction.Assembly.GetName().Name;
+
+                    // If connector is enabled
+                    var enabledConnectors = await edOrgConnectorSettingsRepo.ListAsync(new EnabledConnectorsByEdOrgSpec(request.EducationOrganization!.ParentOrganizationId!.Value));
+                    if (enabledConnectors.Where(x => x.Connector == connectorNameForPayloadAction).Count() == 0)
+                    {
+                        continue;
+                    }
+                    
+                    // and if the connector has a transformer that responds to this payload content
+                    if (file.ContentType == "application/json" && file.JsonContent is not null)
+                    {
+                        var payloadContentObject = DataPayloadContentSerializer.Deseralize(file.JsonContent.ToJsonString()!);
+                        var payloadContentSchema = payloadContentObject.Schema;
+                    
+                        var transformerType = _connectorLoader.Transformers.Where(x => 
+                            x.Key == $"{contentPayloadAction.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}").ToDictionary();
+
+                        if (transformerType.Count > 0)
+                        {
+                            var connectorType = contentPayloadAction.Assembly.GetExportedTypes().Where(p => p.IsAssignableTo(typeof(IConnector))).FirstOrDefault();
+                            
+                            var displayNameType = connectorType?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault();
+                            var displayName = "";
+                            if (displayNameType is not null)
+                            {
+                                displayName = ((DisplayNameAttribute)displayNameType).DisplayName + " / ";
+                            }
+
+                            resolvedPayloadContentActions.Add(
+                                new SelectListItem() {
+                                    Text = displayName + contentPayloadAction.GetProperty("DisplayName")?.GetValue(null, null)?.ToString(),
+                                    Value = contentPayloadAction.FullName
+                                }
+                            );
+                        }
+                    }
+                }
+
+                resolvedPayloadContentActions = resolvedPayloadContentActions.OrderBy(x => x.Text).ToList();
+
+                resolvedPayloadContentActions.Insert(0, 
+                    new SelectListItem() {
+                        Text = "Ignore",
+                        Value = "Ignore"
+                    }
+                );
+                
                 var test = new RequestManifestViewModel() {
                     timeZoneInfo = currentUserHelper.ResolvedCurrentUserTimeZone(),
                     PayloadContentId = file.Id,
@@ -139,7 +169,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     ReceviedCount = mapping?.ReceviedCount,
                     MappedCount = mapping?.MappedCount,
                     IgnoredCount = mapping?.IgnoredCount, 
-                    PayloadContentActionType = contentActionType
+                    PayloadContentActionType = contentActionType,
+                    PayloadContentActions = resolvedPayloadContentActions
                 };
                 viewModel.PayloadContents.Add(test);
             }
