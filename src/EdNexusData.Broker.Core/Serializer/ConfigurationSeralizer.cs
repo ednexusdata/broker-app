@@ -98,7 +98,7 @@ public class ConfigurationSerializer
         // Encrypt object
         var dp = dataProtectionProvider.CreateProtector("SecureConnectionString");
         var seralizedConfig = JsonSerializer.SerializeToDocument<dynamic>(obj);
-        var encryptedSerializedConfig = dp.Protect(seralizedConfig.ToJsonString());
+        var encryptedSerializedConfig = dp.Protect(seralizedConfig.ToJsonString()!);
 
         // Serialize settings object
         //dynamic objWrapper = new ExpandoObject();
