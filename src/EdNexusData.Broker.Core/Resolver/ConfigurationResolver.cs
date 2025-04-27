@@ -15,6 +15,8 @@ public class ConfigurationResolver : IConfigurationResolver
     private readonly FocusEducationOrganizationResolver _focusEdOrg;
     private readonly IServiceProvider _serviceProvider;
 
+    public Guid? CurrentRecordEducationOrganizationId { get; set; }
+
     public ConfigurationResolver(
         IRepository<EducationOrganizationConnectorSettings> edOrgConnectorSettings, 
         IDataProtectionProvider dataProtectionProvider,
@@ -32,6 +34,10 @@ public class ConfigurationResolver : IConfigurationResolver
     
     public async Task<T> FetchConnectorSettingsAsync<T>()
     {
+        if (CurrentRecordEducationOrganizationId != null)
+        {
+            return await FetchConnectorSettingsAsync<T>(CurrentRecordEducationOrganizationId.Value);
+        }
         return await FetchConnectorSettingsAsync<T>(_districtEdOrg.Resolve(await _focusEdOrg.Resolve()).Id);
     }
 

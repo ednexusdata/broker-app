@@ -10,6 +10,7 @@ public class MappingWithPayloadContent : Specification<Mapping>, ISingleResultSp
         .Include(x => x.PayloadContentAction)
         .ThenInclude(x => x!.PayloadContent)
         .ThenInclude(x => x!.Request)
+        .ThenInclude(x => x!.EducationOrganization)
         .Where(x => x.Id == id);
   }
 }

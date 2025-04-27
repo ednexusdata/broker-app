@@ -10,6 +10,8 @@ using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Core.Services;
+using EdNexusData.Broker.Core.Resolvers;
+using EdNexusData.Broker.Common.Configuration;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -25,6 +27,7 @@ public class MappingController : AuthenticatedController<MappingController>
     private readonly IServiceProvider _serviceProvider;
     private readonly CurrentUserHelper currentUserHelper;
     private readonly MappingRecordValidatorService mappingRecordValidatorService;
+    private readonly IConfigurationResolver configurationResolver;
 
   public MappingController(
         IReadRepository<EducationOrganization> educationOrganizationRepository,
@@ -35,7 +38,8 @@ public class MappingController : AuthenticatedController<MappingController>
         JobService jobService,
         IServiceProvider serviceProvider,
         CurrentUserHelper currentUserHelper,
-        MappingRecordValidatorService mappingRecordValidatorService)
+        MappingRecordValidatorService mappingRecordValidatorService,
+        IConfigurationResolver configurationResolver)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
         _incomingRequestRepository = incomingRequestRepository;
@@ -46,7 +50,8 @@ public class MappingController : AuthenticatedController<MappingController>
         _serviceProvider = serviceProvider;
         this.currentUserHelper = currentUserHelper;
         this.mappingRecordValidatorService = mappingRecordValidatorService;
-  }
+        this.configurationResolver = configurationResolver;
+    }
 
     public async Task<IActionResult> Index(Guid id, Guid? jobId)
     {
@@ -204,9 +209,11 @@ public class MappingController : AuthenticatedController<MappingController>
 
     public async Task<IActionResult> Detail(Guid id, Guid mappingBrokerId, int propertyCounter)
     {
-        var mapping = await _mappingRepository.GetByIdAsync(id);
+        var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(id));
 
         ArgumentNullException.ThrowIfNull(mapping);
+
+        configurationResolver.CurrentRecordEducationOrganizationId = mapping.PayloadContentAction!.PayloadContent?.Request?.EducationOrganization?.ParentOrganizationId;
 
         Type mappingType = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(s => s.GetTypes())
