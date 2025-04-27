@@ -32,7 +32,6 @@ public class PreparingController : AuthenticatedController<RequestsController>
     private readonly INowWrapper nowWrapper;
     private readonly JobStatusService<PreparingController> jobStatusService;
     private readonly IRepository<EducationOrganizationConnectorSettings> edOrgConnectorSettingsRepo;
-    private readonly FocusHelper focusHelper;
     private readonly ConnectorLoader _connectorLoader;
 
     public PreparingController(
