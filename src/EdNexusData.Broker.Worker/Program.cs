@@ -81,7 +81,7 @@ builder.ConfigureServices((hostContext, services) =>
         services.AddHttpClient("default");
     }
 
-    services.AddBrokerServicesForWorker();
+    services.AddBrokerServicesForWorker(hostContext.Configuration);
     services.AddConnectorDependencies();
 
     services.AddHostedService<Worker>();

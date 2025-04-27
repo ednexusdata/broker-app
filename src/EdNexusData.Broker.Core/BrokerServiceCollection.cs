@@ -10,6 +10,8 @@ using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Common.Configuration;
 using EdNexusData.Broker.Common.Connector;
 using EdNexusData.Broker.Core.Interfaces;
+using Microsoft.Extensions.Configuration;
+using EdNexusData.Broker.Core.Emails;
 
 namespace EdNexusData.Broker.Core;
 
@@ -73,7 +75,8 @@ public static class BrokerServiceCollection
         return services;
     }
 
-    public static IServiceCollection AddBrokerServicesForWorker(this IServiceCollection services)
+    public static IServiceCollection AddBrokerServicesForWorker(this IServiceCollection services, 
+        Microsoft.Extensions.Configuration.IConfiguration config)
     {
         // Loaders
         services.AddSingleton<ConnectorLoader>();
@@ -110,7 +113,11 @@ public static class BrokerServiceCollection
 
         // Wrappers
         services.AddSingleton<INowWrapper, NowWrapper>();
-        
+
+        services.AddFluentEmail(config.GetValue<string>("SmtpClientOptions:From"))
+            .AddRazorRenderer(typeof(EmailRoot))
+            .AddMailKitSender();
+                    
         return services;
     }
 

@@ -1,0 +1,27 @@
+@model EdNexusData.Broker.Core.Emails.ViewModels.RecordsRequestViewModel;
+@{
+    Layout = "Shared._Layout";
+}
+<div align="center">
+    Broker Logo
+</div>
+<div>The broker has received the following records request:</div>
+<p>
+    <div><strong>From:</strong></div>
+    <div>@Model.From?.District?.Name (@Model.From?.District?.Address?.StateAbbreviation) / @Model.From?.School?.Name</div>
+    <div>@Model.From?.Sender?.Name</div>
+    <div>@Model.From?.Sender?.JobTitle</div>
+    <div>@Model.From?.Sender?.Phone</div>
+    <div>@Model.From?.Sender?.Email</div>
+</p>
+
+<p>
+    <div><strong>Requesting Information for Student:</strong></div>
+    <div>@Model.Student?.FirstName @Model.Student?.MiddleName @Model.Student?.LastName</div>
+    <div>@Model.Student?.Birthdate</div>
+    <div>@Model.Student?.Grade</div>
+</p>
+
+<p>
+    <a href="https://broker.ednexusdata.org/outgoing-requests/edit?requestId=@Model.RequestId">View Records Request</a>
+</p>

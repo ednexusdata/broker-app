@@ -8,6 +8,8 @@ using EdNexusData.Broker.Common.PayloadContents;
 using EdNexusData.Broker.Core.Interfaces;
 using EdNexusData.Broker.Core.Messages;
 using System.Text.Json.Serialization;
+using EdNexusData.Broker.Core.Models;
+using EdNexusData.Broker.Core.Emails.ViewModels;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -195,7 +197,7 @@ public class PayloadLoaderJob : IJob
         var jobData = new MessageContents { 
             Sender = await educationOrganizationContactService.FromUser(jobInstance.InitiatedUserId!.Value), 
             SenderSentTimestamp = nowWrapper.UtcNow, 
-            RequestId = request.Id, 
+            RequestId = request?.Id, 
             RequestStatus = RequestStatus.Extracted, 
             MessageText = "Updated request status to extracted.",
             EducationOrganizationId = request?.EducationOrganizationId,

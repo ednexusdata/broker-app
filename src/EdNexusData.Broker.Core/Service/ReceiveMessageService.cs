@@ -1,6 +1,9 @@
 using System.Net;
 using System.Text.Json;
 using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Core.Emails.ViewModels;
+using EdNexusData.Broker.Core.Jobs;
+using EdNexusData.Broker.Core.Models;
 
 namespace EdNexusData.Broker.Core.Services;
 
@@ -10,18 +13,21 @@ public class ReceiveMessageService
     private readonly RequestService requestService;
     private readonly MessageService messageService;
     private readonly PayloadContentService payloadContentService;
+    private readonly JobService jobService;
 
-    public ReceiveMessageService(
+  public ReceiveMessageService(
         IReadRepository<EducationOrganization> educationOrganizationRepository,
         RequestService requestService,
         MessageService messageService,
-        PayloadContentService payloadContentService
+        PayloadContentService payloadContentService,
+        JobService jobService
     )
     {
         this.educationOrganizationRepository = educationOrganizationRepository;
         this.requestService = requestService;
         this.messageService = messageService;
         this.payloadContentService = payloadContentService;
+        this.jobService = jobService;
     }
 
     public async Task<MessageContents> ReceiveRequest(string webRequest, List<Models.File>? files = null, Microsoft.AspNetCore.Http.HttpResponse? httpResponseMessage = null)
@@ -111,6 +117,24 @@ public class ReceiveMessageService
         };
 
         await messageService.CreateWithMessageContents(request, returnMessageContent, RequestResponse.Request);
+
+        
+        // Queue job to send email
+        var emailData = new EmailJobDetail
+        {
+            TemplateName = "RecordsRequest",
+            To = toEdOrg.Contacts?.FirstOrDefault()?.Email,
+            ReplyTo = request.RequestManifest?.From?.Sender?.Email,
+            Subject = $"New Records Request Received for {request.RequestManifest?.Student?.FirstName} {request.RequestManifest?.Student?.LastName} {request.RequestManifest?.Student?.StudentNumber}",
+            Model = new RecordsRequestViewModel
+            { 
+                Student = request.RequestManifest?.Student,
+                From = request.RequestManifest?.From,
+                RequestId = request.Id
+            },
+            ModelType = typeof(RecordsRequestViewModel).FullName
+        };
+        var emailjob = await jobService.CreateJobAsync(typeof(SendEmailJob), typeof(Request), request?.Id, null, JsonSerializer.SerializeToDocument(emailData));
 
         return returnMessageContent;
     }
