@@ -130,7 +130,8 @@ public class ReceiveMessageService
             { 
                 Student = request.RequestManifest?.Student,
                 From = request.RequestManifest?.From,
-                RequestId = request.Id
+                RequestId = request.Id,
+                Note = request.RequestManifest?.Note
             },
             ModelType = typeof(RecordsRequestViewModel).FullName
         };

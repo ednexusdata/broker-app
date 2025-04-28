@@ -22,6 +22,14 @@
     <div>@Model.Student?.Grade</div>
 </p>
 
+@if (Model.Note != null && Model.Note != "")
+{
+<p>
+    <div><strong>Note</strong></div>
+    <div>@Model.Note</div>
+</p>
+}
+
 <p>
     <a href="@Model.EnvironmentService?.BrokerBaseUrlWithoutSlash/outgoing-requests/edit?requestId=@Model.RequestId">View Records Request</a>
 </p>
