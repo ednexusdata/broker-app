@@ -41,10 +41,13 @@ public class SendEmailJob : IJob
         
         baseViewModel.EnvironmentService = environment;
 
+        var logoPath = Path.Combine(AppContext.BaseDirectory, "Resources", "Final-Education-Nexus-ICON-png.png");
+
         await fluentEmail
             .To(jobDetail.To)
             .ReplyTo(jobDetail.ReplyTo)
             .Subject(jobDetail.Subject)
+            .Attach(new FluentEmail.Core.Models.Attachment() { Data = System.IO.File.OpenRead(logoPath), Filename = "brokerlogo.png", ContentId = "brokerlogo", ContentType = "image/png", IsInline = true })
             .UsingTemplateFromEmbedded($"EdNexusData.Broker.Core.Emails.{jobDetail.TemplateName}.cshtml", model, typeof(EmailRoot).Assembly)
             .SendAsync();
     }
