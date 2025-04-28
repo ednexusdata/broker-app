@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json;
 using EdNexusData.Broker.Core.Emails;
+using EdNexusData.Broker.Core.Emails.ViewModels;
 using EdNexusData.Broker.Core.Models;
 using EdNexusData.Broker.Core.Worker;
 using FluentEmail.Core;
@@ -13,16 +14,18 @@ public class SendEmailJob : IJob
 {
     private IFluentEmail fluentEmail;
     private readonly ITemplateRenderer templateRenderer;
+    private readonly Environment environment;
 
-    public SendEmailJob(
+  public SendEmailJob(
         IFluentEmail fluentEmail,
-        ITemplateRenderer templateRenderer
-    
+        ITemplateRenderer templateRenderer,
+        Environment environment
     )
     {
         this.fluentEmail = fluentEmail;
         this.templateRenderer = templateRenderer;
-    }
+        this.environment = environment;
+  }
     
     public async Task ProcessAsync(Job jobRecord)
     {
@@ -32,7 +35,12 @@ public class SendEmailJob : IJob
         _ = jobDetail ?? throw new ArgumentNullException("Unable to deserialize job parameters to EmailJobDetail");
 
         var model = JsonSerializer.Deserialize(jobDetail.Model!.ToString()!, Type.GetType(jobDetail.ModelType!)!);
+
+        var baseViewModel = model as BaseViewModel;
+        _ = baseViewModel ?? throw new ArgumentNullException("Unable to cast model to BaseViewModel");
         
+        baseViewModel.EnvironmentService = environment;
+
         await fluentEmail
             .To(jobDetail.To)
             .ReplyTo(jobDetail.ReplyTo)

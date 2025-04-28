@@ -6,6 +6,9 @@ public abstract class Environment
 {
     public string EnvironmentName = default!;
     public List<Uri> Addresses = new List<Uri>();
+    public Uri? BrokerBaseUrl { get; set; }
+
+    public string? BrokerBaseUrlWithoutSlash => BrokerBaseUrl?.ToString().TrimEnd('/');
 
     public static ImmutableList<string> NonProductionToLocalEnvironments => new List<string> { "demo", "development", "dev" }.ToImmutableList();
     public static ImmutableList<string> NonProductionEnvironments => new List<string> { "train", "training", "test", "testing" }.ToImmutableList();

@@ -15,5 +15,10 @@ public class WorkerEnvironment : Core.Environment
                 AddAddress(url);
             }
         }
+
+        var brokerBaseUrl = configuration.GetValue<string>("BrokerBaseUrl");
+        _ = brokerBaseUrl ?? throw new ArgumentNullException("Missing broker base url");
+
+        BrokerBaseUrl = new Uri(brokerBaseUrl);
     }
 }
