@@ -684,3 +684,28 @@ GO
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20250502134638_EnabledForEdOrgConnector'
+)
+BEGIN
+    ALTER TABLE [EducationOrganizationConnectorSettings] ADD [Enabled] bit NOT NULL DEFAULT CAST(0 AS bit);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20250502134638_EnabledForEdOrgConnector'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20250502134638_EnabledForEdOrgConnector', N'8.0.15');
+END;
+GO
+
+COMMIT;
+GO
+
