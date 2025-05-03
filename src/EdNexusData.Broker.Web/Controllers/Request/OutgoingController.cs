@@ -309,12 +309,18 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
 
         Guard.Against.Null(incomingRequest);
 
-        incomingRequest.PayloadContents?.Where(
+        var payloadContents = incomingRequest.PayloadContents?.Where(
             x => x.MessageId == null
-        ).ToList().ForEach(
-            async x => await _payloadContentRepository.DeleteAsync(x)
-        );
-
+        ).ToList();
+        
+        if (payloadContents is not null && payloadContents.Count > 0)
+        {
+            foreach (var payloadContent in payloadContents)
+            {
+                await _payloadContentRepository.DeleteAsync(payloadContent);
+            }
+        }
+        
         return RedirectToAction(nameof(Update), new { requestId = requestId });
     }
 
