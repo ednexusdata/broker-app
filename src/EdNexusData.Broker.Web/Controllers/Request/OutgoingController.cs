@@ -300,6 +300,24 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         return RedirectToAction(nameof(Update), new { requestId = requestId });
     }
 
+    [HttpDelete]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteAllAttachments(Guid requestId)
+    {
+        var incomingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdWithPayloadContents(requestId));
+
+        Guard.Against.Null(incomingRequest);
+
+        incomingRequest.PayloadContents?.Where(
+            x => x.MessageId == null
+        ).ToList().ForEach(
+            async x => await _payloadContentRepository.DeleteAsync(x)
+        );
+
+        return RedirectToAction(nameof(Update), new { requestId = requestId });
+    }
+
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
