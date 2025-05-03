@@ -34,7 +34,7 @@ public class ConfigurationSerializer
         if (connectorConfigType.Assembly.GetName().Name! != null) {
             var connectorSpec = new ConnectorByNameAndEdOrgIdSpec(connectorConfigType.Assembly.GetName().Name!, focusEducationOrganization);
             var repoConnectorSettings = await _repo.FirstOrDefaultAsync(connectorSpec);
-            if (repoConnectorSettings is not null)
+            if (repoConnectorSettings is not null && repoConnectorSettings?.Settings != null)
             {
                 var configSettings = Newtonsoft.Json.Linq.JObject.Parse(repoConnectorSettings?.Settings?.RootElement.GetRawText());
                 var encconfigSettingsObj = configSettings[objTypeName].ToString();
