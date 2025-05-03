@@ -2,7 +2,6 @@ using DnsClient;
 using EdNexusData.Broker.Core.Models;
 using System.Web;
 using System.Net.Http.Json;
-using Ardalis.Result;
 
 namespace EdNexusData.Broker.Core.Lookup;
 
@@ -77,14 +76,19 @@ public class DirectoryLookupService
             var dnsresult = await _lookupClient.QueryAsync(searchDomain, QueryType.TXT);
 
             var txtRecords = dnsresult.Answers.TxtRecords();
-            
+
             if (txtRecords.Count() > 0)
             {
-                var brokerTXTRecord = txtRecords.Where(x => x.Text.Contains("v=edubroker") && x.Text.Contains($"env={environment.EnvironmentName.ToLower()}"))?.FirstOrDefault();
+                var brokerTXTRecord = txtRecords
+                    .SelectMany(x => x.Text)
+                    .Select(name => name.ToLower())
+                    .Where(x => x.IndexOf("v=edubroker", StringComparison.OrdinalIgnoreCase) >= 0 
+                        && x.IndexOf($"env={environment.EnvironmentName.ToLower()}", StringComparison.OrdinalIgnoreCase) >= 0)
+                    .FirstOrDefault();
 
                 if (brokerTXTRecord is not null)
                 {
-                    txtresult = ParseBrokerTXTRecord(brokerTXTRecord.Text.First());
+                    txtresult = ParseBrokerTXTRecord(brokerTXTRecord);
                 }
             }
         }
@@ -96,11 +100,15 @@ public class DirectoryLookupService
             
             if (txtRecords.Count() > 0)
             {
-                var brokerTXTRecord = txtRecords.Where(x => x.Text.First().Contains("v=edubroker"))?.FirstOrDefault();
+                var brokerTXTRecord = txtRecords
+                    .SelectMany(x => x.Text)
+                    .Select(name => name.ToLower())
+                    .Where(x => x.IndexOf("v=edubroker", StringComparison.OrdinalIgnoreCase) >= 0)
+                    .FirstOrDefault();
 
                 if (brokerTXTRecord is not null)
                 {
-                    txtresult = ParseBrokerTXTRecord(brokerTXTRecord.Text.First());
+                    txtresult = ParseBrokerTXTRecord(brokerTXTRecord);
                 }
             }
         }
