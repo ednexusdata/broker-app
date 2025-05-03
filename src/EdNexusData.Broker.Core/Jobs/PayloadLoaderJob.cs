@@ -10,6 +10,7 @@ using EdNexusData.Broker.Core.Messages;
 using System.Text.Json.Serialization;
 using EdNexusData.Broker.Core.Models;
 using EdNexusData.Broker.Core.Emails.ViewModels;
+using System.Reflection.Metadata;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -176,18 +177,29 @@ public class PayloadLoaderJob : IJob
             }
 
             // check if there is a result and if it is of type DataPayloadContent
-            if (result is not null && result.GetType().IsAssignableTo(typeof(DocumentPayloadContent)))
+            if (result is not null && (result.GetType().IsAssignableTo(typeof(DocumentPayloadContent)) || result.GetType().IsAssignableTo(typeof(List<DocumentPayloadContent>))))
             {
-                var payloadContentResult = (DocumentPayloadContent)result;
-                _ = payloadContentResult ?? throw new NullReferenceException("Unable to cast result to DocumentPayloadContent type.");
+                if (result is DocumentPayloadContent)
+                {
+                    var payloadContentResult = (DocumentPayloadContent)result;
+                    _ = payloadContentResult ?? throw new NullReferenceException("Unable to cast result to DocumentPayloadContent type.");
 
-                var payloadContent = await payloadContentService.AddBlobFile(
-                    request.Id, 
-                    payloadContentResult.Content, 
-                    payloadContentResult.ContentType, 
-                    payloadContentResult.FileName
-                );
-                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Saved document payload content: {0}", jobToExecute.GetType().FullName);
+                    await AddDocument(payloadContentResult, request, jobInstance, jobToExecute);
+                }
+                
+                if (result is List<DocumentPayloadContent>)
+                {
+                    var payloadContentResults = (List<DocumentPayloadContent>)result;
+                    _ = payloadContentResults ?? throw new NullReferenceException("Unable to cast result to List<DocumentPayloadContent> type.");
+
+                    if (payloadContentResults.Count > 0)
+                    {
+                        foreach(var payloadContentResult in payloadContentResults)
+                        {
+                            await AddDocument(payloadContentResult, request, jobInstance, jobToExecute);
+                        }
+                    }
+                }
             }
         }
 
@@ -204,5 +216,17 @@ public class PayloadLoaderJob : IJob
             MessageType = typeof(StatusUpdateMessage).FullName
         };
         var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), request?.Id, jobInstance.InitiatedUserId, JsonSerializer.SerializeToDocument(jobData));
+    }
+
+    private async Task<PayloadContent?> AddDocument(DocumentPayloadContent document, Request request, Job jobInstance, PayloadJob jobToExecute)
+    {
+        var payloadContent = await payloadContentService.AddBlobFile(
+            request.Id, 
+            document.Content, 
+            document.ContentType, 
+            document.FileName
+        );
+        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Saved document payload content: {0}", jobToExecute.GetType().FullName);
+        return payloadContent;
     }
 }
