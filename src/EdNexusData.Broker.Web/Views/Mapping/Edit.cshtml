@@ -95,7 +95,7 @@
                         {
                           var result = await Model.MappingLookupService!.GetAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @MappingViewModel.ValueForProperty(record, property)?.ToString());
                           <span>@result</span>
-                          <span>(@MappingViewModel.ValueForProperty(record, property))</span>
+                          @if(!string.IsNullOrEmpty(MappingViewModel.ValueForProperty(record, property)?.ToString()) && MappingViewModel.ValueForProperty(record, property)?.ToString() != result) { <span>(@MappingViewModel.ValueForProperty(record, property))</span> }
                         }
                         else
                         {

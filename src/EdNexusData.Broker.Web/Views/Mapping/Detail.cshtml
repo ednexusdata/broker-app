@@ -26,7 +26,7 @@
         {
           var result = await Model.MappingLookupService!.GetAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @Model.MappedValueForProperty(property)?.ToString());
           <span>@result</span>
-          <span>(@Model.InitialValueForProperty(property))</span>
+          @if(!string.IsNullOrEmpty(Model.InitialValueForProperty(property)?.ToString()) && Model.InitialValueForProperty(property)?.ToString() != result) { <span>(@Model.InitialValueForProperty(property))</span> }
         }
         else
         {
