@@ -20,23 +20,23 @@ public class Job : BaseEntity, IAggregateRoot
     public Guid? InitiatedUserId { get; set; }
     public User? InitiatedUser { get; set; }
 
-    // public Core.Contracts.Job ToContract()
-    // {
-    //     var job = new Core.Contracts.Job()
-    //     {
-    //         QueueDateTime = this.QueueDateTime,
-    //         StartDateTime = this.StartDateTime,
-    //         FinishDateTime = this.FinishDateTime,
-    //         JobType = this.JobType,
-    //         JobParameters = this.JobParameters,
-    //         ReferenceType = this.ReferenceType,
-    //         ReferenceGuid = this.ReferenceGuid,
-    //         JobStatus = this.JobStatus.ToContract(),
-    //         WorkerInstance = this.WorkerInstance,
-    //         WorkerState = this.WorkerState,
-    //         WorkerLog = this.WorkerLog
-    //     };
+    public Common.Worker.Job ToContract()
+    {
+        var job = new Common.Worker.Job()
+        {
+            QueueDateTime = QueueDateTime,
+            StartDateTime = StartDateTime,
+            FinishDateTime = FinishDateTime,
+            JobType = JobType,
+            JobParameters = JobParameters,
+            ReferenceType = ReferenceType,
+            ReferenceGuid = ReferenceGuid,
+            JobStatus = JobStatus,
+            WorkerInstance = WorkerInstance,
+            WorkerState = WorkerState,
+            WorkerLog = WorkerLog
+        };
 
-    //     return job;
-    // }
+        return job;
+    }
 }
