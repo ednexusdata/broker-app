@@ -103,7 +103,9 @@ public class DirectoryLookupService
                 var brokerTXTRecord = txtRecords
                     .SelectMany(x => x.Text)
                     .Select(name => name.ToLower())
-                    .Where(x => x.IndexOf("v=edubroker", StringComparison.OrdinalIgnoreCase) >= 0)
+                    .Where(x => x.IndexOf("v=edubroker", StringComparison.OrdinalIgnoreCase) >= 0 
+                        && (x.IndexOf($"env={environment.EnvironmentName.ToLower()}", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                            x.IndexOf($"env=", StringComparison.OrdinalIgnoreCase) == 0))
                     .FirstOrDefault();
 
                 if (brokerTXTRecord is not null)
