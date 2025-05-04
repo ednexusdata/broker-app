@@ -50,5 +50,25 @@ public class MappingLookupService
         return selectList;
     }
 
-    
+    public async Task<string?> GetAsync(LookupAttribute lookupAttribute, string? value)
+    {
+        var selectList = _mappingLookupCache.Get(lookupAttribute.LookupType.Name);
+        
+        // Determine if lookup already called and loaded
+        if (selectList is null)
+        {
+            _logger.LogInformation($"{lookupAttribute.LookupType.Name} not found in cache. Fetching...");
+            // Resolve lookup to call
+            var mappingLookupObj = _mappingLookupResolver.Resolve(lookupAttribute.LookupType);
+            selectList = await mappingLookupObj.SelectListAsync();
+
+            // Cache the value
+            _mappingLookupCache.Add(lookupAttribute.LookupType.Name, selectList);
+        }
+        
+        // Set the selected value
+        var selected = selectList.Where(x => x.Value == value).FirstOrDefault();
+
+        return selected?.Text ?? null;
+    }
 }   

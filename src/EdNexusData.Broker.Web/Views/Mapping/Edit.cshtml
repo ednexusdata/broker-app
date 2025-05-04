@@ -90,7 +90,18 @@
                       </div>
                       @foreach(var property in Model.EditingProperties!)
                       {
-                      <div class="flex-1 px-4 py-2 text-sm text-center @textColor border-r border-b border-gray-200" x-on:click="loadDetail">@MappingViewModel.ValueForProperty(record, property)</div>
+                      <div class="flex-1 px-4 py-2 text-sm text-center @textColor border-r border-b border-gray-200" x-on:click="loadDetail">
+                         @if(MappingDetailViewModel.GetPropertyLookupType(property) != null)
+                        {
+                          var result = await Model.MappingLookupService!.GetAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @MappingViewModel.ValueForProperty(record, property)?.ToString());
+                          <span>@result</span>
+                          <span>(@MappingViewModel.ValueForProperty(record, property))</span>
+                        }
+                        else
+                        {
+                          @MappingViewModel.ValueForProperty(record, property)
+                        }
+                      </div>
                       }
                     </div>
                     <!-- Detail Table -->
