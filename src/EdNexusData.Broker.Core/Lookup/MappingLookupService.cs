@@ -11,30 +11,38 @@ public class MappingLookupService
     private readonly ILogger<MappingLookupService> _logger;
     private readonly MappingLookupResolver _mappingLookupResolver;
     private readonly MappingLookupCache _mappingLookupCache;
+    private readonly FocusEducationOrganizationResolver focusEducationOrganizationResolver;
 
-    public MappingLookupService(ILogger<MappingLookupService> logger, 
+  public MappingLookupService(ILogger<MappingLookupService> logger, 
         MappingLookupResolver mappingLookupResolver,
-        MappingLookupCache mappingLookupCache)
+        MappingLookupCache mappingLookupCache,
+        FocusEducationOrganizationResolver focusEducationOrganizationResolver)
     {
         _logger = logger;
         _mappingLookupResolver = mappingLookupResolver;
         _mappingLookupCache = mappingLookupCache;
-    }
+        this.focusEducationOrganizationResolver = focusEducationOrganizationResolver;
+  }
 
-    public async Task<List<SelectListItem>> SelectAsync(LookupAttribute lookupAttribute, string? value)
+    public async Task<List<SelectListItem>> SelectAsync(LookupAttribute lookupAttribute, string? value, string? keyprefix = null)
     {
-        var selectList = _mappingLookupCache.Get(lookupAttribute.LookupType.Name);
+        if (keyprefix is null)
+        {
+            keyprefix = (await focusEducationOrganizationResolver.Resolve()).Id.ToString();
+        }
+        
+        var selectList = _mappingLookupCache.Get($"{keyprefix}::{lookupAttribute.LookupType.Name}");
         
         // Determine if lookup already called and loaded
         if (selectList is null)
-        {
-            _logger.LogInformation($"{lookupAttribute.LookupType.Name} not found in cache. Fetching...");
+        { 
+            _logger.LogInformation($"{keyprefix}::{lookupAttribute.LookupType.Name} not found in cache. Fetching...");
             // Resolve lookup to call
             var mappingLookupObj = _mappingLookupResolver.Resolve(lookupAttribute.LookupType);
             selectList = await mappingLookupObj.SelectListAsync();
 
             // Cache the value
-            _mappingLookupCache.Add(lookupAttribute.LookupType.Name, selectList);
+            _mappingLookupCache.Add($"{keyprefix}::{lookupAttribute.LookupType.Name}", selectList);
         }
         
         // Set the selected value
@@ -50,20 +58,25 @@ public class MappingLookupService
         return selectList;
     }
 
-    public async Task<string?> GetAsync(LookupAttribute lookupAttribute, string? value)
+    public async Task<string?> GetAsync(LookupAttribute lookupAttribute, string? value, string? keyprefix = null)
     {
-        var selectList = _mappingLookupCache.Get(lookupAttribute.LookupType.Name);
+        if (keyprefix is null)
+        {
+            keyprefix = (await focusEducationOrganizationResolver.Resolve()).Id.ToString();
+        }
+        
+        var selectList = _mappingLookupCache.Get($"{keyprefix}::{lookupAttribute.LookupType.Name}");
         
         // Determine if lookup already called and loaded
         if (selectList is null)
         {
-            _logger.LogInformation($"{lookupAttribute.LookupType.Name} not found in cache. Fetching...");
+            _logger.LogInformation($"{keyprefix}::{lookupAttribute.LookupType.Name} not found in cache. Fetching...");
             // Resolve lookup to call
             var mappingLookupObj = _mappingLookupResolver.Resolve(lookupAttribute.LookupType);
             selectList = await mappingLookupObj.SelectListAsync();
 
             // Cache the value
-            _mappingLookupCache.Add(lookupAttribute.LookupType.Name, selectList);
+            _mappingLookupCache.Add($"{keyprefix}::{lookupAttribute.LookupType.Name}", selectList);
         }
         
         // Set the selected value
