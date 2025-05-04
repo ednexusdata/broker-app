@@ -34,10 +34,21 @@ public class MappingLookupCache
     {
         var returnSelectList = new List<SelectListItem>();
 
+        SelectListGroup? lastGroup = null;
+
         foreach(var select in original)
         {
+            if ((lastGroup is null && select.Group is not null) || (lastGroup is not null && lastGroup.Name != select.Group?.Name))
+            {
+                lastGroup = new SelectListGroup()
+                {
+                    Name = select.Group?.Name
+                };
+            }
+
             returnSelectList.Add(new SelectListItem()
             {
+                Group = lastGroup,
                 Text = select.Text,
                 Value = select.Value,
                 Selected = false
