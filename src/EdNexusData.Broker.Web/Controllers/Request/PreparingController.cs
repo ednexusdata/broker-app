@@ -135,13 +135,20 @@ public class PreparingController : AuthenticatedController<RequestsController>
                             var displayName = "";
                             if (displayNameType is not null)
                             {
-                                displayName = ((DisplayNameAttribute)displayNameType).DisplayName + " / ";
+                                displayName = ((DisplayNameAttribute)displayNameType).DisplayName;
+                            }
+
+                            var contentPayloadActionDisplayNameType = contentPayloadAction?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault();
+                            var contentPayloadActionDisplayName = "";
+                            if (contentPayloadActionDisplayNameType is not null)
+                            {
+                                contentPayloadActionDisplayName = ((DisplayNameAttribute)contentPayloadActionDisplayNameType).DisplayName;
                             }
 
                             resolvedPayloadContentActions.Add(
                                 new SelectListItem() {
-                                    Text = displayName + contentPayloadAction.GetProperty("DisplayName")?.GetValue(null, null)?.ToString(),
-                                    Value = contentPayloadAction.FullName
+                                    Text = $"{displayName} / {contentPayloadActionDisplayName}",
+                                    Value = contentPayloadAction?.FullName
                                 }
                             );
                         }

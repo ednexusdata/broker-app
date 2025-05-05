@@ -7,10 +7,6 @@ using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.PayloadContents;
 using EdNexusData.Broker.Core.Interfaces;
 using EdNexusData.Broker.Core.Messages;
-using System.Text.Json.Serialization;
-using EdNexusData.Broker.Core.Models;
-using EdNexusData.Broker.Core.Emails.ViewModels;
-using System.Reflection.Metadata;
 
 namespace EdNexusData.Broker.Core.Jobs;
 

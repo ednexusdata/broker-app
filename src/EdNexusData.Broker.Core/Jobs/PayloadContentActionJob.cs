@@ -1,6 +1,5 @@
 using EdNexusData.Broker.Core.Worker;
 using EdNexusData.Broker.Core.Resolvers;
-using Ardalis.GuardClauses;
 using EdNexusData.Broker.Core.Specifications;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -17,29 +16,29 @@ public class PayloadContentActionJob : IJob
     private readonly ConnectorLoader _connectorLoader;
     private readonly ConnectorResolver _connectorResolver;
     private readonly PayloadResolver _payloadResolver;
-    private readonly JobStatusService<PayloadContentActionJob> _jobStatusService;
-    private readonly IRepository<Request> _requestRepository;
+    private readonly PayloadContentActionJobResolver payloadContentActionJobResolver;
+    private readonly JobStatusService<PayloadContentActionJob> jobStatusService;
     private readonly IRepository<PayloadContentAction> _payloadContentActionRepository;
     private readonly IServiceProvider _serviceProvider;
-    private readonly IRepository<Core.Mapping> _mappingRepository;
+    private readonly IRepository<Mapping> _mappingRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
 
     public PayloadContentActionJob(
             ConnectorLoader connectorLoader,
             ConnectorResolver connectorResolver,
             PayloadResolver payloadResolver,
+            PayloadContentActionJobResolver payloadContentActionJobResolver,
             JobStatusService<PayloadContentActionJob> jobStatusService,
-            IRepository<Request> requestRepository,
             IRepository<PayloadContentAction> payloadContentActionRepository,
             IServiceProvider serviceProvider,
-            IRepository<Core.Mapping> mappingRepository,
+            IRepository<Mapping> mappingRepository,
             FocusEducationOrganizationResolver focusEducationOrganizationResolver)
     {
         _connectorLoader = connectorLoader;
         _connectorResolver = connectorResolver;
         _payloadResolver = payloadResolver;
-        _jobStatusService = jobStatusService;
-        _requestRepository = requestRepository;
+        this.payloadContentActionJobResolver = payloadContentActionJobResolver;
+        this.jobStatusService = jobStatusService;
         _payloadContentActionRepository = payloadContentActionRepository;
         _serviceProvider = serviceProvider;
         _mappingRepository = mappingRepository;
@@ -48,58 +47,34 @@ public class PayloadContentActionJob : IJob
     
     public async Task ProcessAsync(Job jobInstance)
     {
-        Guard.Against.Null(jobInstance.ReferenceGuid, "referenceGuid", $"Missing reference payload content id in job {jobInstance.ReferenceGuid}");
-
+        // Step 1: Get the payload content action
+         _ = jobInstance.ReferenceGuid ?? throw new ArgumentNullException($"Unable to find request Id {jobInstance.ReferenceGuid}");
         var payloadContentAction = await _payloadContentActionRepository.FirstOrDefaultAsync(new PayloadContentActionWithPayloadContent(jobInstance.ReferenceGuid.Value));
+       
+        _ = payloadContentAction ?? throw new ArgumentNullException($"Couldn't find payload content action id {jobInstance.ReferenceGuid}");
+        _ = payloadContentAction.PayloadContent ?? throw new ArgumentNullException($"Unable to load payload content with payload content action {jobInstance.ReferenceGuid}");
+        _ = payloadContentAction.PayloadContent.Request ?? throw new ArgumentNullException($"Unable to load request with payload content action {jobInstance.ReferenceGuid}");
+        _ = payloadContentAction.PayloadContent.Request.EducationOrganization ?? throw new ArgumentNullException($"Unable to load request with payload content action {jobInstance.ReferenceGuid}");
+        _ = payloadContentAction.PayloadContent.Request.EducationOrganization.ParentOrganizationId ?? throw new ArgumentNullException($"Unable to load request with payload content action {jobInstance.ReferenceGuid}");
+        _ = payloadContentAction.ActiveMapping ?? throw new ArgumentNullException($"Unable to load active mapping with payload content action {jobInstance.ReferenceGuid}");
+        _ = payloadContentAction.PayloadContentActionType ?? throw new ArgumentNullException($"Unable to load active mapping with payload content action type {jobInstance.ReferenceGuid}");
 
-        Guard.Against.Null(payloadContentAction, "payloadContentAction", "Couldn't find payload content action id");
-        Guard.Against.Null(payloadContentAction.PayloadContent, "payloadContentAction.PayloadContent", "Unable to load payload content with payload content action {jobInstance.ReferenceGuid}");
-        Guard.Against.Null(payloadContentAction.PayloadContent.Request, "payloadContentAction.PayloadContent.Request", "Unable to load request with payload content action {jobInstance.ReferenceGuid}");
-        Guard.Against.Null(payloadContentAction.PayloadContent.Request.EducationOrganization, "payloadContentAction.PayloadContent.Request.EducationOrganization", "Unable to load request with payload content action {jobInstance.ReferenceGuid}");
-        Guard.Against.Null(payloadContentAction.PayloadContent.Request.EducationOrganization.ParentOrganizationId, "payloadContentAction.PayloadContent.Request.EducationOrganization.ParentOrganizationId", "Unable to load request with payload content action {jobInstance.ReferenceGuid}");
+        await jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Importing, "Fetched payload content action.");
         
-        //var mapping = await _mappingRepository.FirstOrDefaultAsync(new ActiveMappingForPayloadContentAction(payloadContentAction.ActiveMappingId!.Value));
-
-        Guard.Against.Null(payloadContentAction.ActiveMapping, "mapping", $"Unable to find mapping Id {jobInstance.ReferenceGuid}");
-
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, Core.PayloadContentActionStatus.Importing, "Fetched payload content action.");
-        await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.InProgress, "Importing.");
+        // Step 2: Setup the input parameters
         
-        var mapping = payloadContentAction.ActiveMapping;
- 
-        // Set the ed org
-        _focusEducationOrganizationResolver.EducationOrganizationId = payloadContentAction.PayloadContent.Request.EducationOrganization.ParentOrganizationId.Value;
-
         // Get incoming payload settings
+        _focusEducationOrganizationResolver.EducationOrganizationId = payloadContentAction.PayloadContent.Request.EducationOrganization.ParentOrganizationId.Value;
         var payloadSettings = await _payloadResolver.FetchIncomingPayloadSettingsAsync(payloadContentAction.PayloadContent.Request.Payload, payloadContentAction.PayloadContent.Request.EducationOrganization!.ParentOrganizationId!.Value);
 
         // Resolve the SIS connector
-        Guard.Against.Null(payloadSettings.StudentInformationSystem, null, "No SIS incoming connector set.");
+        _ = payloadSettings.StudentInformationSystem ?? throw new ArgumentNullException($"No SIS incoming connector set");
         var sisConnectorType = _connectorResolver.ResolveConnector(payloadSettings.StudentInformationSystem);
-        Guard.Against.Null(sisConnectorType, null, "Unable to load connector.");
+        _ = sisConnectorType ?? throw new ArgumentNullException($"Unable to load connector");
 
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, Core.PayloadContentActionStatus.Importing, "Begin processing map with type: {0}.", mapping.MappingType);
-
-        // Resolve payload content action type
-        await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, Core.PayloadContentActionStatus.Importing, "Will deseralize object of type: {0}.", mapping.MappingType);
-        var payloadContentActionType = AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(s => s.GetExportedTypes())
-                    .Where(p => p.FullName == payloadContentAction.PayloadContentActionType).FirstOrDefault();
-        Guard.Against.Null(payloadContentActionType, null, $"Unable to find concrete type {payloadContentAction.PayloadContentActionType}");
-
-        // Create payload content action
-        dynamic payloadContentActionObject = ActivatorUtilities.CreateInstance(_serviceProvider, payloadContentActionType);
-
-        // Call execute on it
-        var methodInfo = payloadContentActionType.GetMethod("ExecuteAsync");
-
-        Guard.Against.Null(methodInfo, null, $"Unable to find method ExecuteAsync on payload content action: {payloadContentAction.PayloadContentActionType}");
-
-        Guard.Against.Null(payloadContentAction.PayloadContent.Request.Student, "payloadContentAction.PayloadContent.Request.Student", "Student does not exist.");
-
-        // Get IStudent type in connector
-        var connectorStudentType = payloadContentActionType.Assembly.GetExportedTypes()
-            .Where(p => p.GetInterface(nameof(IStudent)) is not null).FirstOrDefault();
+        // Resolve Student
+        _ = payloadContentAction.PayloadContent.Request.Student ?? throw new ArgumentNullException($"Student does not exist.");
+        var connectorStudentType = payloadContentActionJobResolver.ResolveInterface(payloadContentAction.PayloadContentActionType, nameof(IStudent));
 
         dynamic? connectorStudent = null;
 
@@ -109,21 +84,18 @@ public class PayloadContentActionJob : IJob
             if (payloadContentAction.PayloadContent.Request.Student.Connectors!.Count > 0)
             {
                 var foundStudentType = payloadContentAction.PayloadContent.Request.Student.Connectors.Where(x => x.Key == connectorStudentType.FullName).FirstOrDefault();
-                
                 connectorStudent = JsonConvert.DeserializeObject(foundStudentType.Value.ToString(), connectorStudentType)!;
             }
         }
 
         // Create mapping object
-        var mappingType = payloadContentActionType.Assembly.GetExportedTypes()
-            .Where(p => p.FullName == mapping.MappingType).FirstOrDefault();
-
-        Guard.Against.Null(mappingType, "mappingType", $"Unable to find mapping type {mappingType}");
+        var mapping = payloadContentAction.ActiveMapping;
+        _ = mapping.MappingType ?? throw new ArgumentNullException($"Mapping type does not exist.");
+        var mappingType = payloadContentActionJobResolver.ResolveType(mapping.MappingType);
+        _ = mappingType ?? throw new ArgumentNullException($"Unable to load mapping type {mapping.MappingType}");
 
         var listMappingType = typeof(List<>).MakeGenericType(mappingType);
-
         dynamic? mappingObject = JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString(), listMappingType)!;
-
         dynamic? mappingObjectsToImport = ActivatorUtilities.CreateInstance(_serviceProvider, listMappingType);
 
         // keep objects that are not to be imported
@@ -135,24 +107,78 @@ public class PayloadContentActionJob : IJob
             }
         }
 
-        if (mappingObjectsToImport.Count > 0)
+        if (mappingObjectsToImport.Count == 0)
         {
-            // object mapping, 
-            // PayloadContentAction payloadContentAction, 
-            // IStudent student, 
-            // Domain.Student brokerStudent, 
-            // EducationOrganization educationOrganization
-            var result = await methodInfo!.Invoke(payloadContentActionObject, new object[] { 
-                mappingObjectsToImport, 
-                payloadContentAction.ToCommon(),
-                connectorStudent!, 
-                payloadContentAction.PayloadContent.Request.Student!.Student!.ToCommon(), 
-                payloadContentAction.PayloadContent.Request.EducationOrganization.ToCommon()
-            });
-
-            await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Imported, result.ToString());
-            await _jobStatusService.UpdateRequestStatus(jobInstance, payloadContentAction.PayloadContent.Request, RequestStatus.InProgress, "Finished payload content action.");
+            await jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Error, "No mapping objects to import.");
+            return;
         }
 
+        // Step 3: Create the payload content action job object
+        await jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Importing, "Begin processing map with type: {0}.", mapping.MappingType);
+
+        // Resolve payload content action type
+        await jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Importing, "Will deseralize object of type: {0}.", mapping.MappingType);
+        // Create payload content action
+        var payloadContentActionJobObject = payloadContentActionJobResolver.Resolve(payloadContentAction.PayloadContentActionType);
+        _ = payloadContentActionJobObject ?? throw new ArgumentNullException($"Unable to load payload content action job object {payloadContentAction.PayloadContentActionType}");
+
+        // Step 4: Execute the payload content action job object
+        object? result = null;
+
+        try
+        {
+            if (payloadContentActionJobObject is DelayedPayloadContentActionJob)
+            {
+                DelayedPayloadContentActionJob delayedJobToExecute = (DelayedPayloadContentActionJob)payloadContentActionJobObject!;
+                    
+                var startResult = await delayedJobToExecute.StartAsync(
+                    mappingObjectsToImport, 
+                    payloadContentAction.ToCommon(),
+                    connectorStudent!, 
+                    payloadContentAction.PayloadContent.Request.Student!.Student!.ToCommon(), 
+                    payloadContentAction.PayloadContent.Request.EducationOrganization.ToCommon()
+                );
+                
+                if (startResult == DelayedJobStatus.Finish)
+                {
+                    result = await delayedJobToExecute.FinishAsync();
+                }
+                else
+                {
+                    var continueLooping = true;
+                    DelayedJobStatus? continueResult = null;
+                    while (continueLooping)
+                    {
+                        await Task.Delay(5000);
+                        continueResult = await delayedJobToExecute.ContinueAsync();
+                        if (continueResult != DelayedJobStatus.Continue)
+                            continueLooping = false;
+                    }
+
+                    if (continueResult is not null && continueResult == DelayedJobStatus.Finish)
+                    {
+                        result = await delayedJobToExecute.FinishAsync();
+                    }
+                }
+            }
+            else
+            {
+                // Call execute on it
+                result = await payloadContentActionJobObject.ExecuteAsync(
+                    mappingObjectsToImport, 
+                    payloadContentAction.ToCommon(),
+                    connectorStudent!, 
+                    payloadContentAction.PayloadContent.Request.Student!.Student!.ToCommon(), 
+                    payloadContentAction.PayloadContent.Request.EducationOrganization.ToCommon()
+                );
+            }
+
+            await jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Imported, result?.ToString());
+        }
+        catch (Exception e)
+        {
+            await jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Error, "Errored with: {0}.", e.Message);
+            throw;
+        }
     }
 }

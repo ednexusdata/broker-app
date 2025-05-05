@@ -5,7 +5,6 @@ using EdNexusData.Broker.Common.Configuration;
 using EdNexusData.Broker.Common.Connector;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.Mappings;
-using EdNexusData.Broker.Common.PayloadContentActions;
 using EdNexusData.Broker.Common.Payloads;
 using Microsoft.Extensions.Logging;
 
@@ -226,12 +225,9 @@ public class ConnectorLoader
 
     private void LoadPayloadContentActions()
     {
-        // PayloadContentActions.Add(typeof(IgnorePayloadContentAction));
-        // _logger.LogInformation($"IPayloadContentAction loaded: {typeof(IgnorePayloadContentAction).FullName} from {typeof(IgnorePayloadContentAction).AssemblyQualifiedName}");
-        
         foreach(var connector in Connectors)
         {
-            var payloadContentActions = connector.Assembly.GetExportedTypes().Where(p => p.GetInterface(nameof(IPayloadContentAction)) is not null);
+            var payloadContentActions = connector.Assembly.GetExportedTypes().Where(p => p.IsAssignableTo(typeof(PayloadContentActionJob)) && p.IsAbstract == false);
             if (payloadContentActions.Count() > 0)
             {
                 foreach(var payloadContentAction in payloadContentActions)

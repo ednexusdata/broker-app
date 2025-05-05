@@ -99,6 +99,7 @@ public static class BrokerServiceCollection
         services.AddScoped<FocusEducationOrganizationResolver>();
         services.AddScoped<DistrictEducationOrganizationResolver>();
         services.AddScoped<PayloadJobResolver>();
+        services.AddScoped<PayloadContentActionJobResolver>();
         services.AddScoped<BrokerResolver>();
         
         // Jobs
