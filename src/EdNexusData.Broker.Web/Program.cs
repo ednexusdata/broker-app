@@ -224,13 +224,13 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseForwardedHeaders();
     app.UseHsts();
-    app.UseHttpsRedirection();
+    //app.UseHttpsRedirection();
 
-    app.Use((context, next) =>
-    {
-        context.Request.Scheme = "https";
-        return next(context);
-    });
+    // app.Use((context, next) =>
+    // {
+    //     context.Request.Scheme = "https";
+    //     return next(context);
+    // });
 }
 else
 {
