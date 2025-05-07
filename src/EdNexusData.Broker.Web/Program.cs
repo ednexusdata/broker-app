@@ -80,8 +80,8 @@ builder.Services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
     options.User.RequireUniqueEmail = false;
 })
 .AddEntityFrameworkStores<BrokerDbContext>()
-//.AddDefaultTokenProviders();
-.AddTokenProvider<DataProtectorTokenProvider<IdentityUser<Guid>>>(TokenOptions.DefaultProvider);
+//.AddDefaultTokenProviders()
+.AddTokenProvider<AuthenticatorTokenProvider<IdentityUser<Guid>>>(TokenOptions.DefaultAuthenticatorProvider);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPayloadContentService, PayloadContentService>();
