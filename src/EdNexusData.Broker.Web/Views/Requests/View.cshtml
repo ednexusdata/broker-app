@@ -48,8 +48,8 @@
                 </div>
                 <div class="border-4 border-@incomingBgColor-400 bg-@incomingBgColor-500 p-1.5 m-0.5 rounded">
                     <div class="bg-gray-200 font-bold text-sm text-center rounded-md p-0.5 mb-1">Finished</div>
-                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Closed)?.Timestamp</div>
-                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Closed)?.Userstamp</div>
+                    <div class="text-sm text-center">@Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Finished)?.Timestamp</div>
+                    <div class="text-sm text-center">by @Model.StatusGrid.GetValueOrDefault(EdNexusData.Broker.Common.Jobs.RequestStatus.Finished)?.Userstamp</div>
                 </div>
             </div>
             <div class="grid grid-cols-5 bg-@outgoingBgColor-700 p-1">
