@@ -20,6 +20,11 @@ public class ApiJobsController : Controller
     [HttpGet]
     public async Task<IActionResult> Index(Guid? jobId)
     {
+        if (jobId.HasValue == false)
+        {
+            return BadRequest("Job ID is required.");
+        }
+
         try
         {
             var results = await _jobStatusService.Get(jobId.Value);
