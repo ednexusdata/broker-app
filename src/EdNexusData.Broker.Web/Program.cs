@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Authentication;
 using EdNexusData.Broker.Web.Extensions.Routes;
 using EdNexusData.Broker.Web.Services.PayloadContents;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
-using src.Services.Shared;
 using Microsoft.Extensions.Caching.Memory;
 using EdNexusData.Broker.Web.Exceptions;
 using Microsoft.AspNetCore.DataProtection;
@@ -86,7 +85,6 @@ builder.Services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPayloadContentService, PayloadContentService>();
 //builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddScoped<IClientService, ClientService>();
 
 builder.Services.AddTransient<CustomCookieAuthenticationEvents>();
 
