@@ -56,9 +56,9 @@
               {
                 <tr class="@(even ? "bg-gray-50": "")">
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">@userRole.DisplayText</td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@(((System.ComponentModel.DataAnnotations.DisplayAttribute)typeof(Role).GetMember(userRole?.UserRole.Role.ToString()).First().GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).First()).Name)</td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@(((System.ComponentModel.DataAnnotations.DisplayAttribute)typeof(Role).GetMember(userRole?.UserRole?.Role.ToString()).First().GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).First()).Name)</td>
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
-                    <form method="post" asp-action="Delete" asp-route-id="@userRole.UserRole?.Id">
+                    <form method="post" asp-action="Delete" asp-route-id="@userRole?.UserRole?.Id">
                       <input type="hidden" name="_METHOD" value="DELETE" />
                       <button type="submit" class="inline-flex justify-center rounded-md bg-critical-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-critical-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700">Delete role</button>
                     </form>
