@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Hosting;
 
 var builder = Host.CreateDefaultBuilder(args);
 
@@ -86,7 +87,7 @@ builder.ConfigureServices((hostContext, services) =>
 
     services.AddHostedService<Worker>();
 });
+builder.UseSystemd();
 
 var host = builder.Build();
-
 host.Run();
