@@ -320,6 +320,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
             };
 
             incomingRequest.RequestManifest = new Manifest() {
+                RequestId = incomingRequest.Id,
                 RequestType = typeof(StudentCumulativeRecordPayload).FullName!,
                 Student = student,
                 Note = viewModel.Note,
