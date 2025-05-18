@@ -212,11 +212,14 @@ public static class FileHelpers
                 {
                     var fileBlob = await ProcessFormFile<BufferedSingleFileUploadDb>(file, modelState, [".png", ".txt", ".pdf", ".json"], 2097152);
 
-                    filesToProcess.Add(new Core.Models.File()
+                    if (fileBlob.Length > 0)
                     {
-                        Name = file.FileName,
-                        Contents = fileBlob
-                    });
+                        filesToProcess.Add(new Core.Models.File()
+                        {
+                            Name = file.FileName,
+                            Contents = fileBlob
+                        });
+                    }
                 }
             }
         }

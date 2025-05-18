@@ -161,7 +161,7 @@ public class ReceiveMessageService
         await requestService.UpdateResponseManifest(request.Id, mainfestJson);
         var message = await messageService.CreateWithMessageContents(request, new MessageContents()
         {
-            RequestStatus = RequestStatus.Transmitted, // messageTransmission.RequestStatus,
+            RequestStatus = RequestStatus.Transmitted,
             Sender = messageTransmission.Sender,
             SenderSentTimestamp = messageTransmission.SenderSentTimestamp,
             Contents = JsonDocument.Parse(JsonSerializer.Serialize(request.ResponseManifest)),
