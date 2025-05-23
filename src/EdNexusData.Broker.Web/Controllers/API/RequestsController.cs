@@ -39,7 +39,7 @@ public class RequestsController : Controller
         }
         catch(Exception ex)
         {
-            return StatusCode((int)HttpStatusCode.InternalServerError, $"{ex.Message}\n\n{ex.StackTrace}\n\n{ex.InnerException?.Message}\n\n{ex.InnerException?.StackTrace}");
+            return StatusCode((int)HttpStatusCode.InternalServerError, $"{ex.Message}\n\n{ex.StackTrace}\n\n{ex.InnerException?.Message}\n\n{ex.InnerException?.StackTrace}\n\nManifest sent:{manifest}");
         }
     }
 }

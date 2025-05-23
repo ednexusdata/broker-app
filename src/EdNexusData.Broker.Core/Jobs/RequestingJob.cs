@@ -59,22 +59,32 @@ public class RequestingJob : IJob
         var result = await httpClient.PostAsync(brokerAddress?.Path, multipartContent);
         if (result.IsSuccessStatusCode)
         {
-            var content = await result.Content.ReadFromJsonAsync<MessageContents>(Defaults.JsonSerializerDefaults.PropertyNameCaseInsensitive);
-            await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, 
-                "Sent request result: {0} / {1}", result.StatusCode, content?.Contents.ToJsonString());
-            multipartContent.Dispose();
-
-            // Step 6: Update message as sent with http transmission info
-            await messageService.MarkSent(message, result, RequestStatus.Requested, jobInstance);
-
-            // Step 7: Create message with response
-            if (content is not null)
+            var stringContent = await result.Content.ReadAsStringAsync();
+            try
             {
-                await messageService.CreateWithMessageContents(request, content, RequestResponse.Response);
+                var content = await result.Content.ReadFromJsonAsync<MessageContents>(Defaults.JsonSerializerDefaults.PropertyNameCaseInsensitive);
+                await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting,
+                    "Sent request result: {0} / {1}", result.StatusCode, content?.Contents.ToJsonString());
+                multipartContent.Dispose();
+
+                // Step 6: Update message as sent with http transmission info
+                await messageService.MarkSent(message, result, RequestStatus.Requested, jobInstance);
+
+                // Step 7: Create message with response
+                if (content is not null)
+                {
+                    await messageService.CreateWithMessageContents(request, content, RequestResponse.Response);
+                }
+
+                // Step 8: Update request to sent
+                await requestService.MarkRequested(request, jobInstance);
+            }
+            catch (JsonException ex)
+            {
+                throw new JsonException($"Unable to deserialize response content: {stringContent}", ex);
             }
 
-            // Step 8: Update request to sent
-            await requestService.MarkRequested(request, jobInstance);
+            
         }
         else
         {
