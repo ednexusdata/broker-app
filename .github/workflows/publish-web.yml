@@ -84,7 +84,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: /home/runner/work/broker-app/broker-app/docker/web
           push: true
           tags: ghcr.io/ednexusdata/broker-web:${{ github.ref_name }}
           platform: ${{ matrix.kind }}
