@@ -81,4 +81,4 @@ jobs:
         run: |
           cd /home/runner/work/broker-app/broker-app/docker/web
           tag=$(git describe --tags --abbrev=0)
-          docker buildx build --build-arg GITHUB_RELEASE_TAG="$tag" --platform ${{ matrix.kind }} -t ghcr.io/ednexusdata/broker-web:$tag --push .
+          docker buildx build --build-arg GITHUB_RELEASE_TAG="$tag" --build-arg GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" --platform ${{ matrix.kind }} -t ghcr.io/ednexusdata/broker-web:$tag --push .
