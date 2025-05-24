@@ -23,7 +23,7 @@ RUN mkdir /app
 RUN tar -xzf /tmp/${ASSET_NAME} -C /app/
 
 # Change directory to the extracted asset folder (assuming it has an executable)
-WORKDIR /app/${ASSET_NAME%}
+WORKDIR /app/${ASSET_NAME}
 
 # Run the executable (replace 'executable' with the actual executable name)
 ENTRYPOINT ["dotnet", "EdNexusData.Broker.Worker.dll"]
