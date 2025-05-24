@@ -87,3 +87,6 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/ednexusdata/broker-web:${{ github.ref_name }}
+          platform: ${{ matrix.kind }}
+          build-args: |
+            GITHUB_RELEASE_TAG=${{ github.ref_name }}
