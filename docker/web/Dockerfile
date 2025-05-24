@@ -1,5 +1,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
+ARG GITHUB_TOKEN
 ARG TARGETOS
 ARG TARGETARCH
 ARG GITHUB_RELEASE_TAG
@@ -17,7 +18,14 @@ RUN apt-get update && \
     apt-get clean
 
 # Download the asset from GitHub releases
-RUN wget https://github.com/ednexusdata/broker-app/releases/download/${GITHUB_RELEASE_TAG}/${ASSET_NAME}.tar.gz -O /tmp/${ASSET_NAME}
+# RUN wget https://github.com/ednexusdata/broker-app/releases/download/${GITHUB_RELEASE_TAG}/${ASSET_NAME}.tar.gz -O /tmp/${ASSET_NAME}
+RUN ASSET_ID=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
+    "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest" | \
+    jq -r '.assets[] | select(.name=="${ASSET_NAME}.tar.gz") | .id') && \
+    wget --header="Authorization: token ${GITHUB_TOKEN}" \
+         --header="Accept: application/octet-stream" \
+         "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/assets/${ASSET_ID}" \
+         -O /tmp/${ASSET_NAME}
 
 # Make directory
 RUN mkdir /app
