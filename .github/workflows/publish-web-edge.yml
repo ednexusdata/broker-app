@@ -74,6 +74,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   tag-latest:
+    needs: check-for-changes
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.check_latest.outputs.tag_name }}
