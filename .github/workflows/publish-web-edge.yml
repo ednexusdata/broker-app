@@ -44,21 +44,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Authenticate with GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u USERNAME --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Delete Older GHCR Nightly Images (Keeping Last 3)
         run: |
-          IMAGE_REPO="ghcr.io/YOUR_GITHUB_USERNAME/YOUR_IMAGE_NAME"
-          NIGHTLY_IMAGES=$(gh api "orgs/YOUR_GITHUB_USERNAME/packages/container/YOUR_IMAGE_NAME/versions" \
+          IMAGE_REPO="ghcr.io/ednexusdata/broker-web"
+          NIGHTLY_IMAGES=$(gh api "orgs/ednexusdata/packages/container/broker-web/versions" \
                            --jq '.[].id' | tail -n +4)
           for IMAGE_ID in $EDGE_IMAGES; do
-            gh api -X DELETE "orgs/YOUR_GITHUB_USERNAME/packages/container/YOUR_IMAGE_NAME/versions/$IMAGE_ID"
+            gh api -X DELETE "orgs/ednexusdata/packages/container/broker-web/versions/$IMAGE_ID"
           done
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   build-and-release:
-    name: Release
+    needs: check-for-changes
+    name: Build and Release
     strategy:
       matrix:
         kind: ['linux/amd64','linux/arm64']
@@ -124,7 +125,12 @@ jobs:
           files: "EdNexusData.Broker.Web*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+  
+  publish-ghcr-images:
+    needs: [build-and-release, delete-old-ghcr-images]
+    name: Build and publish docker image
+    runs-on: ${{ matrix.os }}
+    steps:
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
