@@ -6,6 +6,8 @@ on:
       - 'edge-*'
   release:
     types: [published]
+  repository_dispatch:
+    types: [trigger-next]
 
 jobs:
   release:
@@ -29,6 +31,10 @@ jobs:
             echo "Triggered by Release: ${{ github.event.release.tag_name }}"
             echo "triggered_tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
             echo "TRIGGERED_TAG=${{ github.event.release.tag_name }}" >> "$GITHUB_ENV"
+          elif [[ "${{ github.event_name }}" == "repository_dispatch" && "${{ github.event.action }}" == "trigger-next" ]]; then
+            echo "Triggered by client-payload: ${{ github.event.client_payload.triggered_tag }}"
+            echo "triggered_tag=${{ github.event.client_payload.triggered_tag }}" >> "$GITHUB_OUTPUT"
+            echo "TRIGGERED_TAG=${{ github.event.client_payload.triggered_tag }}" >> "$GITHUB_ENV"
           else
             echo "Triggered by Push: ${{ github.ref_name }}"
             echo "triggered_tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
