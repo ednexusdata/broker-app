@@ -72,9 +72,30 @@ jobs:
           done
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  tag-latest:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.check_latest.outputs.tag_name }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Latest Commit Hash
+        id: get_commit
+        run: echo "COMMIT_HASH=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Create and Push Latest Tag
+        run: |
+          TAG_NAME="edge-$(date +'%Y%m%d-%H%M%S')"
+          git tag $TAG_NAME $COMMIT_HASH
+          git push origin $TAG_NAME
+          echo "tag_name=$TAG_NAME"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   build-and-release:
-    needs: check-for-changes
+    needs: [check-for-changes, tag-latest]
     if: ${{ needs.check-for-changes.outputs.has_changes == 'true' }}
     name: Build and Release
     strategy:
@@ -117,7 +138,7 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          tag=$(git describe --tags --abbrev=0)
+          tag=${{ needs.tag-latest.outputs.tag }}
           release_name="EdNexusData.Broker.Web-$tag-${{ matrix.target }}"
 
           # Build everything
@@ -144,7 +165,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   publish-ghcr-images:
-    needs: [build-and-release, delete-old-ghcr-images]
+    needs: [build-and-release, delete-old-ghcr-images, tag-latest]
     name: Build and publish docker image
     runs-on: ${{ matrix.os }}
     steps:
@@ -163,7 +184,7 @@ jobs:
         with:
           context: /home/runner/work/broker-app/broker-app/docker/web
           push: true
-          tags: ghcr.io/ednexusdata/broker-web:${{ github.ref_name }}
+          tags: ghcr.io/ednexusdata/broker-web:${{ needs.tag-latest.outputs.tag }}
           platforms: ${{ matrix.kind }}
           build-args: |
-            GITHUB_RELEASE_TAG=${{ github.ref_name }}
+            GITHUB_RELEASE_TAG=${{ needs.tag-latest.outputs.tag }}
