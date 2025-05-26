@@ -1,6 +1,6 @@
 name: Publish EdNexusData.Broker.Worker
 
-run-name: "Publish EdNexusData.Broker.Worker EdNexusData.Broker.Worker"
+run-name: "Publish EdNexusData.Broker.Worker"
 
 on:
   push:
