@@ -2,8 +2,6 @@ name: Publish EdNexusData.Broker.Web
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'edge-*'
   release:
