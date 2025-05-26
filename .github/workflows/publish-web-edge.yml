@@ -77,7 +77,7 @@ jobs:
     needs: check-for-changes
     runs-on: ubuntu-latest
     outputs:
-      tag_name: ${{ steps.tag-latest.outputs.tag_name }}
+      tag_name: ${{ steps.tag_latest.outputs.tag_name }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -87,6 +87,7 @@ jobs:
         run: echo "COMMIT_HASH=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Create and Push Latest Tag
+        id: tag_latest
         run: |
           TAG_NAME="edge-$(date +'%Y%m%d%H%M%S')"
           git tag $TAG_NAME $COMMIT_HASH
