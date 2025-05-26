@@ -90,6 +90,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: "EdNexusData.Broker.Web*"
+          tag_name: ${{ env.TRIGGERED_TAG }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
