@@ -167,22 +167,7 @@ jobs:
           files: "EdNexusData.Broker.Web*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
-  publish-ghcr-images:
-    needs: [build-and-release, delete-old-ghcr-images, tag-latest]
-    name: Build and publish docker image
-    strategy:
-      matrix:
-        kind: ['linux/amd64','linux/arm64']
-        include:
-          - kind: linux/amd64
-            os: ubuntu-latest
-            target: linux-amd64
-          - kind: linux/arm64
-            os: ubuntu-latest
-            target: linux-arm64
-    runs-on: ${{ matrix.os }}
-    steps:
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
