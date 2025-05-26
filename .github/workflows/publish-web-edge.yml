@@ -62,9 +62,6 @@ jobs:
     if: ${{ needs.check-for-changes.outputs.has_changes == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Authenticate with GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
       - name: Delete Older GHCR Nightly Images (Keeping Last 3)
         run: |
           IMAGE_REPO="ghcr.io/ednexusdata/broker-web"
