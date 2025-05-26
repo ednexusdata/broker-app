@@ -6,6 +6,8 @@ on:
       - 'edge-*'
   release:
     types: [published]
+  repository_dispatch:
+    types: [trigger-next]
 
 jobs:
   release:
