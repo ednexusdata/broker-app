@@ -9,8 +9,8 @@ jobs:
   check-for-changes:
     runs-on: ubuntu-latest
     outputs:
-      last_commit: ${{ steps.check.outputs.last_commit }}
-      has_changes: ${{ steps.check.outputs.has_changes }}
+      last_commit: ${{ steps.check_latest.outputs.last_commit }}
+      has_changes: ${{ steps.check_previous.outputs.has_changes }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
