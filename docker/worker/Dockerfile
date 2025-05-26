@@ -13,14 +13,9 @@ RUN apt-get update && \
     apt-get install -y wget tar && \
     apt-get clean
 
-# Download the asset from GitHub releases
-RUN wget https://github.com/ednexusdata/broker-app/releases/download/${GITHUB_RELEASE_TAG}/${ASSET_NAME}.tar.gz -O /tmp/${ASSET_NAME}
-
-# Make directory
-RUN mkdir /app
-
-# Extract the asset
-RUN tar -xzf /tmp/${ASSET_NAME} -C /app/
+# Copy files from build context into /app
+WORKDIR /app
+COPY . .
 
 # Change directory to the extracted asset folder (assuming it has an executable)
 WORKDIR /app/${ASSET_NAME}
