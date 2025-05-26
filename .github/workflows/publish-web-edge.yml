@@ -21,13 +21,10 @@ jobs:
           echo "last_commit=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
           echo "last_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Log Variables
-        run: |
-          echo "Last Commit: ${{ steps.check_latest.outputs.last_commit }}"
-          echo "Has Changes: ${{ steps.check_previous.outputs.has_changes }}"
-
       - name: Retrieve Last Edge Build Tags
         id: check_previous
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           NIGHTLY_TAGS=$(gh release list | awk '/edge-/{print $1}' | sort -r | head -n 3)
           echo "$EDGE_TAGS" > edge_tags.txt
@@ -46,3 +43,8 @@ jobs:
             echo "has_changes=false" >> "$GITHUB_ENV"
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Log Variables
+        run: |
+          echo "Last Commit: ${{ steps.check_latest.outputs.last_commit }}"
+          echo "Has Changes: ${{ steps.check_previous.outputs.has_changes }}"
