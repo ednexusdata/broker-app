@@ -90,7 +90,7 @@ jobs:
           TAG_NAME="edge-$(date +'%Y%m%d-%H%M%S')"
           git tag $TAG_NAME $COMMIT_HASH
           git push origin $TAG_NAME
-          echo "tag_name=$TAG_NAME"
+          echo "tag_name: $TAG_NAME"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
