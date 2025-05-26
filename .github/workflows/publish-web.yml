@@ -69,7 +69,7 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          tag=$TRIGGERED_TAG # $(git describe --tags --abbrev=0)
+          tag=${{ env.TRIGGERED_TAG }} # $(git describe --tags --abbrev=0)
           release_name="EdNexusData.Broker.Web-$tag-${{ matrix.target }}"
 
           # Build everything
