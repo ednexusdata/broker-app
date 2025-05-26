@@ -1,6 +1,11 @@
 name: Publish EdNexusData.Broker.Worker
 
 on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'edge-*'
   release:
     types: [published]
 
@@ -19,6 +24,19 @@ jobs:
             target: linux-arm64
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Determine Triggered Tag
+        id: triggered_tag
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "Triggered by Release: ${{ github.event.release.tag_name }}"
+            echo "triggered_tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+            echo "TRIGGERED_TAG=${{ github.event.release.tag_name }}" >> "$GITHUB_ENV"
+          else
+            echo "Triggered by Push: ${{ github.ref_name }}"
+            echo "triggered_tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "TRIGGERED_TAG=${{ github.ref_name }}" >> "$GITHUB_ENV"
+          fi
+    
       - name: Checkout broker-app
         uses: actions/checkout@v4
 
@@ -37,7 +55,7 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          tag=$(git describe --tags --abbrev=0)
+          tag=$TRIGGERED_TAG # $(git describe --tags --abbrev=0)
           release_name="EdNexusData.Broker.Worker-$tag-${{ matrix.target }}"
 
           # Build everything
