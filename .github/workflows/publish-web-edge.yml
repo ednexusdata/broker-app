@@ -159,7 +159,7 @@ jobs:
       - name: Create and Publish Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: edge-${{ needs.check-for-changes.outputs.last_commit }}
+          tag_name: ${{ needs.tag-latest.outputs.tag }}
           name: Edge Build (${{ needs.check-for-changes.outputs.last_commit }})
           files: "EdNexusData.Broker.Web*"
         env:
