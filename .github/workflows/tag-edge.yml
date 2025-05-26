@@ -87,4 +87,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: trigger-next
-          client-payload: '{"tag": "$tag_name"}'
+          client-payload: '{"tag": "${{ env.tag_name }}"}'
