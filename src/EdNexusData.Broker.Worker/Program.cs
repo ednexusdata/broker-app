@@ -8,9 +8,30 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.Hosting;
 
 var builder = Host.CreateDefaultBuilder(args);
+
+builder.ConfigureAppConfiguration((hostingContext, config) =>
+{
+    // Define the folder containing your appsettings.json files
+    var configFolder = System.Environment.GetEnvironmentVariable("SETTINGS_FOLDER") ?? "/settings";
+
+    // Load all appsettings.json files from the folder
+    if (Directory.Exists(configFolder))
+    {
+        // Load the base appsettings.json
+        config.AddJsonFile(Path.Combine(configFolder, "appsettings.json"), optional: false, reloadOnChange: true);
+
+        // Determine the environment (default to Production)
+        var env = hostingContext.HostingEnvironment.EnvironmentName ?? "Production";
+
+        // Load environment-specific appsettings file
+        config.AddJsonFile(Path.Combine(configFolder, $"appsettings.{env}.json"), optional: true, reloadOnChange: true);
+
+        // Load environment variables (overrides JSON files)
+        config.AddEnvironmentVariables();
+    }
+});
 
 builder.ConfigureServices((hostContext, services) =>
 {

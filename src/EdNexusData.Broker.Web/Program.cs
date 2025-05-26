@@ -25,7 +25,25 @@ using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Autofac
+// Define the folder containing your appsettings.json files
+var configFolder = System.Environment.GetEnvironmentVariable("SETTINGS_FOLDER") ?? "/settings";
+
+// Load all appsettings.json files from the folder
+if (Directory.Exists(configFolder))
+{
+    // Load the base configuration first
+    builder.Configuration.AddJsonFile(Path.Combine(configFolder, "appsettings.json"), optional: true, reloadOnChange: true);
+
+    // Check the environment (default to Production if not set)
+    var env = builder.Environment.EnvironmentName ?? "Production";
+
+    // Load environment-specific settings (if they exist)
+    builder.Configuration.AddJsonFile(Path.Combine(configFolder, $"appsettings.{env}.json"), optional: true, reloadOnChange: true);
+
+    // Optional: Load environment variables (overrides appsettings.json values)
+    builder.Configuration.AddEnvironmentVariables();
+}
+
 //builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Services.AddDistributedMemoryCache();
 // Add services to the container.
