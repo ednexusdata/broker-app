@@ -77,7 +77,7 @@ jobs:
     needs: check-for-changes
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.check_latest.outputs.tag_name }}
+      tag_name: ${{ steps.check_latest.outputs.tag_name }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -141,7 +141,7 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          tag=${{ needs.tag-latest.outputs.tag }}
+          tag=${{ needs.tag-latest.outputs.tag_name }}
           release_name="EdNexusData.Broker.Web-$tag-${{ matrix.target }}"
 
           # Build everything
