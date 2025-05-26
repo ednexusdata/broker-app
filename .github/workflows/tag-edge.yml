@@ -1,0 +1,83 @@
+name: Publish EdNexusData.Broker.Web Edge Release
+
+on:
+  schedule:
+    - cron: '0 7 * * *' # Runs at midnight PDT daily
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  check-for-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      last_commit: ${{ steps.check_latest.outputs.last_commit }}
+      has_changes: ${{ steps.check_previous.outputs.has_changes }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Latest Commit Hash
+        id: check_latest
+        run: |
+          echo "last_commit=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "last_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Retrieve Last Edge Build Tags
+        id: check_previous
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NIGHTLY_TAGS=$(gh release list | awk '/edge-/{print $1}' | sort -r | head -n 3)
+          echo "$EDGE_TAGS" > edge_tags.txt
+          echo "Edge Tags: $EDGE_TAGS"
+
+          LAST_COMMIT_STORED=$(echo "$EDGE_TAGS" | head -n 1 | cut -d '-' -f2)
+          CURRENT_COMMIT=$(git rev-parse HEAD)
+
+          echo "Last Commit Stored: $LAST_COMMIT_STORED"
+          echo "Current Commit: $CURRENT_COMMIT"
+
+          if [[ "$LAST_COMMIT_STORED" != "$CURRENT_COMMIT" ]]; then
+            echo "has_changes=true" >> "$GITHUB_ENV"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_ENV"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Log Variables
+        run: |
+          echo "Last Commit: ${{ steps.check_latest.outputs.last_commit }}"
+          echo "Has Changes: ${{ steps.check_previous.outputs.has_changes }}"
+
+  debug-has-changes:
+    runs-on: ubuntu-latest
+    needs: check-for-changes
+    steps:
+      - name: Debug Output
+        run: |
+          echo "Has Changes: ${{ needs.check-for-changes.outputs.has_changes }}"
+
+  tag-latest:
+    needs: check-for-changes
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.tag_latest.outputs.tag_name }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Latest Commit Hash
+        id: get_commit
+        run: echo "COMMIT_HASH=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Create and Push Latest Tag
+        id: tag_latest
+        run: |
+          TAG_NAME="edge-$(date +'%Y%m%d%H%M%S')"
+          git tag $TAG_NAME $COMMIT_HASH
+          git push origin $TAG_NAME
+          echo "tag_name: $TAG_NAME"
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_ENV"
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
