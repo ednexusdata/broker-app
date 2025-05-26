@@ -83,6 +83,8 @@ jobs:
         with:
           tag_name: ${{ env.TRIGGERED_TAG }}
           files: "EdNexusData.Broker.Worker*"
+          prerelease: true
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
