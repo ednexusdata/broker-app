@@ -162,7 +162,7 @@ jobs:
       - name: Create and Publish Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.tag-latest.outputs.tag }}
+          tag_name: ${{ needs.tag-latest.outputs.tag_name }}
           name: Edge Build (${{ needs.check-for-changes.outputs.last_commit }})
           files: "EdNexusData.Broker.Web*"
         env:
@@ -188,7 +188,7 @@ jobs:
         with:
           context: /home/runner/work/broker-app/broker-app/docker/web
           push: true
-          tags: ghcr.io/ednexusdata/broker-web:${{ needs.tag-latest.outputs.tag }}
+          tags: ghcr.io/ednexusdata/broker-web:${{ needs.tag-latest.outputs.tag_name }}
           platforms: ${{ matrix.kind }}
           build-args: |
-            GITHUB_RELEASE_TAG=${{ needs.tag-latest.outputs.tag }}
+            GITHUB_RELEASE_TAG=${{ needs.tag-latest.outputs.tag_name }}
