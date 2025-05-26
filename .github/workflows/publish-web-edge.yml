@@ -92,6 +92,8 @@ jobs:
           git tag $TAG_NAME $COMMIT_HASH
           git push origin $TAG_NAME
           echo "tag_name: $TAG_NAME"
+          echo "tag=$TAG_NAME" >> "$GITHUB_ENV"
+          echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
