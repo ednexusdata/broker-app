@@ -1,4 +1,4 @@
-name: Publish EdNexusData.Broker.Web Edge Release
+name: Broker Edge Release Checker
 
 on:
   schedule:
