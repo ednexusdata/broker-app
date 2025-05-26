@@ -49,6 +49,14 @@ jobs:
           echo "Last Commit: ${{ steps.check_latest.outputs.last_commit }}"
           echo "Has Changes: ${{ steps.check_previous.outputs.has_changes }}"
 
+  debug-has-changes:
+    runs-on: ubuntu-latest
+    needs: check-for-changes
+    steps:
+      - name: Debug Output
+        run: |
+          echo "Has Changes: ${{ needs.check-for-changes.outputs.has_changes }}"
+
   delete-old-ghcr-images:
     needs: check-for-changes
     if: ${{ needs.check-for-changes.outputs.has_changes == 'true' }}
