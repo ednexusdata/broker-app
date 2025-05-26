@@ -48,3 +48,117 @@ jobs:
         run: |
           echo "Last Commit: ${{ steps.check_latest.outputs.last_commit }}"
           echo "Has Changes: ${{ steps.check_previous.outputs.has_changes }}"
+
+  delete-old-ghcr-images:
+    needs: check-for-changes
+    if: ${{ needs.check-for-changes.outputs.has_changes == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate with GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Delete Older GHCR Nightly Images (Keeping Last 3)
+        run: |
+          IMAGE_REPO="ghcr.io/ednexusdata/broker-web"
+          NIGHTLY_IMAGES=$(gh api "orgs/ednexusdata/packages/container/broker-web/versions" \
+                           --jq '.[].id' | tail -n +4)
+          for IMAGE_ID in $EDGE_IMAGES; do
+            gh api -X DELETE "orgs/ednexusdata/packages/container/broker-web/versions/$IMAGE_ID"
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  build-and-release:
+    needs: check-for-changes
+    if: ${{ needs.check-for-changes.outputs.has_changes == 'true' }}
+    name: Build and Release
+    strategy:
+      matrix:
+        kind: ['linux/amd64','linux/arm64']
+        include:
+          - kind: linux/amd64
+            os: ubuntu-latest
+            target: linux-amd64
+          - kind: linux/arm64
+            os: ubuntu-latest
+            target: linux-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout broker-app
+        uses: actions/checkout@v4
+
+      - name: Clone broker-common into same level
+        run: |
+          git clone https://github.com/ednexusdata/broker-common.git /home/runner/work/broker-app/broker-common
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install npm
+        run: | 
+          cd /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web
+          npm install
+
+      - name: Restore dependencies
+        run: dotnet restore /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj
+
+      - name: Build
+        shell: bash
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          release_name="EdNexusData.Broker.Web-$tag-${{ matrix.target }}"
+
+          # Build everything
+          dotnet publish /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+
+          # Pack files
+          if [ "${{ matrix.target }}" == "win-x64" ]; then
+            # Pack to zip for Windows
+            7z a -tzip "${release_name}.zip" "./${release_name}/*"
+          else
+            tar czvf "${release_name}.tar.gz" "$release_name"
+          fi
+
+          # Move output directory to docker context
+          mv "$release_name" /home/runner/work/broker-app/broker-app/docker/web
+
+      - name: Create and Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: edge-${{ needs.check-for-changes.outputs.last_commit }}
+          name: Edge Build (${{ needs.check-for-changes.outputs.last_commit }})
+          files: "EdNexusData.Broker.Web*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  publish-ghcr-images:
+    needs: [build-and-release, delete-old-ghcr-images]
+    name: Build and publish docker image
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: /home/runner/work/broker-app/broker-app/docker/web
+          push: true
+          tags: ghcr.io/ednexusdata/broker-web:${{ github.ref_name }}
+          platforms: ${{ matrix.kind }}
+          build-args: |
+            GITHUB_RELEASE_TAG=${{ github.ref_name }}
