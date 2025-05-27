@@ -124,7 +124,7 @@ jobs:
         with:
           context: /home/runner/work/broker-app/broker-app/docker/web
           push: true
-          tags: ghcr.io/ednexusdata/broker-web:${{ env.TRIGGERED_TAG }}-${{ matrix.kind }}
+          tags: ghcr.io/ednexusdata/broker-web:${{ env.TRIGGERED_TAG }}-${{ matrix.target }}
           platforms: ${{ matrix.kind }}
           build-args: |
             GITHUB_RELEASE_TAG=${{ env.TRIGGERED_TAG }}
@@ -144,8 +144,8 @@ jobs:
         run: |
           IMAGE_NAME="ghcr.io/ednexusdata/broker-web
           docker manifest create $IMAGE_NAME:${{ env.TRIGGERED_TAG }}} \
-            --amend $IMAGE_NAME:${{ env.TRIGGERED_TAG }}-linux/amd64 \
-            --amend $IMAGE_NAME:${{ env.TRIGGERED_TAG }}-linux/arm64
+            --amend $IMAGE_NAME:${{ env.TRIGGERED_TAG }}-linux-amd64 \
+            --amend $IMAGE_NAME:${{ env.TRIGGERED_TAG }}-linux-arm64
 
           docker manifest push $IMAGE_NAME:${{ env.TRIGGERED_TAG }}
 
