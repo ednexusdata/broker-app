@@ -114,7 +114,7 @@ jobs:
         with:
           context: /home/runner/work/broker-app/broker-app/docker/worker
           push: true
-          tags: ghcr.io/ednexusdata/broker-worker:${{ env.TRIGGERED_TAG }}
+          tags: ghcr.io/ednexusdata/broker-worker:${{ env.TRIGGERED_TAG }}, ghcr.io/ednexusdata/broker-worker:edge
           platforms: ${{ matrix.kind }}
           build-args: |
             GITHUB_RELEASE_TAG=${{ env.TRIGGERED_TAG }}
