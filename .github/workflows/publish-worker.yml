@@ -97,17 +97,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Delete Older GHCR Nightly Images (Keeping Last 3)
-        run: |
-          IMAGE_REPO="ghcr.io/ednexusdata/broker-web"
-          EDGE_IMAGES=$(gh api "orgs/ednexusdata/packages/container/broker-worker/versions" \
-                           --jq '.[].id' | tail -n +4)
-          for IMAGE_ID in $EDGE_IMAGES; do
-            gh api -X DELETE "orgs/ednexusdata/packages/container/broker-worker/versions/$IMAGE_ID"
-          done
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
