@@ -144,7 +144,7 @@ jobs:
           
       - name: Merge Multi-Arch Manifest
         run: |
-          IMAGE_NAME="ghcr.io/ednexusdata/broker-web
+          IMAGE_NAME="ghcr.io/ednexusdata/broker-web"
           docker manifest create $IMAGE_NAME:${{ needs.release.outputs.triggered_tag }}} \
             --amend $IMAGE_NAME:${{ needs.release.outputs.triggered_tag }}-linux-amd64 \
             --amend $IMAGE_NAME:${{ needs.release.outputs.triggered_tag }}-linux-arm64
