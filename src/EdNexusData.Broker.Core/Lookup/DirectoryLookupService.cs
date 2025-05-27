@@ -59,7 +59,7 @@ public class DirectoryLookupService
         {
             var uri = environment.Addresses.FirstOrDefault(x => x.Scheme == "https");
 
-            _ = uri ?? throw new ArgumentException("Unable to parse address to URI.");
+            _ = uri ?? throw new ArgumentException("Unable to parse address to URI. Check if https is running.");
             
             txtresult.Host = (uri.Host == "[::]") ? "localhost" : uri.Host;
 
