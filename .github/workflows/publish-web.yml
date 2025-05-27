@@ -25,6 +25,8 @@ jobs:
             os: ubuntu-latest
             target: linux-arm64
     runs-on: ${{ matrix.os }}
+    outputs:
+      triggered_tag: ${{ steps.triggered_tag.outputs.triggered_tag }}
     steps:
       - name: Determine Triggered Tag
         id: triggered_tag
@@ -143,11 +145,11 @@ jobs:
       - name: Merge Multi-Arch Manifest
         run: |
           IMAGE_NAME="ghcr.io/ednexusdata/broker-web
-          docker manifest create $IMAGE_NAME:${{ env.TRIGGERED_TAG }}} \
-            --amend $IMAGE_NAME:${{ env.TRIGGERED_TAG }}-linux-amd64 \
-            --amend $IMAGE_NAME:${{ env.TRIGGERED_TAG }}-linux-arm64
+          docker manifest create $IMAGE_NAME:${{ needs.release.outputs.triggered_tag }}} \
+            --amend $IMAGE_NAME:${{ needs.release.outputs.triggered_tag }}-linux-amd64 \
+            --amend $IMAGE_NAME:${{ needs.release.outputs.triggered_tag }}-linux-arm64
 
-          docker manifest push $IMAGE_NAME:${{ env.TRIGGERED_TAG }}
+          docker manifest push $IMAGE_NAME:${{ needs.release.outputs.triggered_tag }}
 
-          docker tag $IMAGE_NAME:${{ env.TRIGGERED_TAG }} $IMAGE_NAME:edge-latest
-          docker push $IMAGE_NAME:edge-latest
+          docker tag $IMAGE_NAME:${{ needs.release.outputs.triggered_tag }} $IMAGE_NAME:edge
+          docker push $IMAGE_NAME:edge
