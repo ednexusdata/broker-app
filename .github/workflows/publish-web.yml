@@ -118,17 +118,13 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        env:
-          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: /home/runner/work/broker-app/broker-app/docker/web
           push: true
-          tags: ghcr.io/ednexusdata/broker-web:${{ env.TRIGGERED_TAG }}, ghcr.io/ednexusdata/broker-web:edge
+          tags: ghcr.io/ednexusdata/broker-web:${{ env.TRIGGERED_TAG }}-${{ matrix.kind }}
           platforms: ${{ matrix.kind }}
           build-args: |
-            GITHUB_RELEASE_TAG=${{ env.TRIGGERED_TAG }}  
-        env:
-          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+            GITHUB_RELEASE_TAG=${{ env.TRIGGERED_TAG }}
