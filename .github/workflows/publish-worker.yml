@@ -108,7 +108,6 @@ jobs:
           tags: ghcr.io/ednexusdata/broker-worker:${{ env.TRIGGERED_TAG }}-${{ matrix.target }}
           platforms: ${{ matrix.kind }}
           provenance: false
-          sbom: false
           build-args: |
             GITHUB_RELEASE_TAG=${{ env.TRIGGERED_TAG }} 
 
