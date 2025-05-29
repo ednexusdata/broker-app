@@ -79,7 +79,7 @@ jobs:
 
           # Move output directory to docker context
           # mv "$release_name" /home/runner/work/broker-app/broker-app/docker/worker
-          cp $release_name/* /home/runner/work/broker-app/broker-app/docker/worker/
+          cp -r $release_name/* /home/runner/work/broker-app/broker-app/docker/worker/
           
       - name: Publish
         uses: softprops/action-gh-release@v1
