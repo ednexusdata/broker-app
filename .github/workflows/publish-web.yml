@@ -88,11 +88,8 @@ jobs:
           fi
 
           # Move output directory to docker context
-          mv "$release_name" /home/runner/work/broker-app/broker-app/docker/web
-
-          # Rename directory
-          mv /home/runner/work/broker-app/broker-app/docker/web/$release_name EdNexusData.Broker.Web
-
+          cp $release_name/* /home/runner/work/broker-app/broker-app/docker/web/
+          
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
