@@ -14,7 +14,7 @@ var builder = Host.CreateDefaultBuilder(args);
 builder.ConfigureAppConfiguration((hostingContext, config) =>
 {
     // Define the folder containing your appsettings.json files
-    var configFolder = System.Environment.GetEnvironmentVariable("SETTINGS_FOLDER") ?? "/settings";
+    var configFolder = System.Environment.GetEnvironmentVariable("SETTINGS_FOLDER") ?? "/app/settings";
 
     // Load all appsettings.json files from the folder
     if (Directory.Exists(configFolder))
@@ -85,7 +85,7 @@ builder.ConfigureServices((hostContext, services) =>
     .AddEntityFrameworkStores<BrokerDbContext>()
     .AddTokenProvider<DataProtectorTokenProvider<IdentityUser<Guid>>>(TokenOptions.DefaultProvider);
     
-    if (hostContext.HostingEnvironment.IsDevelopment())
+    if (hostContext.HostingEnvironment.IsDevelopment() || hostContext.Configuration["EnvironmentIgnoreCertValidationCheck"] == "true")
     {
         services.AddHttpClient("default").ConfigurePrimaryHttpMessageHandler(() => {
             var httpClientHandler = new HttpClientHandler

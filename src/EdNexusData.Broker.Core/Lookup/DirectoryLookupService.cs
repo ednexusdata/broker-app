@@ -2,6 +2,7 @@ using DnsClient;
 using EdNexusData.Broker.Core.Models;
 using System.Web;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Logging;
 
 namespace EdNexusData.Broker.Core.Lookup;
 
@@ -9,15 +10,18 @@ public class DirectoryLookupService
 {
     private readonly ILookupClient _lookupClient;
     private readonly Environment environment;
+    private readonly ILogger<DirectoryLookupService> logger;
     private readonly HttpClient _httpClient;
 
     public DirectoryLookupService(
         ILookupClient lookupClient, 
         IHttpClientFactory httpClientFactory,
-        Environment environment)
+        Environment environment,
+        ILogger<DirectoryLookupService> logger)
     {
         _lookupClient = lookupClient;
         this.environment = environment;
+        this.logger = logger;
         _httpClient = httpClientFactory.CreateClient("default");
     }
 
@@ -57,6 +61,7 @@ public class DirectoryLookupService
         
         if (environment.IsNonProductionToLocalEnvironment())
         {
+            logger.LogInformation("In a non-production forced to local environment: {EnvironmentName}", environment.EnvironmentName);
             var uri = environment.Addresses.FirstOrDefault(x => x.Scheme == "https");
 
             _ = uri ?? throw new ArgumentException("Unable to parse address to URI. Check if https is running.");
@@ -73,6 +78,7 @@ public class DirectoryLookupService
         }
         else if (environment.IsNonProductionEnvironment())
         {
+            logger.LogInformation("In a non-production environment: {EnvironmentName}", environment.EnvironmentName);
             var dnsresult = await _lookupClient.QueryAsync(searchDomain, QueryType.TXT);
 
             var txtRecords = dnsresult.Answers.TxtRecords();

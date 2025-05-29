@@ -26,7 +26,7 @@ using System.Security.Cryptography.X509Certificates;
 var builder = WebApplication.CreateBuilder(args);
 
 // Define the folder containing your appsettings.json files
-var configFolder = System.Environment.GetEnvironmentVariable("SETTINGS_FOLDER") ?? "/settings";
+var configFolder = System.Environment.GetEnvironmentVariable("SETTINGS_FOLDER") ?? "/app/settings";
 
 // Load all appsettings.json files from the folder
 if (Directory.Exists(configFolder))
