@@ -88,7 +88,7 @@ jobs:
           fi
 
           # Move output directory to docker context
-          cp -r $release_name/* /home/runner/work/broker-app/broker-app/docker/web/
+          cp -r "$release_name/*" /home/runner/work/broker-app/broker-app/docker/web/
           
       - name: Publish
         uses: softprops/action-gh-release@v1
