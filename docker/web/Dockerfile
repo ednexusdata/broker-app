@@ -21,7 +21,7 @@ WORKDIR /app
 COPY . .
 
 # Change directory to the extracted asset folder (assuming it has an executable)
-WORKDIR /app/${ASSET_NAME}
+WORKDIR /app
 
 # Run the executable (replace 'executable' with the actual executable name)
 ENTRYPOINT ["dotnet", "EdNexusData.Broker.Web.dll"]
