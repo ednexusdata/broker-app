@@ -89,7 +89,7 @@ jobs:
       - name: Create and Push Latest Tag
         id: tag_latest
         run: |
-          TAG_NAME="edge-${{ steps.bump.outputs.newVersion }}" # "edge-$(date +'%Y%m%d%H%M%S')"
+          TAG_NAME="edge-v${{ steps.bump.outputs.newVersion }}" # "edge-$(date +'%Y%m%d%H%M%S')"
           git tag $TAG_NAME $COMMIT_HASH
           git push origin $TAG_NAME
           echo "tag_name: $TAG_NAME"
