@@ -1,5 +1,6 @@
 @using Microsoft.AspNetCore.Authentication
 @using System.Reflection
+@inject EdNexusData.Broker.Core.Environment environment
 @model EdNexusData.Broker.Web.Controllers.LogInViewModel
 @{
     // Copyright: 2023 Education Nexus Oregon
@@ -15,7 +16,8 @@
         <img class="mx-auto h-48 w-auto" src="~/images/Final-Education-Nexus-ICON-png.png" alt="Education Nexus Oregon">
         <h2 class="font-title mt-2 text-center text-4xl">Broker</h2>
         <h4 class="font-title text-center text-xl text-gray-600">Student Records Transfer</h4>
-        <p class="mt-2 text-center text-sm text-gray-600">@Assembly.GetExecutingAssembly().GetName().Version</p>
+        <p class="mt-2 text-center text-sm text-gray-600">@environment.EnvironmentName</p>
+        <p class="text-center text-sm text-gray-600">@Assembly.GetExecutingAssembly().GetName().Version</p>
       </div>
       <div>
         <div class="border border-gray-200 px-4 py-8 sm:rounded-lg sm:px-10">

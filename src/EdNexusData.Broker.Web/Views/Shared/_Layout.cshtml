@@ -1,4 +1,5 @@
 ﻿@using System.Reflection
+@inject EdNexusData.Broker.Core.Environment environment
 <!DOCTYPE html>
 <html lang="en" class="bg-gray-100">
   <head>
@@ -18,7 +19,9 @@
     </main>
     <footer>
       <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-        <div class="border-t border-gray-200 py-3 text-center text-sm text-gray-600 sm:text-left"><span class="block sm:inline">&copy; @DateTime.Now.Year <a href="https://ednexusdata.org" target="_blank">Education Nexus Oregon</a>.</span> <span class="block sm:inline">All rights reserved.</span> <span>Broker Version: @Assembly.GetExecutingAssembly().GetName().Version</span></div>
+        <div class="flex justify-between border-t border-gray-200 py-3 text-center text-sm text-gray-600 sm:text-left">
+            <div><span class="block sm:inline">&copy; @DateTime.Now.Year <a href="https://ednexusdata.org" target="_blank">Education Nexus Oregon</a>.</span> <span class="block sm:inline">All rights reserved.</span></div>
+            <div><span>@Assembly.GetExecutingAssembly().GetName().Version</span> <span>@environment.EnvironmentName</span></div>
       </div>
     </footer>
 
