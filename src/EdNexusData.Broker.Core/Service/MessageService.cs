@@ -348,13 +348,13 @@ public class MessageService
     {
         var requestContent = new TransmissionContent()
         {
-            Headers = http.Headers.ToDictionary(x => x.Key, y => y.Value)
+            Headers = http.Headers.Where(x => x.Value.GetType() != typeof(Microsoft.Extensions.Primitives.StringValues)).ToDictionary(x => x.Key, y => y.Value)
         };
 
         var responseContent = new TransmissionContent()
         {
             StatusCode = http.StatusCode,
-            Headers = http.Headers.ToDictionary(x => x.Key, y => y.Value)
+            Headers = http.Headers.Where(x => x.Value.GetType() != typeof(Microsoft.Extensions.Primitives.StringValues)).ToDictionary(x => x.Key, y => y.Value)
         };
 
         return new TransmissionMessage()
