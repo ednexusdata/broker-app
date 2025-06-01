@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -185,7 +186,8 @@ builder.Services.AddExceptionHandler<ForceLogoutExceptionHandler>();
 
 builder.Services.AddControllersWithViews();
 
-if (builder.Environment.IsDevelopment())
+if (builder.Environment.EnvironmentName is not null 
+    && EdNexusData.Broker.Core.Environment.IsNonProductionToLocalEnvironment(builder.Environment.EnvironmentName))
 {
     builder.Services.AddHttpClient("default").ConfigurePrimaryHttpMessageHandler(() => {
         var httpClientHandler = new HttpClientHandler
@@ -294,16 +296,16 @@ app.MapControllerRoute(
 
 app.Start();
 
-var server = app.Services.GetService<IServer>();
-var addressFeature = server?.Features.Get<IServerAddressesFeature>();
-if (addressFeature is not null)
-{
-    var environ = app.Services.GetService<EdNexusData.Broker.Core.Environment>();
-    foreach (var address in addressFeature.Addresses)
-    {
-        environ!.AddAddress(address);
-    }
-}
+// var server = app.Services.GetService<IServer>();
+// var addressFeature = server?.Features.Get<IServerAddressesFeature>();
+// if (addressFeature is not null)
+// {
+//     var environ = app.Services.GetService<EdNexusData.Broker.Core.Environment>();
+//     foreach (var address in addressFeature.Addresses)
+//     {
+//         environ!.AddAddress(address);
+//     }
+// }
 
 using (var scoped = app.Services.CreateScope())
 {

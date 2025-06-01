@@ -9,4 +9,6 @@ public class BrokerDnsTxtRecord
     public string? KeyAlgorithim { get; set; }
     public string? PublicKey { get; set; }
     public string? Environment { get; set; }
+
+    public string? Scheme { get; set; } = "https";
 }

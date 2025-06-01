@@ -40,7 +40,7 @@ builder.ConfigureServices((hostContext, services) =>
     services.AddSingleton(typeof(ILogger), logger!);
     services.AddSingleton(typeof(EdNexusData.Broker.Core.Environment), typeof(WorkerEnvironment));
     
-    switch (hostContext.Configuration["DatabaseProvider"])
+    switch (hostContext.Configuration["Broker:DatabaseProvider"])
     {
         case DbProviderType.MsSql:
             services.AddDbContext<BrokerDbContext, MsSqlDbContext>();
@@ -62,9 +62,9 @@ builder.ConfigureServices((hostContext, services) =>
     services.AddSingleton(typeof(IMemoryCache), typeof(MemoryCache));
     services.AddSingleton(typeof(JobStatusStore));
 
-    if (hostContext.Configuration["WorkerUserStamp"] is not null)
+    if (hostContext.Configuration["Broker:WorkerUserStamp"] is not null)
     {
-        var current = new CurrentUserService(hostContext.Configuration["WorkerUserStamp"]!);
+        var current = new CurrentUserService(hostContext.Configuration["Broker:WorkerUserStamp"]!);
         services.AddSingleton<ICurrentUser>(current);
     }
     else
@@ -85,7 +85,8 @@ builder.ConfigureServices((hostContext, services) =>
     .AddEntityFrameworkStores<BrokerDbContext>()
     .AddTokenProvider<DataProtectorTokenProvider<IdentityUser<Guid>>>(TokenOptions.DefaultProvider);
     
-    if (hostContext.HostingEnvironment.IsDevelopment() || hostContext.Configuration["EnvironmentIgnoreCertValidationCheck"] == "true")
+    if (EdNexusData.Broker.Core.Environment.IsNonProductionToLocalEnvironment(hostContext.HostingEnvironment.EnvironmentName)
+        || hostContext.Configuration["Broker:IgnoreCertificateValidationCheck"] == "true")
     {
         services.AddHttpClient("default").ConfigurePrimaryHttpMessageHandler(() => {
             var httpClientHandler = new HttpClientHandler

@@ -1,15 +1,15 @@
+using EdNexusData.Broker.Core.Services;
 using Environment = EdNexusData.Broker.Core.Environment;
 
 namespace EdNexusData.Broker.Web;
 
 public class WebEnvironment : Environment
 {
-    private readonly IHostEnvironment hostEnvironment;
-
-    public WebEnvironment(IHostEnvironment hostEnvironment)
+    public WebEnvironment(
+        IHostEnvironment hostEnvironment,
+        IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)
     {
-        this.hostEnvironment = hostEnvironment;
-
+        ApplicationName = ApplicationName.EdNexusDataBrokerWeb;
         EnvironmentName = hostEnvironment.EnvironmentName;
     }
 }

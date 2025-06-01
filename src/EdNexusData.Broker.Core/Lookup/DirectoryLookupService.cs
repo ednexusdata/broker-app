@@ -35,7 +35,7 @@ public class DirectoryLookupService
         var txtresult = await ResolveBroker(searchDomain);
         _ = txtresult.Host ?? throw new NullReferenceException("Unable to get host from broker TXT record.");
 
-        _httpClient.BaseAddress = new Uri($"https://{txtresult.Host}");
+        _httpClient.BaseAddress = new Uri($"{txtresult.Scheme}://{txtresult.Host}");
         var path = StripPathSlashes(txtresult.Path) + "/api/v1/directory/search?domain=" + HttpUtility.UrlEncode(searchDomain);
         var client = await _httpClient.GetAsync(path);
 
@@ -62,13 +62,17 @@ public class DirectoryLookupService
         if (environment.IsNonProductionToLocalEnvironment())
         {
             logger.LogInformation("In a non-production forced to local environment: {EnvironmentName}", environment.EnvironmentName);
-            var uri = environment.Addresses.FirstOrDefault(x => x.Scheme == "https");
+            var uri = environment.BrokerBaseUrl;
 
-            _ = uri ?? throw new ArgumentException("Unable to parse address to URI. Check if https is running.");
-            
+            if (environment.ApplicationName == ApplicationName.EdNexusDataBrokerWorker && environment.LocalBrokerUrl is not null)
+            {
+                uri = environment.LocalBrokerUrl;
+            }
+
+            txtresult.Scheme = uri.Scheme;
             txtresult.Host = (uri.Host == "[::]") ? "localhost" : uri.Host;
 
-            if (uri.Port != 443)
+            if (txtresult.Scheme != "https" && txtresult.Scheme != "http")
             {
                 txtresult.Host = $"{txtresult.Host}:{uri.Port}";
             }
