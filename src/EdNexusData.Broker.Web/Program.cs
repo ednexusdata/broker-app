@@ -18,11 +18,9 @@ using EdNexusData.Broker.Web.Exceptions;
 using Microsoft.AspNetCore.DataProtection;
 using EdNexusData.Broker.Core.Worker;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Community.Microsoft.Extensions.Caching.PostgreSql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +44,6 @@ if (Directory.Exists(configFolder))
 }
 
 //builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
-builder.Services.AddDistributedMemoryCache();
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
 //builder.Services.AddScoped<ScopedHttpContext>();
@@ -107,7 +104,7 @@ builder.Services.AddScoped<IPayloadContentService, PayloadContentService>();
 
 builder.Services.AddTransient<CustomCookieAuthenticationEvents>();
 
-builder.Services.ConfigureApplicationCookie(options => 
+builder.Services.ConfigureApplicationCookie(options =>
 {
     options.AccessDeniedPath = "/AccessDenied";
     options.Cookie.Name = "EdNexusData.Broker.Identity";
@@ -121,6 +118,25 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.EventsType = typeof(CustomCookieAuthenticationEvents);
 });
 
+switch (builder.Configuration["DatabaseProvider"])
+{
+    case DbProviderType.MsSql:
+        builder.Services.AddDistributedSqlServerCache(options =>
+        {
+            options.ConnectionString = builder.Configuration.GetConnectionString("MsSqlConnection");
+            options.SchemaName = "dbo";
+            options.TableName = "DistributedCache";
+        });
+        break;
+    case DbProviderType.PostgreSql:
+        builder.Services.AddDistributedPostgreSqlCache(options =>
+        {
+            options.ConnectionString = builder.Configuration.GetConnectionString("PostgreSqlConnection")!;
+            options.SchemaName = "public"; // Optional: defaults to "public"
+            options.TableName = "DistributedCache";   // Optional: defaults to "Cache"
+        });
+        break;
+}
 
 builder.Services.AddSession(options =>
 {
