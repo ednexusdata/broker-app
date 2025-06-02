@@ -18,6 +18,8 @@ public class MsSqlDbContext : BrokerDbContext
     {
         base.OnModelCreating(modelBuilder);
         
+        //modelBuilder.Entity<CacheEntry>().ToTable("DistributedCache");
+
         var namespaces = new[] { "EdNexusData.Broker.Data.Configurations", "EdNexusData.Broker.Data.Configurations.MsSql" };
         ApplyConfiguration(modelBuilder, namespaces);
     }
