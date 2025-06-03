@@ -61,6 +61,7 @@ jobs:
   tag-latest:
     needs: check-for-changes
     runs-on: ubuntu-latest
+    if: needs.check-for-changes.outputs.has_changes == 'true'
     outputs:
       tag_name: ${{ steps.tag_latest.outputs.tag_name }}
     steps:
