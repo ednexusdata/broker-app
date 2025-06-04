@@ -237,7 +237,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
         ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear(); // Allow external proxies
+    options.KnownProxies.Clear();
 });
+
 
 
 var app = builder.Build();
