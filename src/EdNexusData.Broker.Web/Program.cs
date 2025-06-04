@@ -241,10 +241,17 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
-
+builder.Services.AddHttpLogging(options =>  
+{
+    options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
+    options.RequestHeaders.Add("X-Forwarded-For");
+    options.RequestHeaders.Add("X-Forwarded-Proto");
+    options.ResponseHeaders.Add("X-Forwarded-For");
+    options.ResponseHeaders.Add("X-Forwarded-Proto");
+});
 
 var app = builder.Build();
-
+app.UseHttpLogging();
 using (var service = app.Services.CreateAsyncScope())
 {
     var seederService = service.ServiceProvider.GetRequiredService<SeederService>();
