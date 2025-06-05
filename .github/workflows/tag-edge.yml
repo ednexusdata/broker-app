@@ -30,7 +30,7 @@ jobs:
           echo "$NIGHTLY_TAGS" > edge_tags.txt
           echo "Edge Tags: $NIGHTLY_TAGS"
           
-          LAST_COMMIT_STORED=$(echo "$NIGHTLY_TAGS" | head -n 1 | cut -d '-' -f2)
+          LAST_COMMIT_STORED=edge-$(echo "$NIGHTLY_TAGS" | head -n 1 | cut -d '-' -f2)
           LAST_COMMIT_HASH=$(git rev-list -n 1 "$LAST_COMMIT_STORED")
           CURRENT_COMMIT=$(git rev-parse HEAD)
 
