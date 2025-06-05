@@ -31,7 +31,13 @@ jobs:
           echo "Edge Tags: $NIGHTLY_TAGS"
           
           LAST_COMMIT_STORED=$(echo "$NIGHTLY_TAGS" | head -n 1 | cut -d '-' -f2)
+          LAST_COMMIT_HASH=$(git rev-list -n 1 "$LAST_COMMIT_STORED")
           CURRENT_COMMIT=$(git rev-parse HEAD)
+
+          if [[ -z "$LAST_COMMIT_HASH" ]]; then
+            echo "Error: Tag '$LAST_COMMIT_STORED' does not correspond to a known commit."
+            exit 1
+          fi
           
           echo "Last Commit Stored: $LAST_COMMIT_STORED"
           echo "Current Commit: $CURRENT_COMMIT"
@@ -51,7 +57,7 @@ jobs:
           fi
           
           # Proceed with change detection
-          if [[ "$LAST_COMMIT_STORED" != "$CURRENT_COMMIT" ]]; then
+          if [[ "$LAST_COMMIT_HASH" != "$CURRENT_COMMIT" ]]; then
             echo "has_changes=true" >> "$GITHUB_ENV"
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
