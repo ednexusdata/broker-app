@@ -27,15 +27,30 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: | 
           NIGHTLY_TAGS=$(gh release list | awk '/edge-v/{print $1}' | sort -r | head -n 3)
-          echo "$EDGE_TAGS" > edge_tags.txt
-          echo "Edge Tags: $EDGE_TAGS"
-
-          LAST_COMMIT_STORED=$(echo "$EDGE_TAGS" | head -n 1 | cut -d '-' -f2)
+          echo "$NIGHTLY_TAGS" > edge_tags.txt
+          echo "Edge Tags: $NIGHTLY_TAGS"
+          
+          LAST_COMMIT_STORED=$(echo "$NIGHTLY_TAGS" | head -n 1 | cut -d '-' -f2)
           CURRENT_COMMIT=$(git rev-parse HEAD)
-
+          
           echo "Last Commit Stored: $LAST_COMMIT_STORED"
           echo "Current Commit: $CURRENT_COMMIT"
-
+          
+          # Identify changed files
+          CHANGED_FILES=$(git diff --name-only "$LAST_COMMIT_STORED" "$CURRENT_COMMIT")
+          
+          # Define ignored patterns (GitHub workflows, version files in .NET projects)
+          IGNORED_PATTERNS="^\.github/|version|\.csproj|\.sln|AssemblyInfo\.cs"
+          
+          # Check if only ignored files are changed
+          if [[ -z "$(echo "$CHANGED_FILES" | grep -vE "$IGNORED_PATTERNS")" ]]; then
+            echo "Only ignored files changed—skipping execution."
+            echo "has_changes=false" >> "$GITHUB_ENV"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          
+          # Proceed with change detection
           if [[ "$LAST_COMMIT_STORED" != "$CURRENT_COMMIT" ]]; then
             echo "has_changes=true" >> "$GITHUB_ENV"
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
@@ -43,6 +58,7 @@ jobs:
             echo "has_changes=false" >> "$GITHUB_ENV"
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
+
 
       - name: Log Variables
         run: |
