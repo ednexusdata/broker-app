@@ -26,11 +26,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: | 
-          NIGHTLY_TAGS=$(gh release list | awk '/edge-v/{print $1}' | sort -r | head -n 3)
+          EDGE_TAGS=$(gh release list | awk '/edge-v/{print $1}' | sort -r | head -n 3)
           echo "$EDGE_TAGS" > edge_tags.txt
           echo "Edge Tags: $EDGE_TAGS"
 
-          LAST_COMMIT_STORED=$(echo "$EDGE_TAGS" | head -n 1 | cut -d '-' -f2)
+          LAST_COMMIT_STORED=$(git rev-list -n 1 $(echo "$EDGE_TAGS" | head -n 1))
           CURRENT_COMMIT=$(git rev-parse HEAD)
 
           echo "Last Commit Stored: $LAST_COMMIT_STORED"
