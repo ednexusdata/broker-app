@@ -26,6 +26,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: | 
+          git fetch --tags
+          
           EDGE_TAGS=$(gh release list | awk '/edge-v/{print $1}' | sort -r | head -n 3)
           echo "$EDGE_TAGS" > edge_tags.txt
           echo "Edge Tags: $EDGE_TAGS"
