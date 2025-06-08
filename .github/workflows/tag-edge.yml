@@ -39,9 +39,14 @@ jobs:
 
           echo "Last Commit Stored: $LAST_COMMIT_STORED"
           echo "Current Commit: $CURRENT_COMMIT"
-          
-          echo "has_changes=false" >> "$GITHUB_ENV"
-          echo "has_changes=false" >> "$GITHUB_OUTPUT"
+
+          if [[ "$LAST_COMMIT_STORED" != "$CURRENT_COMMIT" ]]; then
+            echo "has_changes=true" >> "$GITHUB_ENV"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_ENV"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Log Variables
         run: |
