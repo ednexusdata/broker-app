@@ -31,6 +31,12 @@ jobs:
           echo "Edge Tags: $EDGE_TAGS"
           LATEST_EDGE_TAG=$(echo $EDGE_TAGS | tr ' ' '\n' | head -n 1)
           echo "Latest Edge Tag: $LATEST_EDGE_TAG"
+
+          LAST_COMMIT_STORED=$(git rev-list -n 1 "$LATEST_EDGE_TAG")
+          CURRENT_COMMIT=$(git rev-parse HEAD)
+
+          echo "Last Commit Stored: $LAST_COMMIT_STORED"
+          echo "Current Commit: $CURRENT_COMMIT"
           
           echo "has_changes=false" >> "$GITHUB_ENV"
           echo "has_changes=false" >> "$GITHUB_OUTPUT"
