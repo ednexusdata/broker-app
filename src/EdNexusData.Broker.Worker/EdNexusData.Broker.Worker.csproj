@@ -26,36 +26,38 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Edupoint_Files Include="..\..\..\broker-connector-edupointsynergy\src\bin\**\*.dll" />
-    <EdFi_Files Include="..\..\..\broker-connector-edfi\src\bin\**\*.dll" />
-    <Fixture_Files Include="..\..\..\broker-connector-fixture\src\bin\**\*.dll" />
+    <Edupoint_Files Include="..\..\..\broker-connector-edupointsynergy\src\bin\**\*.*" />
+    <EdFi_Files Include="..\..\..\broker-connector-edfi\src\bin\**\*.*" />
+    <Fixture_Files Include="..\..\..\broker-connector-fixture\src\bin\Debug\net8.0\publish\*.*" />
   </ItemGroup>
 
   <Target Name="BuildCopyConnectorsSynergy" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug'">
-    <MSBuild Projects="..\..\..\broker-connector-edupointsynergy\src\EdNexusData.Broker.Connector.Edupoint.Synergy.csproj" Properties="Configuration=$(Configuration)">
-    </MSBuild>
-    <Message Text="Executing BuildCopyConnectors Synergy task" Importance="High" />
+    <Message Text="Publishing Synergy project..." Importance="High" />
+    <Exec Command="dotnet publish ../../../broker-connector-edupointsynergy/src/EdNexusData.Broker.Connector.Edupoint.Synergy.csproj -c $(Configuration) --self-contained false" />
+    <Message Text="Copying published Synergy files..." Importance="High" />
 
     <Copy SourceFiles="@(Edupoint_Files)" DestinationFolder="$(TargetDir)\connectors\EdNexusData.Broker.Connector.Edupoint.Synergy" />
 
     <Message Text="Copied Synergy build files" Importance="High" />
   </Target>
-
+  
   <Target Name="BuildCopyConnectorsEdFi" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug'">
-    <MSBuild Projects="..\..\..\broker-connector-edfi\src\EdNexusData.Broker.Connector.EdFiAlliance.EdFi.csproj" Properties="Configuration=$(Configuration)">
-    </MSBuild>
-    <Message Text="Executing BuildCopyConnectors EdFi task" Importance="High" />
+    <Message Text="Publishing EdFi project..." Importance="High" />
+    <Exec Command="dotnet publish ../../../broker-connector-edfi/src/EdNexusData.Broker.Connector.EdFiAlliance.EdFi.csproj -c $(Configuration) --self-contained false" />
+    <Message Text="Copying published EdFi files..." Importance="High" />
 
     <Copy SourceFiles="@(EdFi_Files)" DestinationFolder="$(TargetDir)\connectors\EdNexusData.Broker.Connector.EdFiAlliance.EdFi" />
 
     <Message Text="Copied EdFi build files" Importance="High" />
   </Target>
 
-  <Target Name="BuildCopyConnectorsFixture" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug'">
-    <MSBuild Projects="..\..\..\broker-connector-fixture\src\EdNexusData.Broker.Connector.Fixture.csproj" Properties="Configuration=$(Configuration)">
-    </MSBuild>
-    <Message Text="Executing BuildCopyConnectors Fixture task" Importance="High" />
 
+  <Target Name="BuildCopyConnectorsFixture" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+    <!-- Publish the fixture project -->
+    <Message Text="Publishing Fixture project..." Importance="High" />
+    <Exec Command="dotnet publish ../../../broker-connector-fixture/src/EdNexusData.Broker.Connector.Fixture.csproj -c $(Configuration) --self-contained false" />
+    <Message Text="Copying published Fixture files..." Importance="High" />
+    
     <Copy SourceFiles="@(Fixture_Files)" DestinationFolder="$(TargetDir)\connectors\EdNexusData.Broker.Connector.Fixture" />
 
     <Message Text="Copied Fixture build files" Importance="High" />
