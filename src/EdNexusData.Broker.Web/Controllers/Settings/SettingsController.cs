@@ -21,7 +21,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     private readonly IRepository<EducationOrganizationConnectorSettings> _repo;
     private readonly IRepository<EducationOrganizationPayloadSettings> _educationOrganizationPayloadSettings;
     private readonly PayloadJobService _payloadJobService;
-    
+    private readonly ModelFormBuilderHelper modelFormBuilderHelper;
     private readonly FocusHelper _focusHelper;
 
     private Guid? _focusedDistrictEdOrg { get; set; }
@@ -35,7 +35,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         IRepository<EducationOrganizationPayloadSettings> educationOrganizationPayloadSettings,
         IncomingPayloadSerializer incomingPayloadSerializer,
         OutgoingPayloadSerializer outgoingPayloadSerializer,
-        PayloadJobService payloadJobService
+        PayloadJobService payloadJobService,
+        ModelFormBuilderHelper modelFormBuilderHelper
         )
     {
         ArgumentNullException.ThrowIfNull(connectorLoader);
@@ -49,6 +50,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         _incomingPayloadSerializer = incomingPayloadSerializer;
         _outgoingPayloadSerializer = outgoingPayloadSerializer;
         _payloadJobService = payloadJobService;
+        this.modelFormBuilderHelper = modelFormBuilderHelper;
     }
 
     public async Task<IActionResult> Index()
@@ -132,7 +134,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
                 forms.Add(
                     new { 
                         displayName = displayName.DisplayName, 
-                        html = ModelFormBuilderHelper.HtmlForModel(configModel) 
+                        html = await modelFormBuilderHelper.HtmlForModel(configModel, assembly) 
                     }
                 );
             }
@@ -142,7 +144,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     }
 
     [HttpPost("/Settings/Configuration/{assembly}")]
-    public async Task<IActionResult> UpdateConfiguration(IFormCollection collection)
+    public async Task<IActionResult> UpdateConfiguration(string assembly, IFormCollection collection)
     {
         var result = await FocusedToDistrict();
         if (result != null) return result;
@@ -150,7 +152,9 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         var assemblyQualifiedName = collection["ConnectorConfigurationType"];
 
         // Get Connector Config Type
-        Type connectorConfigType = Type.GetType(assemblyQualifiedName!, true)!;
+        var connectorLoadContext = _connectorLoader.ConnectorLoadContexts.Where(x => x.Key.Contains(assembly)).FirstOrDefault();
+        Type connectorConfigType = connectorLoadContext.Value.Assemblies.Where(x => x.GetName().Name == assembly).FirstOrDefault()?.GetType(assemblyQualifiedName!, true)!;
+        //Type connectorConfigType = Type.GetType(assemblyQualifiedName!, true)!;
 
         var iconfigModel = await _configurationSerializer.DeseralizeAsync(connectorConfigType, _focusedDistrictEdOrg!.Value);
 

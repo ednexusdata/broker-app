@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.Loader;
 using EdNexusData.Broker.Common.Attributes;
 using EdNexusData.Broker.Common.Authentication;
 using EdNexusData.Broker.Common.Configuration;
@@ -23,6 +24,7 @@ public class ConnectorLoader
     public Dictionary<Type, Type> Importers { get; private set; } = new Dictionary<Type, Type>();
 
     public Dictionary<string, Assembly> Assemblies { get; private set; } = new Dictionary<string, Assembly>();
+    public Dictionary<string, ConnectorLoadContext> ConnectorLoadContexts { get; private set; } = new Dictionary<string, ConnectorLoadContext>();
 
     public Dictionary<string, string> ConnectorIndex { get; private set; } = new Dictionary<string, string>();
     public Dictionary<string, string> ConfigurationIndex { get; private set; } = new Dictionary<string, string>();
@@ -131,8 +133,10 @@ public class ConnectorLoader
             if (string.IsNullOrEmpty(assemblyPath)) return;
 
             var connectorAssemblyFiles = Directory.GetFiles(assemblyPath);
-
-            foreach(var assemblyFilePath in connectorAssemblyFiles)
+            var context = new ConnectorLoadContext(assemblyPath);
+            ConnectorLoadContexts.Add(assemblyPath, context);
+            
+            foreach (var assemblyFilePath in connectorAssemblyFiles)
             {
                 if (string.IsNullOrEmpty(assemblyFilePath)) return;
 
@@ -143,10 +147,11 @@ public class ConnectorLoader
                     // {
                     //     Assembly.LoadFrom(assemblyFilePath);
                     // }
-                    
+
                     try
                     {
-                        Assembly.LoadFrom(assemblyFilePath);
+                        var assembly = context.LoadFromAssemblyPath(assemblyFilePath);
+                        //Assembly.LoadFrom(assemblyFilePath);
                     }
                     catch (FileLoadException)
                     {
@@ -156,23 +161,42 @@ public class ConnectorLoader
             }
         }
 
-        var types = AppDomain.CurrentDomain.GetAssemblies()
-                        .SelectMany(s => s.GetExportedTypes())
-                        .Where(p => p.GetInterface(nameof(IConnector)) is not null);
-
-        if (types is not null) {
-            foreach(var type in types)
+        // Loop through each context
+        foreach(var assemblyContext in ConnectorLoadContexts)
+        {
+            // Loop through each assembly in the context
+            foreach (var assembly in assemblyContext.Value.Assemblies)
             {
-                if (type.GetInterface(nameof(IConnector)) != null)
+                var iconnectorTypes = assembly.GetExportedTypes().Where(x => x.GetInterface(nameof(IConnector)) is not null);
+                if (iconnectorTypes.FirstOrDefault() is not null)
                 {
-                    Connectors.Add(type);
-                    Assemblies.Add(type.Assembly.GetName().Name!, type.Assembly);
-                    ConnectorIndex.Add(type.FullName!, type.AssemblyQualifiedName!);
-                    
-                    _logger.LogInformation($"Connector loaded: {type.FullName} from {type.AssemblyQualifiedName}");
+                    var iconnectorType = iconnectorTypes.FirstOrDefault()!;
+                    Connectors.Add(iconnectorType);
+                    Assemblies.Add(iconnectorType.Assembly.GetName().Name!, iconnectorType.Assembly);
+                    ConnectorIndex.Add(assembly.FullName!, iconnectorType.AssemblyQualifiedName!);
+
+                    _logger.LogInformation($"Connector loaded: {assembly.FullName} from {iconnectorType.AssemblyQualifiedName}");
                 }
             }
         }
+
+        // var types = AppDomain.CurrentDomain.GetAssemblies()
+        //                 .SelectMany(s => s.GetExportedTypes())
+        //                 .Where(p => p.GetInterface(nameof(IConnector)) is not null);
+
+        // if (types is not null) {
+        //     foreach(var type in types)
+        //     {
+        //         if (type.GetInterface(nameof(IConnector)) != null)
+        //         {
+        //             Connectors.Add(type);
+        //             Assemblies.Add(type.Assembly.GetName().Name!, type.Assembly);
+        //             ConnectorIndex.Add(type.FullName!, type.AssemblyQualifiedName!);
+                    
+        //             _logger.LogInformation($"Connector loaded: {type.FullName} from {type.AssemblyQualifiedName}");
+        //         }
+        //     }
+        // }
         
     }
 
