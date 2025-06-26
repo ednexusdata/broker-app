@@ -50,6 +50,7 @@ public static class BrokerServiceCollection
         services.AddScoped<StudentResolver>();
         services.AddScoped<MappingLookupResolver>();
         services.AddScoped<AuthenticationProviderResolver>();
+        services.AddSingleton<TypeResolver>();
 
         // Services
         services.AddScoped<StudentLookupService>();
@@ -103,6 +104,7 @@ public static class BrokerServiceCollection
         services.AddScoped<PayloadJobResolver>();
         services.AddScoped<PayloadContentActionJobResolver>();
         services.AddScoped<BrokerResolver>();
+        services.AddSingleton<TypeResolver>();
         
         // Jobs
         services.AddScoped<RequestingJob>();

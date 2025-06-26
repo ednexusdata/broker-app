@@ -4,11 +4,24 @@ namespace EdNexusData.Broker.Core.Resolvers;
 
 public class TypeResolver
 {
-    private readonly IServiceProvider _serviceProvider;
-    
-    public TypeResolver(IServiceProvider serviceProvider)
+    private readonly ConnectorLoader connectorLoader;
+
+    public TypeResolver(
+        ConnectorLoader connectorLoader)
     {
-        _serviceProvider = serviceProvider;
+        this.connectorLoader = connectorLoader;
+    }
+    
+    public Type ResolveConnectorType(string typeName)
+    {
+        var type = connectorLoader.ConnectorLoadContexts
+            .SelectMany(outer => outer.Value.Assemblies
+                .Where(inner => inner.GetType(typeName) != null)
+                .Select(inner => inner.GetType(typeName)))
+            .ToList();
+
+        return type.FirstOrDefault()
+            ?? throw new InvalidOperationException($"Type '{typeName}' not found in loaded connectors.");
     }
 
     public static DisplayNameAttribute? ResolveDisplayName(string typeName)
@@ -22,7 +35,7 @@ public class TypeResolver
         {
             return null;
         }
-        
+
         return type
             .GetCustomAttributes(false)
             .Where(x => x.GetType() == typeof(DisplayNameAttribute))
