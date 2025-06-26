@@ -7,6 +7,7 @@ using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.Models;
 using EdNexusData.Broker.Common;
+using EdNexusData.Broker.Core.Resolvers;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -22,6 +23,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     private readonly IRepository<EducationOrganizationPayloadSettings> _educationOrganizationPayloadSettings;
     private readonly PayloadJobService _payloadJobService;
     private readonly ModelFormBuilderHelper modelFormBuilderHelper;
+    private readonly TypeResolver typeResolver;
     private readonly FocusHelper _focusHelper;
 
     private Guid? _focusedDistrictEdOrg { get; set; }
@@ -36,7 +38,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         IncomingPayloadSerializer incomingPayloadSerializer,
         OutgoingPayloadSerializer outgoingPayloadSerializer,
         PayloadJobService payloadJobService,
-        ModelFormBuilderHelper modelFormBuilderHelper
+        ModelFormBuilderHelper modelFormBuilderHelper,
+        TypeResolver typeResolver
         )
     {
         ArgumentNullException.ThrowIfNull(connectorLoader);
@@ -51,6 +54,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         _outgoingPayloadSerializer = outgoingPayloadSerializer;
         _payloadJobService = payloadJobService;
         this.modelFormBuilderHelper = modelFormBuilderHelper;
+        this.typeResolver = typeResolver;
     }
 
     public async Task<IActionResult> Index()
@@ -144,17 +148,14 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     }
 
     [HttpPost("/Settings/Configuration/{assembly}")]
-    public async Task<IActionResult> UpdateConfiguration(string assembly, IFormCollection collection)
+    public async Task<IActionResult> UpdateConfiguration(IFormCollection collection)
     {
         var result = await FocusedToDistrict();
         if (result != null) return result;
 
         var assemblyQualifiedName = collection["ConnectorConfigurationType"];
 
-        // Get Connector Config Type
-        var connectorLoadContext = _connectorLoader.ConnectorLoadContexts.Where(x => x.Key.Contains(assembly)).FirstOrDefault();
-        Type connectorConfigType = connectorLoadContext.Value.Assemblies.Where(x => x.GetName().Name == assembly).FirstOrDefault()?.GetType(assemblyQualifiedName!, true)!;
-        //Type connectorConfigType = Type.GetType(assemblyQualifiedName!, true)!;
+        Type connectorConfigType = typeResolver.ResolveConnectorType(assemblyQualifiedName!);
 
         var iconfigModel = await _configurationSerializer.DeseralizeAsync(connectorConfigType, _focusedDistrictEdOrg!.Value);
 
