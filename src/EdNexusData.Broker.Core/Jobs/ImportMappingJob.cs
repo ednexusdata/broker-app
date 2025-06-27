@@ -22,6 +22,7 @@ public class ImportMappingJob : IJob
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
+    private readonly TypeResolver typeResolver;
 
     public ImportMappingJob(
             ConnectorLoader connectorLoader,
@@ -32,7 +33,8 @@ public class ImportMappingJob : IJob
             IRepository<Core.PayloadContent> payloadContentRepository,
             IServiceProvider serviceProvider,
             IRepository<Mapping> mappingRepository,
-            FocusEducationOrganizationResolver focusEducationOrganizationResolver)
+            FocusEducationOrganizationResolver focusEducationOrganizationResolver,
+            TypeResolver typeResolver)
     {
         _connectorLoader = connectorLoader;
         _connectorResolver = connectorResolver;
@@ -43,6 +45,7 @@ public class ImportMappingJob : IJob
         _serviceProvider = serviceProvider;
         _mappingRepository = mappingRepository;
         _focusEducationOrganizationResolver = focusEducationOrganizationResolver;
+        this.typeResolver = typeResolver;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -83,9 +86,13 @@ public class ImportMappingJob : IJob
 
         // Deseralize object to the type
         await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Core.PayloadContentActionStatus.Importing, "Will deseralize object of type: {0}.", mapping.MappingType);
-        var mappingType = AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(s => s.GetExportedTypes())
-                    .Where(p => p.FullName == mapping.MappingType).FirstOrDefault();
+
+        // var mappingType = AppDomain.CurrentDomain.GetAssemblies()
+        //             .SelectMany(s => s.GetExportedTypes())
+        //             .Where(p => p.FullName == mapping.MappingType).FirstOrDefault();
+        
+        _ = mapping.MappingType ?? throw new ArgumentNullException(nameof(mapping.MappingType), "Mapping type cannot be null.");
+        var mappingType = typeResolver.ResolveConnectorType(mapping.MappingType);
         Guard.Against.Null(mappingType, null, $"Unable to find concrete type {mapping.MappingType}");
 
         Type mappingCollectionType = typeof(List<>).MakeGenericType([mappingType]);

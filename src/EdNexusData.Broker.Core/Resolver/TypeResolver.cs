@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Reflection;
+using System.Runtime.Loader;
 
 namespace EdNexusData.Broker.Core.Resolvers;
 
@@ -18,10 +20,87 @@ public class TypeResolver
             .SelectMany(outer => outer.Value.Assemblies
                 .Where(inner => inner.GetType(typeName) != null)
                 .Select(inner => inner.GetType(typeName)))
+            .ToList().FirstOrDefault();
+
+        var _ = type
+            ?? throw new InvalidOperationException($"Type '{typeName}' not found in loaded connectors.");
+        
+        var assembly = type.Assembly;
+        var context = AssemblyLoadContext.GetLoadContext(assembly);
+        Console.WriteLine($"**************Assembly: {assembly.FullName}");
+        Console.WriteLine($"**************Load Context: {context?.Name ?? "Default"}");
+
+        return type;
+    }
+
+    public List<Type>? ResolveConnectorInterface(string typeName)
+    {
+        var types = connectorLoader.ConnectorLoadContexts
+            .SelectMany(outer => outer.Value.Assemblies
+                .SelectMany(s => s.GetExportedTypes())
+                .Where(inner => inner.GetInterface(typeName) is not null))
             .ToList();
 
-        return type.FirstOrDefault()
-            ?? throw new InvalidOperationException($"Type '{typeName}' not found in loaded connectors.");
+        if (types is not null && types.Count > 0)
+        {
+            foreach (var type in types)
+            {
+                var assembly = type.Assembly;
+                var context = AssemblyLoadContext.GetLoadContext(assembly);
+                Console.WriteLine($"**************Assembly: {assembly.FullName}");
+                Console.WriteLine($"**************Load Context: {context?.Name ?? "Default"}");
+            }
+        }
+
+        return types
+            ?? throw new InvalidOperationException($"Interface '{typeName}' not found in loaded connectors.");
+    }
+
+    public List<Type>? ResolveConnectorInterface(Assembly assembly, string typeName)
+    {
+        var types = connectorLoader.ConnectorLoadContexts
+            .Where(outer => outer.Value.Assemblies.Any(a => a == assembly))
+            .FirstOrDefault().Value.Assemblies
+            .SelectMany(s => s.GetExportedTypes())
+            .Where(inner => inner.GetInterface(typeName) is not null)
+            .ToList();
+
+        if (types is not null && types.Count > 0)
+        {
+            foreach (var type in types)
+            {
+                var assemblyText = type.Assembly;
+                var context = AssemblyLoadContext.GetLoadContext(assemblyText);
+                Console.WriteLine($"**************Assembly: {assemblyText.FullName}");
+                Console.WriteLine($"**************Load Context: {context?.Name ?? "Default"}");
+            }
+        }
+
+        return types
+            ?? throw new InvalidOperationException($"Interface '{typeName}' not found in loaded connectors.");
+    }
+
+    public static List<Type>? ResolveConnectorInterface(ConnectorLoader connectorLoader, string typeName)
+    {
+        var types = connectorLoader.ConnectorLoadContexts
+            .SelectMany(outer => outer.Value.Assemblies
+                .SelectMany(s => s.GetExportedTypes())
+                .Where(inner => inner.GetInterface(typeName) is not null))
+            .ToList();
+
+        if (types is not null && types.Count > 0)
+        {
+            foreach (var type in types)
+            {
+                var assembly = type.Assembly;
+                var context = AssemblyLoadContext.GetLoadContext(assembly);
+                Console.WriteLine($"**************Assembly: {assembly.FullName}");
+                Console.WriteLine($"**************Load Context: {context?.Name ?? "Default"}");
+            }
+        }
+
+        return types
+            ?? throw new InvalidOperationException($"Interface '{typeName}' not found in loaded connectors.");
     }
 
     public static DisplayNameAttribute? ResolveDisplayName(string typeName)

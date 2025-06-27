@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Security.Cryptography.X509Certificates;
 using Community.Microsoft.Extensions.Caching.PostgreSql;
+using System.ComponentModel.Design;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -224,7 +225,6 @@ else
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
 builder.Services.AddBrokerServices();
-builder.Services.AddConnectorDependencies();
 
 builder.Services.Configure<IISServerOptions>(options =>
 {
@@ -241,17 +241,17 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
-builder.Services.AddHttpLogging(options =>  
-{
-    options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
-    options.RequestHeaders.Add("X-Forwarded-For");
-    options.RequestHeaders.Add("X-Forwarded-Proto");
-    options.ResponseHeaders.Add("X-Forwarded-For");
-    options.ResponseHeaders.Add("X-Forwarded-Proto");
-});
+// builder.Services.AddHttpLogging(options =>  
+// {
+//     options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
+//     options.RequestHeaders.Add("X-Forwarded-For");
+//     options.RequestHeaders.Add("X-Forwarded-Proto");
+//     options.ResponseHeaders.Add("X-Forwarded-For");
+//     options.ResponseHeaders.Add("X-Forwarded-Proto");
+// });
 
 var app = builder.Build();
-app.UseHttpLogging();
+//app.UseHttpLogging();
 using (var service = app.Services.CreateAsyncScope())
 {
     var seederService = service.ServiceProvider.GetRequiredService<SeederService>();
@@ -321,6 +321,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Start();
+
+var defaultServiceProvider = app.Services.GetRequiredService<IServiceProvider>();
+BrokerServiceProvider.AddConnectorDependencies(defaultServiceProvider);
 
 // var server = app.Services.GetService<IServer>();
 // var addressFeature = server?.Features.Get<IServerAddressesFeature>();

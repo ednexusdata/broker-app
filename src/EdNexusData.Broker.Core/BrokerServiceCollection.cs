@@ -126,22 +126,6 @@ public static class BrokerServiceCollection
         return services;
     }
 
-    public static IServiceCollection AddConnectorDependencies(this IServiceCollection services)
-    {
-        Activator.CreateInstance<ConnectorLoader>();
-        
-        var types = AppDomain.CurrentDomain.GetAssemblies()
-                        .SelectMany(s => s.GetExportedTypes())
-                        .Where(p => p.GetInterface(nameof(IConnectorServiceCollection)) is not null);
-        
-        foreach(var type in types)
-        {   
-            var myMethod = type.GetMethod("AddDependencies");
-            myMethod!.Invoke(null, new object[] { services });
-        }
-
-        return services;
-    }
 }
 
 // Exists to not conflict with generic IPayloadResolver type

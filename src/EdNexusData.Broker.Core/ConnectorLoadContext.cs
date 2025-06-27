@@ -8,7 +8,7 @@ public class ConnectorLoadContext : AssemblyLoadContext
 {
     private readonly AssemblyDependencyResolver _resolver;
 
-    public ConnectorLoadContext(string pluginPath) : base(isCollectible: true)
+    public ConnectorLoadContext(string pluginPath) : base(name: $"ConnectorContext_{Path.GetFileName(pluginPath)}", isCollectible: true)
     {
         _resolver = new AssemblyDependencyResolver(pluginPath);
     }

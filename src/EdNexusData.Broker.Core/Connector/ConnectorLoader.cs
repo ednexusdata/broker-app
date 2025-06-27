@@ -25,6 +25,7 @@ public class ConnectorLoader
 
     public Dictionary<string, Assembly> Assemblies { get; private set; } = new Dictionary<string, Assembly>();
     public Dictionary<string, ConnectorLoadContext> ConnectorLoadContexts { get; private set; } = new Dictionary<string, ConnectorLoadContext>();
+    public Dictionary<string, BrokerServiceProvider> ConnectorServiceProviders { get; set; } = new Dictionary<string, BrokerServiceProvider>();
 
     public Dictionary<string, string> ConnectorIndex { get; private set; } = new Dictionary<string, string>();
     public Dictionary<string, string> ConfigurationIndex { get; private set; } = new Dictionary<string, string>();
