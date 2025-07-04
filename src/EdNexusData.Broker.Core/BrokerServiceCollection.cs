@@ -126,7 +126,33 @@ public static class BrokerServiceCollection
         return services;
     }
 
+    public static IServiceCollection AddConnectorServicesToDefaultProvider(this IServiceCollection services)
+    {
+        var connectorLoader = Activator.CreateInstance<ConnectorLoader>();
+        _ = connectorLoader ?? throw new InvalidOperationException("Loader could not be instantiated.");
+
+        // var types = AppDomain.CurrentDomain.GetAssemblies()
+        //                 .SelectMany(s => s.GetExportedTypes())
+        //                 .Where(p => p.GetInterface(nameof(IConnectorServiceCollection)) is not null);
+
+        services.AddSingleton(connectorLoader);
+
+        var types = TypeResolver.ResolveConnectorInterface(connectorLoader, nameof(IConnectorServiceCollection));
+        if (types is not null && types.Count > 0)
+        {
+            foreach (var type in types)
+            {
+                // Call AddDependencies on each service collection
+                var myMethod = type?.GetMethod("AddDependencies");
+                myMethod!.Invoke(null, [services]);
+            }
+        }
+
+        return services;
+    }
+
 }
+
 
 // Exists to not conflict with generic IPayloadResolver type
 internal interface IPayloadResolver

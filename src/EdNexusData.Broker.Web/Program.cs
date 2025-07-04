@@ -63,7 +63,17 @@ switch (builder.Configuration["DatabaseProvider"])
         break;
 }
 
-var certificate = new X509Certificate2(builder.Configuration["DataProtection:PfxCertPath"]!, builder.Configuration["DataProtection:PfxCertPassword"]!);
+Console.WriteLine("PfxCertPath: " + builder.Configuration["DataProtection:PfxCertPath"]);
+
+X509Certificate2 certificate;
+if (builder.Configuration["DataProtection:PfxCertPassword"] == "null")
+{
+    certificate = new X509Certificate2(builder.Configuration["DataProtection:PfxCertPath"]!);
+}
+else
+{
+    certificate = new X509Certificate2(builder.Configuration["DataProtection:PfxCertPath"]!, builder.Configuration["DataProtection:PfxCertPassword"]!);
+}
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<BrokerDbContext>()
     .ProtectKeysWithCertificate(certificate)
@@ -225,6 +235,7 @@ else
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
 builder.Services.AddBrokerServices();
+builder.Services.AddConnectorServicesToDefaultProvider();
 
 builder.Services.Configure<IISServerOptions>(options =>
 {
@@ -322,8 +333,8 @@ app.MapControllerRoute(
 
 app.Start();
 
-var defaultServiceProvider = app.Services.GetRequiredService<IServiceProvider>();
-BrokerServiceProvider.AddConnectorDependencies(defaultServiceProvider);
+// var defaultServiceProvider = app.Services.GetRequiredService<IServiceProvider>();
+// BrokerServiceProvider.AddConnectorDependencies(defaultServiceProvider);
 
 // var server = app.Services.GetService<IServer>();
 // var addressFeature = server?.Features.Get<IServerAddressesFeature>();
