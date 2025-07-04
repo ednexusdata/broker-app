@@ -72,7 +72,16 @@ builder.ConfigureServices((hostContext, services) =>
         services.AddSingleton<ICurrentUser, CurrentUserService>();
     }
 
-    var certificate = new X509Certificate2(hostContext.Configuration["DataProtection:PfxCertPath"]!, hostContext.Configuration["DataProtection:PfxCertPassword"]!);
+    X509Certificate2 certificate;
+    if (hostContext.Configuration["DataProtection:PfxCertPassword"] == "null")
+    {
+        certificate = new X509Certificate2(hostContext.Configuration["DataProtection:PfxCertPath"]!);
+    }
+    else
+    {
+        certificate = new X509Certificate2(hostContext.Configuration["DataProtection:PfxCertPath"]!, hostContext.Configuration["DataProtection:PfxCertPassword"]!);
+    }
+    
     services.AddDataProtection()
         .PersistKeysToDbContext<BrokerDbContext>()
         .ProtectKeysWithCertificate(certificate)
@@ -105,7 +114,7 @@ builder.ConfigureServices((hostContext, services) =>
     }
 
     services.AddBrokerServicesForWorker(hostContext.Configuration);
-    services.AddConnectorDependencies();
+    services.AddConnectorServicesToDefaultProvider();
 
     services.AddHostedService<Worker>();
 });

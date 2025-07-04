@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Security.Cryptography.X509Certificates;
 using Community.Microsoft.Extensions.Caching.PostgreSql;
+using System.ComponentModel.Design;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,7 +63,17 @@ switch (builder.Configuration["DatabaseProvider"])
         break;
 }
 
-var certificate = new X509Certificate2(builder.Configuration["DataProtection:PfxCertPath"]!, builder.Configuration["DataProtection:PfxCertPassword"]!);
+Console.WriteLine("PfxCertPath: " + builder.Configuration["DataProtection:PfxCertPath"]);
+
+X509Certificate2 certificate;
+if (builder.Configuration["DataProtection:PfxCertPassword"] == "null")
+{
+    certificate = new X509Certificate2(builder.Configuration["DataProtection:PfxCertPath"]!);
+}
+else
+{
+    certificate = new X509Certificate2(builder.Configuration["DataProtection:PfxCertPath"]!, builder.Configuration["DataProtection:PfxCertPassword"]!);
+}
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<BrokerDbContext>()
     .ProtectKeysWithCertificate(certificate)
@@ -224,7 +235,7 @@ else
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
 builder.Services.AddBrokerServices();
-builder.Services.AddConnectorDependencies();
+builder.Services.AddConnectorServicesToDefaultProvider();
 
 builder.Services.Configure<IISServerOptions>(options =>
 {
@@ -241,17 +252,17 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
-builder.Services.AddHttpLogging(options =>  
-{
-    options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
-    options.RequestHeaders.Add("X-Forwarded-For");
-    options.RequestHeaders.Add("X-Forwarded-Proto");
-    options.ResponseHeaders.Add("X-Forwarded-For");
-    options.ResponseHeaders.Add("X-Forwarded-Proto");
-});
+// builder.Services.AddHttpLogging(options =>  
+// {
+//     options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
+//     options.RequestHeaders.Add("X-Forwarded-For");
+//     options.RequestHeaders.Add("X-Forwarded-Proto");
+//     options.ResponseHeaders.Add("X-Forwarded-For");
+//     options.ResponseHeaders.Add("X-Forwarded-Proto");
+// });
 
 var app = builder.Build();
-app.UseHttpLogging();
+//app.UseHttpLogging();
 using (var service = app.Services.CreateAsyncScope())
 {
     var seederService = service.ServiceProvider.GetRequiredService<SeederService>();
@@ -321,6 +332,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Start();
+
+// var defaultServiceProvider = app.Services.GetRequiredService<IServiceProvider>();
+// BrokerServiceProvider.AddConnectorDependencies(defaultServiceProvider);
 
 // var server = app.Services.GetService<IServer>();
 // var addressFeature = server?.Features.Get<IServerAddressesFeature>();

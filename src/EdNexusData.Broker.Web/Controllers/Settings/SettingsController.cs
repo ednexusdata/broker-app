@@ -7,6 +7,7 @@ using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.Models;
 using EdNexusData.Broker.Common;
+using EdNexusData.Broker.Core.Resolvers;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -21,7 +22,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     private readonly IRepository<EducationOrganizationConnectorSettings> _repo;
     private readonly IRepository<EducationOrganizationPayloadSettings> _educationOrganizationPayloadSettings;
     private readonly PayloadJobService _payloadJobService;
-    
+    private readonly ModelFormBuilderHelper modelFormBuilderHelper;
+    private readonly TypeResolver typeResolver;
     private readonly FocusHelper _focusHelper;
 
     private Guid? _focusedDistrictEdOrg { get; set; }
@@ -35,7 +37,9 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         IRepository<EducationOrganizationPayloadSettings> educationOrganizationPayloadSettings,
         IncomingPayloadSerializer incomingPayloadSerializer,
         OutgoingPayloadSerializer outgoingPayloadSerializer,
-        PayloadJobService payloadJobService
+        PayloadJobService payloadJobService,
+        ModelFormBuilderHelper modelFormBuilderHelper,
+        TypeResolver typeResolver
         )
     {
         ArgumentNullException.ThrowIfNull(connectorLoader);
@@ -49,6 +53,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         _incomingPayloadSerializer = incomingPayloadSerializer;
         _outgoingPayloadSerializer = outgoingPayloadSerializer;
         _payloadJobService = payloadJobService;
+        this.modelFormBuilderHelper = modelFormBuilderHelper;
+        this.typeResolver = typeResolver;
     }
 
     public async Task<IActionResult> Index()
@@ -132,7 +138,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
                 forms.Add(
                     new { 
                         displayName = displayName.DisplayName, 
-                        html = ModelFormBuilderHelper.HtmlForModel(configModel) 
+                        html = await modelFormBuilderHelper.HtmlForModel(configModel, assembly) 
                     }
                 );
             }
@@ -149,8 +155,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
 
         var assemblyQualifiedName = collection["ConnectorConfigurationType"];
 
-        // Get Connector Config Type
-        Type connectorConfigType = Type.GetType(assemblyQualifiedName!, true)!;
+        Type connectorConfigType = typeResolver.ResolveConnectorType(assemblyQualifiedName!);
 
         var iconfigModel = await _configurationSerializer.DeseralizeAsync(connectorConfigType, _focusedDistrictEdOrg!.Value);
 
