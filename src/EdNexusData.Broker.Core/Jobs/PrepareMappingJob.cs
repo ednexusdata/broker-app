@@ -25,6 +25,7 @@ public class PrepareMappingJob : IJob
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly FocusEducationOrganizationResolver focusEducationOrganizationResolver;
+    private readonly TypeResolver typeResolver;
 
     public PrepareMappingJob(
             ConnectorLoader connectorLoader,
@@ -36,7 +37,8 @@ public class PrepareMappingJob : IJob
             IRepository<PayloadContentAction> actionRepository,
             IServiceProvider serviceProvider,
             IRepository<Mapping> mappingRepository,
-            FocusEducationOrganizationResolver focusEducationOrganizationResolver)
+            FocusEducationOrganizationResolver focusEducationOrganizationResolver,
+            TypeResolver typeResolver)
     {
         _connectorLoader = connectorLoader;
         _connectorResolver = connectorResolver;
@@ -48,6 +50,7 @@ public class PrepareMappingJob : IJob
         _serviceProvider = serviceProvider;
         _mappingRepository = mappingRepository;
         this.focusEducationOrganizationResolver = focusEducationOrganizationResolver;
+        this.typeResolver = typeResolver;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -125,14 +128,15 @@ public class PrepareMappingJob : IJob
             throw new NullReferenceException($"Unable to resolve transformer type: {payloadContentActionType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}");
         }
 
-        var methodInfo = transformerType.GetMethod("Map");
+        // Retrieve transformerType from context
+        var resolvedTransformerType = typeResolver.ResolveConnectorTypeInContext(transformerType.FullName!, transformerType.Assembly);
+
+        var methodInfo = resolvedTransformerType.GetMethod("Map");
         _ = methodInfo ?? throw new MissingMethodException($"Unable to find method map on transformerType: {transformerType.FullName}");
 
-        var transformMethodInfo = transformerType.GetMethod("Transform");
+        var transformMethodInfo = resolvedTransformerType.GetMethod("Transform");
 
-        var transformerContentType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetExportedTypes())
-            .Where(p => p.FullName == payloadContentSchema?.ContentObjectType).FirstOrDefault();
+        var transformerContentType = typeResolver.ResolveConnectorTypeInContext(payloadContentSchema?.ContentObjectType!, transformerType.Assembly);
 
         var records = new List<dynamic>();
         var transformedRecords = new List<dynamic>();
@@ -142,7 +146,7 @@ public class PrepareMappingJob : IJob
         Type? recordType = null;
 
         // Create transformer object
-        dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, transformerType);
+        dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, resolvedTransformerType);
 
         foreach(var record in contentRecords!)
         {
