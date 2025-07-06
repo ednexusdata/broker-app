@@ -147,26 +147,30 @@ public class PrepareMappingJob : IJob
 
         // Create transformer object
         dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, resolvedTransformerType);
+        
+        // Attach job status info
+        var jobStatusService = new JobStatusServiceProxy<PrepareMappingJob>(_jobStatusService, jobInstance, payloadContent.Request);
 
-        foreach(var record in contentRecords!)
+        foreach (var record in contentRecords!)
         {
 
             var correctRecordType = Convert.ChangeType(System.Text.Json.JsonSerializer.Deserialize(record, transformerContentType, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                }), transformerContentType);
+            {
+                PropertyNameCaseInsensitive = true
+            }), transformerContentType);
 
             // Call transformer's map method
-            var result = methodInfo!.Invoke(transformer, new object[] { 
-                correctRecordType, 
-                payloadContent.Request.RequestManifest?.Student?.ToCommon()!, 
-                payloadContent.Request.EducationOrganization?.ToCommon()!, 
+            var result = methodInfo!.Invoke(transformer, new object[] {
+                correctRecordType,
+                payloadContent.Request.RequestManifest?.Student?.ToCommon()!,
+                payloadContent.Request.EducationOrganization?.ToCommon()!,
                 payloadContent.Request.ResponseManifest?.ToCommon()!,
+                jobStatusService,
                 payloadContentObject.AdditionalContents!
             });
 
             var awaitedResult = await result;
-            
+
             recordType = awaitedResult.GetType();
 
             var transformResult = awaitedResult;
@@ -174,10 +178,10 @@ public class PrepareMappingJob : IJob
 
             if (transformMethodInfo is not null)
             {
-                transformResult = transformMethodInfo!.Invoke(transformer, new object[] { 
-                    correctRecordType, 
-                    payloadContent.Request.RequestManifest?.Student?.ToCommon()!, 
-                    payloadContent.Request.EducationOrganization?.ToCommon()!, 
+                transformResult = transformMethodInfo!.Invoke(transformer, new object[] {
+                    correctRecordType,
+                    payloadContent.Request.RequestManifest?.Student?.ToCommon()!,
+                    payloadContent.Request.EducationOrganization?.ToCommon()!,
                     payloadContent.Request.ResponseManifest?.ToCommon()!,
                     payloadContentObject.AdditionalContents!
                 });
@@ -186,7 +190,7 @@ public class PrepareMappingJob : IJob
 
                 awaitedTransformedResult.BrokerId = awaitedResult.BrokerId;
             }
-            
+
             // Save each
             records.Add(awaitedResult);
             transformedRecords.Add(awaitedTransformedResult);
@@ -218,7 +222,5 @@ public class PrepareMappingJob : IJob
         await _actionRepository.UpdateAsync(action);
 
         await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, action, Core.PayloadContentActionStatus.Prepared, "Prepared");
-
-        await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Complete, "Finished preparing mapping.");
     }
 }

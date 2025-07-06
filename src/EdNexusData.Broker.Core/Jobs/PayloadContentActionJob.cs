@@ -58,7 +58,7 @@ public class PayloadContentActionJob : IJob
         _ = payloadContentAction.PayloadContent.Request.EducationOrganization.ParentOrganizationId ?? throw new ArgumentNullException($"Unable to load request with payload content action {jobInstance.ReferenceGuid}");
         _ = payloadContentAction.ActiveMapping ?? throw new ArgumentNullException($"Unable to load active mapping with payload content action {jobInstance.ReferenceGuid}");
         _ = payloadContentAction.PayloadContentActionType ?? throw new ArgumentNullException($"Unable to load active mapping with payload content action type {jobInstance.ReferenceGuid}");
-
+        
         await jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Importing, "Fetched payload content action.");
         
         // Step 2: Setup the input parameters
@@ -124,24 +124,29 @@ public class PayloadContentActionJob : IJob
 
         // Step 4: Execute the payload content action job object
         object? result = null;
+        
+        // Attach job status info
+            
 
         try
         {
             if (payloadContentActionJobObject is DelayedPayloadContentActionJob)
             {
                 DelayedPayloadContentActionJob delayedJobToExecute = (DelayedPayloadContentActionJob)payloadContentActionJobObject!;
-                    
+                delayedJobToExecute.JobStatusService = new JobStatusServiceProxy<PayloadContentActionJob>(jobStatusService, jobInstance, payloadContentAction.PayloadContent.Request);
+
                 var startResult = await delayedJobToExecute.StartAsync(
-                    mappingObjectsToImport, 
+                    mappingObjectsToImport,
                     payloadContentAction.ToCommon(),
-                    connectorStudent!, 
-                    payloadContentAction.PayloadContent.Request.Student!.Student!.ToCommon(), 
-                    payloadContentAction.PayloadContent.Request.EducationOrganization.ToCommon()
+                    connectorStudent!,
+                    payloadContentAction.PayloadContent.Request.Student!.Student!.ToCommon(),
+                    payloadContentAction.PayloadContent.Request.EducationOrganization.ToCommon(),
+                    delayedJobToExecute.JobStatusService
                 );
-                
+
                 if (startResult == DelayedJobStatus.Finish)
                 {
-                    result = await delayedJobToExecute.FinishAsync();
+                    result = await delayedJobToExecute.FinishAsync(delayedJobToExecute.JobStatusService);
                 }
                 else
                 {
@@ -150,14 +155,14 @@ public class PayloadContentActionJob : IJob
                     while (continueLooping)
                     {
                         await Task.Delay(5000);
-                        continueResult = await delayedJobToExecute.ContinueAsync();
+                        continueResult = await delayedJobToExecute.ContinueAsync(delayedJobToExecute.JobStatusService);
                         if (continueResult != DelayedJobStatus.Continue)
                             continueLooping = false;
                     }
 
                     if (continueResult is not null && continueResult == DelayedJobStatus.Finish)
                     {
-                        result = await delayedJobToExecute.FinishAsync();
+                        result = await delayedJobToExecute.FinishAsync(delayedJobToExecute.JobStatusService);
                     }
                 }
             }
@@ -165,11 +170,12 @@ public class PayloadContentActionJob : IJob
             {
                 // Call execute on it
                 result = await payloadContentActionJobObject.ExecuteAsync(
-                    mappingObjectsToImport, 
+                    mappingObjectsToImport,
                     payloadContentAction.ToCommon(),
-                    connectorStudent!, 
-                    payloadContentAction.PayloadContent.Request.Student!.Student!.ToCommon(), 
-                    payloadContentAction.PayloadContent.Request.EducationOrganization.ToCommon()
+                    connectorStudent!,
+                    payloadContentAction.PayloadContent.Request.Student!.Student!.ToCommon(),
+                    payloadContentAction.PayloadContent.Request.EducationOrganization.ToCommon(),
+                    new JobStatusServiceProxy<PayloadContentActionJob>(jobStatusService, jobInstance, payloadContentAction.PayloadContent.Request)
                 );
             }
 

@@ -77,7 +77,7 @@ public class PayloadLoaderJob : IJob
             await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracting, "Resolved job to execute: {0}", jobToExecute.GetType().FullName);
 
             // Attach job status info
-            jobToExecute.JobStatusService = new JobStatusServiceProxy(jobToExecute, jobInstance, request);
+            jobToExecute.JobStatusService = new JobStatusServiceProxy<PayloadLoaderJob>(jobStatusService, jobInstance, request);
 
             object? result = null;
 
@@ -87,11 +87,15 @@ public class PayloadLoaderJob : IJob
                 {
                     DelayedPayloadJob delayedJobToExecute = (DelayedPayloadJob)jobToExecute!;
                     
-                    var startResult = await delayedJobToExecute.StartAsync(request.Student?.Student?.StudentNumber!, (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null);
+                    var startResult = await delayedJobToExecute.StartAsync(
+                        request.Student?.Student?.StudentNumber!,
+                        (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null,
+                        jobToExecute.JobStatusService
+                    );
                     
                     if (startResult == DelayedJobStatus.Finish)
                     {
-                        result = await delayedJobToExecute.FinishAsync();
+                        result = await delayedJobToExecute.FinishAsync(jobToExecute.JobStatusService);
                     }
                     else
                     {
@@ -100,21 +104,25 @@ public class PayloadLoaderJob : IJob
                         while (continueLooping)
                         {
                             await Task.Delay(5000);
-                            continueResult = await delayedJobToExecute.ContinueAsync();
+                            continueResult = await delayedJobToExecute.ContinueAsync(jobToExecute.JobStatusService);
                             if (continueResult != DelayedJobStatus.Continue)
                                 continueLooping = false;
                         }
 
                         if (continueResult is not null && continueResult == DelayedJobStatus.Finish)
                         {
-                            result = await delayedJobToExecute.FinishAsync();
+                            result = await delayedJobToExecute.FinishAsync(jobToExecute.JobStatusService);
                         }
                     }
                 }
                 else
                 {
                     // Execute the job
-                    result = await jobToExecute.ExecuteAsync(request.Student?.Student?.StudentNumber!, (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null);
+                    result = await jobToExecute.ExecuteAsync(
+                        request.Student?.Student?.StudentNumber!,
+                        (outgoingPayloadContent.Settings is not null) ? JsonDocument.Parse(outgoingPayloadContent.Settings) : null,
+                        jobToExecute.JobStatusService
+                    );
                 }
             }
             catch (Exception e)
