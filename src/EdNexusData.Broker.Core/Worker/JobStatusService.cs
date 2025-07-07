@@ -55,6 +55,7 @@ public class JobStatusService<T>
         jobStatusStore.Logs[jobRecord.Id] += string.Format("{0}\t{1}\t{2}\r\n", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"), Thread.CurrentThread.ManagedThreadId, jobRecord.WorkerState);
 
         jobRecord.JobStatus = newJobStatus!.Value;
+        jobRecord.WorkerLog = jobStatusStore.Logs[jobRecord.Id];
 
         var endStatuses = new List<JobStatus> { JobStatus.Interrupted, JobStatus.Complete, JobStatus.Aborted, JobStatus.Failed };
 
