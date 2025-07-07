@@ -183,6 +183,7 @@ public class PrepareMappingJob : IJob
                     payloadContent.Request.RequestManifest?.Student?.ToCommon()!,
                     payloadContent.Request.EducationOrganization?.ToCommon()!,
                     payloadContent.Request.ResponseManifest?.ToCommon()!,
+                    jobStatusService,
                     payloadContentObject.AdditionalContents!
                 });
 
