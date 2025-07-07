@@ -25,6 +25,7 @@ public class PrepareMappingJob : IJob
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly FocusEducationOrganizationResolver focusEducationOrganizationResolver;
+    private readonly TypeResolver typeResolver;
 
     public PrepareMappingJob(
             ConnectorLoader connectorLoader,
@@ -36,7 +37,8 @@ public class PrepareMappingJob : IJob
             IRepository<PayloadContentAction> actionRepository,
             IServiceProvider serviceProvider,
             IRepository<Mapping> mappingRepository,
-            FocusEducationOrganizationResolver focusEducationOrganizationResolver)
+            FocusEducationOrganizationResolver focusEducationOrganizationResolver,
+            TypeResolver typeResolver)
     {
         _connectorLoader = connectorLoader;
         _connectorResolver = connectorResolver;
@@ -48,6 +50,7 @@ public class PrepareMappingJob : IJob
         _serviceProvider = serviceProvider;
         _mappingRepository = mappingRepository;
         this.focusEducationOrganizationResolver = focusEducationOrganizationResolver;
+        this.typeResolver = typeResolver;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -125,14 +128,15 @@ public class PrepareMappingJob : IJob
             throw new NullReferenceException($"Unable to resolve transformer type: {payloadContentActionType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}");
         }
 
-        var methodInfo = transformerType.GetMethod("Map");
+        // Retrieve transformerType from context
+        var resolvedTransformerType = typeResolver.ResolveConnectorTypeInContext(transformerType.FullName!, transformerType.Assembly);
+
+        var methodInfo = resolvedTransformerType.GetMethod("Map");
         _ = methodInfo ?? throw new MissingMethodException($"Unable to find method map on transformerType: {transformerType.FullName}");
 
-        var transformMethodInfo = transformerType.GetMethod("Transform");
+        var transformMethodInfo = resolvedTransformerType.GetMethod("Transform");
 
-        var transformerContentType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetExportedTypes())
-            .Where(p => p.FullName == payloadContentSchema?.ContentObjectType).FirstOrDefault();
+        var transformerContentType = typeResolver.ResolveConnectorTypeInContext(payloadContentSchema?.ContentObjectType!, transformerType.Assembly);
 
         var records = new List<dynamic>();
         var transformedRecords = new List<dynamic>();
@@ -142,27 +146,31 @@ public class PrepareMappingJob : IJob
         Type? recordType = null;
 
         // Create transformer object
-        dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, transformerType);
+        dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, resolvedTransformerType);
+        
+        // Attach job status info
+        var jobStatusService = new JobStatusServiceProxy<PrepareMappingJob>(_jobStatusService, jobInstance, payloadContent.Request);
 
-        foreach(var record in contentRecords!)
+        foreach (var record in contentRecords!)
         {
 
             var correctRecordType = Convert.ChangeType(System.Text.Json.JsonSerializer.Deserialize(record, transformerContentType, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                }), transformerContentType);
+            {
+                PropertyNameCaseInsensitive = true
+            }), transformerContentType);
 
             // Call transformer's map method
-            var result = methodInfo!.Invoke(transformer, new object[] { 
-                correctRecordType, 
-                payloadContent.Request.RequestManifest?.Student?.ToCommon()!, 
-                payloadContent.Request.EducationOrganization?.ToCommon()!, 
+            var result = methodInfo!.Invoke(transformer, new object[] {
+                correctRecordType,
+                payloadContent.Request.RequestManifest?.Student?.ToCommon()!,
+                payloadContent.Request.EducationOrganization?.ToCommon()!,
                 payloadContent.Request.ResponseManifest?.ToCommon()!,
+                jobStatusService,
                 payloadContentObject.AdditionalContents!
             });
 
             var awaitedResult = await result;
-            
+
             recordType = awaitedResult.GetType();
 
             var transformResult = awaitedResult;
@@ -170,10 +178,10 @@ public class PrepareMappingJob : IJob
 
             if (transformMethodInfo is not null)
             {
-                transformResult = transformMethodInfo!.Invoke(transformer, new object[] { 
-                    correctRecordType, 
-                    payloadContent.Request.RequestManifest?.Student?.ToCommon()!, 
-                    payloadContent.Request.EducationOrganization?.ToCommon()!, 
+                transformResult = transformMethodInfo!.Invoke(transformer, new object[] {
+                    correctRecordType,
+                    payloadContent.Request.RequestManifest?.Student?.ToCommon()!,
+                    payloadContent.Request.EducationOrganization?.ToCommon()!,
                     payloadContent.Request.ResponseManifest?.ToCommon()!,
                     payloadContentObject.AdditionalContents!
                 });
@@ -182,7 +190,7 @@ public class PrepareMappingJob : IJob
 
                 awaitedTransformedResult.BrokerId = awaitedResult.BrokerId;
             }
-            
+
             // Save each
             records.Add(awaitedResult);
             transformedRecords.Add(awaitedTransformedResult);
@@ -214,7 +222,5 @@ public class PrepareMappingJob : IJob
         await _actionRepository.UpdateAsync(action);
 
         await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, action, Core.PayloadContentActionStatus.Prepared, "Prepared");
-
-        await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Complete, "Finished preparing mapping.");
     }
 }

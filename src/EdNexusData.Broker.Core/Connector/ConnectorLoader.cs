@@ -135,7 +135,7 @@ public class ConnectorLoader
 
             var connectorAssemblyFiles = Directory.GetFiles(assemblyPath);
             var context = new ConnectorLoadContext(assemblyPath);
-            ConnectorLoadContexts.Add(assemblyPath, context);
+            ConnectorLoadContexts.Add(context.Name!, context);
             
             foreach (var assemblyFilePath in connectorAssemblyFiles)
             {

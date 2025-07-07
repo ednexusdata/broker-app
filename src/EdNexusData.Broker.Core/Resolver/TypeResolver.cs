@@ -22,13 +22,40 @@ public class TypeResolver
                 .Select(inner => inner.GetType(typeName)))
             .ToList().FirstOrDefault();
 
-        var _ = type
+        _ = type
             ?? throw new InvalidOperationException($"Type '{typeName}' not found in loaded connectors.");
         
         var assembly = type.Assembly;
         var context = AssemblyLoadContext.GetLoadContext(assembly);
         Console.WriteLine($"**************Assembly: {assembly.FullName}");
         Console.WriteLine($"**************Load Context: {context?.Name ?? "Default"}");
+
+        return type;
+    }
+
+    public Type ResolveConnectorTypeInContext(string typeName, Assembly assembly)
+    {
+        // Find the context
+        var contextName = AssemblyLoadContext.GetLoadContext(assembly)?.Name;
+        _ = contextName
+            ?? throw new InvalidOperationException($"Assembly '{assembly.FullName}' is not loaded in any connector context.");
+
+        // Get the context
+        var context = connectorLoader.ConnectorLoadContexts
+            .Where(c => c.Key == contextName).FirstOrDefault().Value;
+
+        var type = context.Assemblies
+                .Where(inner => inner.GetType(typeName) != null)
+                .Select(inner => inner.GetType(typeName))
+                .ToList().FirstOrDefault();
+
+        _ = type
+            ?? throw new InvalidOperationException($"Type '{typeName}' not found in loaded connectors.");
+        
+        var assemblyLog = type.Assembly;
+        var contextLog = AssemblyLoadContext.GetLoadContext(assemblyLog);
+        Console.WriteLine($"**************Assembly: {assemblyLog.FullName}");
+        Console.WriteLine($"**************Load Context: {contextLog?.Name ?? "Default"}");
 
         return type;
     }
