@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using System.Security.Cryptography.X509Certificates;
 using Community.Microsoft.Extensions.Caching.PostgreSql;
 using System.ComponentModel.Design;
+using Microsoft.AspNetCore.Authentication.OAuth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -166,6 +167,19 @@ if (builder.Configuration["Authentication:Google:ClientId"] is not null &&
     {
         googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
         googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+        googleOptions.Events = new OAuthEvents
+        {
+            OnRedirectToAuthorizationEndpoint = context =>
+            {
+                var redirectUri = context.RedirectUri;
+                if (redirectUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+                {
+                    redirectUri = redirectUri.Replace("http://", "https://");
+                }
+                context.Response.Redirect(redirectUri);
+                return Task.CompletedTask;
+            }
+        };
     });
 }
 
@@ -176,6 +190,19 @@ if (builder.Configuration["Authentication:Microsoft:ClientId"] is not null &&
     {
         microsoftOptions.ClientId = builder.Configuration["Authentication:Microsoft:ClientId"]!;
         microsoftOptions.ClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"]!;
+        microsoftOptions.Events = new OAuthEvents
+        {
+            OnRedirectToAuthorizationEndpoint = context =>
+            {
+                var redirectUri = context.RedirectUri;
+                if (redirectUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+                {
+                    redirectUri = redirectUri.Replace("http://", "https://");
+                }
+                context.Response.Redirect(redirectUri);
+                return Task.CompletedTask;
+            }
+        };
     });
 }
     
