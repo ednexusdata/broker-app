@@ -21,6 +21,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Security.Cryptography.X509Certificates;
 using Community.Microsoft.Extensions.Caching.PostgreSql;
+using System.Net;
+using EdNexusData.Broker.Web.Models.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -245,20 +247,45 @@ builder.Services.AddHostedService<BrokerDbContextInitializationService>();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
+    var configSection = builder.Configuration.GetSection("ForwardedHeaders");
+    var fhConfig = configSection.Get<ForwardedHeadersConfiguration>();
+
+    if (fhConfig != null)
+    {
+        if (fhConfig.KnownProxies is not null)
+        {
+            foreach (var proxy in fhConfig.KnownProxies)
+            {
+                IPAddress.TryParse(proxy, out var ipAddress);
+                if (ipAddress is not null) options.KnownProxies.Add(ipAddress);
+            }
+            // if (fhConfig.KnownProxies.Count == 0)
+            // {
+            //     options.KnownProxies.Clear();
+            // }
+        }
+
+        if (fhConfig.KnownNetworks is not null)
+        {
+            foreach (var network in fhConfig.KnownNetworks)
+            {
+                IPAddress.TryParse(network.Prefix, out var ipAddress);
+                if (ipAddress is not null)
+                options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(
+                    ipAddress,
+                    network.PrefixLength
+                ));
+            }
+            // if (fhConfig.KnownNetworks.Count == 0)
+            // {
+            //     options.KnownNetworks.Clear();
+            // }
+        }   
+    }
+    
     options.ForwardedHeaders =
         ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.KnownNetworks.Clear(); // Allow external proxies
-    options.KnownProxies.Clear();
 });
-
-// builder.Services.AddHttpLogging(options =>  
-// {
-//     options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
-//     options.RequestHeaders.Add("X-Forwarded-For");
-//     options.RequestHeaders.Add("X-Forwarded-Proto");
-//     options.ResponseHeaders.Add("X-Forwarded-For");
-//     options.ResponseHeaders.Add("X-Forwarded-Proto");
-// });
 
 var app = builder.Build();
 
@@ -294,13 +321,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseForwardedHeaders();
     app.UseHsts();
-    //app.UseHttpsRedirection();
-
-    // app.Use((context, next) =>
-    // {
-    //     context.Request.Scheme = "https";
-    //     return next(context);
-    // });
 }
 else
 {
