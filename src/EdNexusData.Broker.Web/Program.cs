@@ -21,8 +21,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Security.Cryptography.X509Certificates;
 using Community.Microsoft.Extensions.Caching.PostgreSql;
-using System.ComponentModel.Design;
-using Microsoft.AspNetCore.Authentication.OAuth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -167,19 +165,6 @@ if (builder.Configuration["Authentication:Google:ClientId"] is not null &&
     {
         googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
         googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
-        googleOptions.Events = new OAuthEvents
-        {
-            OnRedirectToAuthorizationEndpoint = context =>
-            {
-                var redirectUri = context.RedirectUri;
-                if (redirectUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-                {
-                    redirectUri = redirectUri.Replace("http://", "https://");
-                }
-                context.Response.Redirect(redirectUri);
-                return Task.CompletedTask;
-            }
-        };
     });
 }
 
@@ -190,19 +175,6 @@ if (builder.Configuration["Authentication:Microsoft:ClientId"] is not null &&
     {
         microsoftOptions.ClientId = builder.Configuration["Authentication:Microsoft:ClientId"]!;
         microsoftOptions.ClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"]!;
-        microsoftOptions.Events = new OAuthEvents
-        {
-            OnRedirectToAuthorizationEndpoint = context =>
-            {
-                var redirectUri = context.RedirectUri;
-                if (redirectUri.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
-                {
-                    redirectUri = redirectUri.Replace("http://", "https://");
-                }
-                context.Response.Redirect(redirectUri);
-                return Task.CompletedTask;
-            }
-        };
     });
 }
     
@@ -289,6 +261,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 // });
 
 var app = builder.Build();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
 //app.UseHttpLogging();
 using (var service = app.Services.CreateAsyncScope())
 {
@@ -296,9 +271,22 @@ using (var service = app.Services.CreateAsyncScope())
     await seederService!.Invoke();
 }
 
+
 // Noted this way because of 
 // https://github.com/dotnet/aspnetcore/issues/51888
 app.UseExceptionHandler(o => { });
+
+app.Use(async (context, next) =>
+{
+    logger.LogDebug("Before Forwarded Headers Processed | Request Scheme: {0}", context.Request.Scheme);
+
+    context.Request.Headers.TryGetValue("X-Forwarded-Proto", out var forwardedProto);
+    logger.LogDebug("Before Forwarded Headers Processed | X-Forwarded-Proto: {Proto}", forwardedProto.ToString());
+    
+    context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor);
+    logger.LogDebug("Before Forwarded Headers Processed | X-Forwarded-For: {For}", forwardedFor.ToString());
+    await next();
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -316,8 +304,8 @@ if (!app.Environment.IsDevelopment())
 }
 else
 {
-    //app.UseDeveloperExceptionPage();
     app.UseForwardedHeaders();
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseStaticFiles();
@@ -328,6 +316,18 @@ app.UseHttpMethodOverride(new HttpMethodOverrideOptions()
 });
 
 app.UseRouting();
+
+app.Use(async (context, next) =>
+{
+    logger.LogDebug("After Forwarded Headers Processed | Request Scheme: {0}", context.Request.Scheme);
+
+    context.Request.Headers.TryGetValue("X-Forwarded-Proto", out var forwardedProto);
+    logger.LogDebug("After Forwarded Headers Processed | X-Forwarded-Proto: {Proto}", forwardedProto.ToString());
+    
+    context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor);
+    logger.LogDebug("After Forwarded Headers Processed | X-Forwarded-For: {For}", forwardedFor.ToString());
+    await next();
+});
 
 // app.UseCookiePolicy(new CookiePolicyOptions()
 // {
