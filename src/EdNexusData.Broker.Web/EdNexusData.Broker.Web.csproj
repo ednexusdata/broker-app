@@ -39,7 +39,8 @@
   </ItemGroup>
 
   <Target Name="Tailwind" BeforeTargets="Build">
-    <Exec Command="sh ./scripts/build-css.sh" />
+    <Exec Command="sh ./scripts/build-css.sh" Condition="$([MSBuild]::IsOSPlatform('Linux')) Or $([MSBuild]::IsOSPlatform('OSX'))" />
+    <Exec Command="npm run css:build" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </Target>
 
   <ItemGroup>
