@@ -15,10 +15,10 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 name: "DistributedCache",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Value = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    ExpiresAtTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    SlidingExpirationInSeconds = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    Id = table.Column<string>(type: "nvarchar(449)", nullable: false),
+                    Value = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    ExpiresAtTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    SlidingExpirationInSeconds = table.Column<long>(type: "bigint", nullable: false),
                     AbsoluteExpiration = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
                 },
                 constraints: table =>

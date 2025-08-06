@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EdNexusData.Broker.Data.Migrations.MsSql
 {
     [DbContext(typeof(MsSqlDbContext))]
-    [Migration("20250804233233_AddDistributedCache")]
+    [Migration("20250806052821_AddDistributedCache")]
     partial class AddDistributedCache
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.18")
+                .HasAnnotation("ProductVersion", "8.0.19")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -652,20 +652,21 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
             modelBuilder.Entity("EdNexusData.Broker.Data.DistributedCacheEntry", b =>
                 {
-                    b.Property<Guid?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(449)");
 
                     b.Property<DateTimeOffset?>("AbsoluteExpiration")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset?>("ExpiresAtTime")
+                        .IsRequired()
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("SlidingExpirationInSeconds")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<long>("SlidingExpirationInSeconds")
+                        .HasColumnType("bigint");
 
                     b.Property<byte[]>("Value")
+                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.HasKey("Id");

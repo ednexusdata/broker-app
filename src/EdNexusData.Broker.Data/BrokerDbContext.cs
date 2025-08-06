@@ -29,7 +29,6 @@ public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRol
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     public DbSet<Setting>? Settings { get; set; }
     public DbSet<Seed>? Seeds { get; set; }
-    public DbSet<DistributedCacheEntry> DistributedCache { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
