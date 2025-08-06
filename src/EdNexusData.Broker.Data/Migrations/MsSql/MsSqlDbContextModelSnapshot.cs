@@ -668,6 +668,11 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ExpiresAtTime")
+                        .HasDatabaseName("Index_ExpiresAtTime");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("ExpiresAtTime"), false);
+
                     b.ToTable("DistributedCache", (string)null);
                 });
 

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EdNexusData.Broker.Data.Migrations.MsSql
 {
     /// <inheritdoc />
-    public partial class AddDistributedCache : Migration
+    public partial class DistributedCache : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,6 +25,12 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                 {
                     table.PrimaryKey("PK_DistributedCache", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "Index_ExpiresAtTime",
+                table: "DistributedCache",
+                column: "ExpiresAtTime")
+                .Annotation("SqlServer:Clustered", false);
         }
 
         /// <inheritdoc />

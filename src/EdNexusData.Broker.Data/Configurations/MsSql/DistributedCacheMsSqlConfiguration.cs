@@ -8,27 +8,31 @@ namespace EdNexusData.Broker.Data.Configurations.MsSql;
 
 internal class DistributedCacheMsSqlConfiguration : IEntityTypeConfiguration<DistributedCacheEntry>
 {
-    public void Configure(EntityTypeBuilder<DistributedCacheEntry> builder)
-    {
-        builder.ToTable("DistributedCache");
-        builder.HasKey(e => e.Id);
+      public void Configure(EntityTypeBuilder<DistributedCacheEntry> builder)
+      {
+            builder.ToTable("DistributedCache");
+            builder.HasKey(e => e.Id);
 
-        builder.Property(e => e.Id)
-               .HasColumnType("nvarchar(449)")
-               .IsRequired();
+            builder.Property(e => e.Id)
+                   .HasColumnType("nvarchar(449)")
+                   .IsRequired();
 
-        builder.Property(e => e.Value)
-              .HasColumnType("varbinary(max)")
-              .IsRequired();
+            builder.Property(e => e.Value)
+                  .HasColumnType("varbinary(max)")
+                  .IsRequired();
 
-        builder.Property(e => e.ExpiresAtTime)
-              .HasColumnType("datetimeoffset")
-              .IsRequired();
+            builder.Property(e => e.ExpiresAtTime)
+                  .HasColumnType("datetimeoffset")
+                  .IsRequired();
 
-        builder.Property(e => e.SlidingExpirationInSeconds)
-              .HasColumnType("bigint");
+            builder.Property(e => e.SlidingExpirationInSeconds)
+                  .HasColumnType("bigint");
 
-        builder.Property(e => e.AbsoluteExpiration)
-              .HasColumnType("datetimeoffset");
+            builder.Property(e => e.AbsoluteExpiration)
+                  .HasColumnType("datetimeoffset");
+              
+            builder.HasIndex(e => e.ExpiresAtTime)
+                  .HasDatabaseName("Index_ExpiresAtTime")
+                  .HasAnnotation("SqlServer:Clustered", false); // Mark as NONCLUSTERED
     }
 }

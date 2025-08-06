@@ -677,7 +677,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20250419045026_InitialMigration', N'8.0.18');
+    VALUES (N'20250419045026_InitialMigration', N'8.0.19');
 END;
 GO
 
@@ -702,7 +702,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20250502134638_EnabledForEdOrgConnector', N'8.0.18');
+    VALUES (N'20250502134638_EnabledForEdOrgConnector', N'8.0.19');
 END;
 GO
 
@@ -745,7 +745,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20250602015833_UpdatedMigrationsAndDistCache', N'8.0.18');
+    VALUES (N'20250602015833_UpdatedMigrationsAndDistCache', N'8.0.19');
 END;
 GO
 
@@ -757,14 +757,14 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20250804233233_AddDistributedCache'
+    WHERE [MigrationId] = N'20250806060236_DistributedCache'
 )
 BEGIN
     CREATE TABLE [DistributedCache] (
-        [Id] uniqueidentifier NOT NULL,
-        [Value] varbinary(max) NULL,
-        [ExpiresAtTime] datetimeoffset NULL,
-        [SlidingExpirationInSeconds] datetimeoffset NULL,
+        [Id] nvarchar(449) NOT NULL,
+        [Value] varbinary(max) NOT NULL,
+        [ExpiresAtTime] datetimeoffset NOT NULL,
+        [SlidingExpirationInSeconds] bigint NOT NULL,
         [AbsoluteExpiration] datetimeoffset NULL,
         CONSTRAINT [PK_DistributedCache] PRIMARY KEY ([Id])
     );
@@ -773,11 +773,20 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20250804233233_AddDistributedCache'
+    WHERE [MigrationId] = N'20250806060236_DistributedCache'
+)
+BEGIN
+    CREATE NONCLUSTERED INDEX [Index_ExpiresAtTime] ON [DistributedCache] ([ExpiresAtTime]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20250806060236_DistributedCache'
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20250804233233_AddDistributedCache', N'8.0.18');
+    VALUES (N'20250806060236_DistributedCache', N'8.0.19');
 END;
 GO
 

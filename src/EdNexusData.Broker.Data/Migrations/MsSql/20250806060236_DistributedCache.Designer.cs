@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EdNexusData.Broker.Data.Migrations.MsSql
 {
     [DbContext(typeof(MsSqlDbContext))]
-    [Migration("20250806052821_AddDistributedCache")]
-    partial class AddDistributedCache
+    [Migration("20250806060236_DistributedCache")]
+    partial class DistributedCache
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -670,6 +670,11 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                         .HasColumnType("varbinary(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAtTime")
+                        .HasDatabaseName("Index_ExpiresAtTime");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("ExpiresAtTime"), false);
 
                     b.ToTable("DistributedCache", (string)null);
                 });
