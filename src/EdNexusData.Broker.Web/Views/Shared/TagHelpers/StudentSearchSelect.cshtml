@@ -119,7 +119,7 @@
                             x-transition:leave-start="opacity-100"
                             x-transition:leave-end="opacity-0"
                             @@mousedown="open()"
-                            @@keyup.debounce="fetchSearch()"
+                            @@keyup.debounce.1000ms="fetchSearch()"
                             @@keydown.enter.stop.prevent="selectOption()"
                             @@keydown.arrow-up.prevent="focusPrevOption()"
                             @@keydown.arrow-down.prevent="focusNextOption()"
