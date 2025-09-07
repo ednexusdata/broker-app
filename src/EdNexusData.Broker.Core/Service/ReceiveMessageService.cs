@@ -191,6 +191,24 @@ public class ReceiveMessageService
         await messageService.CreateWithMessageContents(request, returnMessageContent, RequestResponse.Request);
         await requestService.UpdateStatus(request, RequestStatus.Transmitted);
 
+        // Queue job to send email
+        var emailData = new EmailJobDetail
+        {
+            TemplateName = "RecordsSent",
+            To = toEdOrg.Contacts?.FirstOrDefault()?.Email,
+            ReplyTo = request.ResponseManifest?.From?.Sender?.Email,
+            Subject = $"New Records Sent for {request.RequestManifest?.Student?.FirstName} {request.RequestManifest?.Student?.LastName} {request.RequestManifest?.Student?.StudentNumber}",
+            Model = new RecordsSentViewModel
+            { 
+                Student = request.RequestManifest?.Student,
+                From = request.ResponseManifest?.From,
+                RequestId = request.Id,
+                Note = request.ResponseManifest?.Note
+            },
+            ModelType = typeof(RecordsSentViewModel).FullName
+        };
+        var emailjob = await jobService.CreateJobAsync(typeof(SendEmailJob), typeof(Request), request?.Id, null, JsonSerializer.SerializeToDocument(emailData));
+
         return returnMessageContent;
     }
 }
