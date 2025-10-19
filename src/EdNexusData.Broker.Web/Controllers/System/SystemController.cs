@@ -14,24 +14,26 @@ public class SystemController : AuthenticatedController<SystemController>
     private readonly ILogger<SystemController> logger;
     private readonly IMemoryCache cache;
     private readonly SettingsService settingsService;
+    private readonly IRepository<Setting> settingsRepository;
 
     public SystemController(
         ILogger<SystemController> logger,
         IMemoryCache cache,
-        SettingsService settingsService)
+        SettingsService settingsService,
+        IRepository<Setting> settingsRepository)
     {
         this.logger = logger;
         this.cache = cache;
         this.settingsService = settingsService;
+        this.settingsRepository = settingsRepository;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        var cacheStats = cache.GetCurrentStatistics();
-
         return View(new IndexViewModel
         {
-            CacheStatistics = cacheStats
+            CacheStatistics = cache.GetCurrentStatistics(),
+            Settings = await settingsRepository.ListAsync(new SettingsSortByKeySpecification())
         });
     }
 
@@ -47,6 +49,26 @@ public class SystemController : AuthenticatedController<SystemController>
         }
 
         TempData[VoiceTone.Positive] = $"Cleared cache.";
+        return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Settings(List<Setting> settings)
+    {
+        var changeCount = 0;
+        foreach (var setting in settings)
+        {
+            // Get existing setting
+            var dbSetting = await settingsRepository.GetByIdAsync(setting.Id);
+            if (dbSetting is not null && dbSetting.Value != setting.Value)
+            {
+                dbSetting.Value = setting.Value;
+                await settingsRepository.UpdateAsync(dbSetting);
+                changeCount++;
+            }
+        }
+
+        TempData[VoiceTone.Positive] = $"Updated {changeCount} setting(s).";
         return RedirectToAction("Index");
     }
 }
