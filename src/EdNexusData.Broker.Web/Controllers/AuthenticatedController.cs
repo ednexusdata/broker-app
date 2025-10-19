@@ -18,7 +18,7 @@ public class AuthenticatedController<T> : Controller where T : AuthenticatedCont
 
     protected void ValidateSession()
     {
-        if(HttpContext is not null && !HttpContext.Request.Path.StartsWithSegments("/login/logout"))
+        if (HttpContext is not null && !HttpContext.Request.Path.StartsWithSegments("/login/logout"))
         {
             HttpContext.Response.Redirect("/login/logout");
             return;
@@ -38,7 +38,7 @@ public class AuthenticatedController<T> : Controller where T : AuthenticatedCont
         var session = HttpContext?.Session;
         return session is null ? string.Empty : session.GetString(FocusOrganizationDistrict) ?? string.Empty;
     }
-    
+
     protected string GetFocusOrganizationSchool()
     {
         var session = HttpContext?.Session;

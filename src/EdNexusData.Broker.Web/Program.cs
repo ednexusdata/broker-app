@@ -23,6 +23,7 @@ using System.Security.Cryptography.X509Certificates;
 using Community.Microsoft.Extensions.Caching.PostgreSql;
 using System.Net;
 using EdNexusData.Broker.Web.Models.Configuration;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -242,6 +243,11 @@ builder.Services.AddConnectorServicesToDefaultProvider();
 builder.Services.AddMemoryCache(options =>
 {
     options.TrackStatistics = true; // This is where you specify TrackStatistics.
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueCountLimit = 5000; // set the default so it can be overridden per request
 });
 
 builder.Services.Configure<IISServerOptions>(options =>
