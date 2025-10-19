@@ -67,7 +67,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
-                _logger.LogWarning($"Fetching source data for {key}");
+                _logger.LogInformation($"Fetching source data for {key}");
                 return _sourceRepository.FirstOrDefaultAsync(specification, cancellationToken);
             })!;
         }
@@ -128,9 +128,9 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
 
         return await _cache.GetOrCreate(key, async entry =>
         {
-        entry.SetOptions(_cacheOptions);
-        _logger.LogWarning($"Fetching source data for {key}");
-        return await _sourceRepository.ListAsync(cancellationToken);
+            entry.SetOptions(_cacheOptions);
+            _logger.LogInformation($"Fetching source data for {key}");
+            return await _sourceRepository.ListAsync(cancellationToken);
         })!;
     }
 
@@ -144,7 +144,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         return _cache.GetOrCreate(key, entry =>
         {
             entry.SetOptions(_cacheOptions);
-            _logger.LogWarning($"Fetching source data for {key}");
+            _logger.LogInformation($"Fetching source data for {key}");
             return _sourceRepository.ListAsync(specification, cancellationToken);
         })!;
         }
@@ -161,7 +161,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         return _cache.GetOrCreate(key, entry =>
         {
             entry.SetOptions(_cacheOptions);
-            _logger.LogWarning($"Fetching source data for {key}");
+            _logger.LogInformation($"Fetching source data for {key}");
             return _sourceRepository.ListAsync(specification, cancellationToken);
         })!;
         }
@@ -182,7 +182,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
-                _logger.LogWarning($"Fetching source data for {key}");
+                _logger.LogInformation($"Fetching source data for {key}");
                 return _sourceRepository.SingleOrDefaultAsync(specification, cancellationToken);
             })!;
         }
@@ -198,7 +198,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
-                _logger.LogWarning($"Fetching source data for {key}");
+                _logger.LogInformation($"Fetching source data for {key}");
                 return _sourceRepository.SingleOrDefaultAsync(specification, cancellationToken);
             })!;
         }

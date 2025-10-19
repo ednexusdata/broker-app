@@ -238,6 +238,12 @@ builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 builder.Services.AddBrokerServices();
 builder.Services.AddConnectorServicesToDefaultProvider();
 
+// Add and configure the in-memory cache
+builder.Services.AddMemoryCache(options =>
+{
+    options.TrackStatistics = true; // This is where you specify TrackStatistics.
+});
+
 builder.Services.Configure<IISServerOptions>(options =>
 {
     options.AutomaticAuthentication = false;

@@ -1,0 +1,29 @@
+@model EdNexusData.Broker.Web.ViewModels.System.IndexViewModel;
+@{
+    // Copyright: 2023 Education Nexus Oregon
+    // Author: Makoa Jacobsen, makoa@makoajacobsen.com
+    ViewData["Title"] = "System";
+    Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = false;
+}
+<div>
+<fieldset class="border border-gray-300 p-4 rounded-md bg-white">
+  <legend class="text-lg font-semibold text-gray-700 px-2 bg-white p-0.5 border border-gray-300 rounded-md">Cache</legend>
+
+  <div class="mb-4">
+    <ul class="flex space-x-4">
+      <li>Entry Count: @Model.CacheStatistics?.CurrentEntryCount</li>
+      <li>Estimated Size: @Model.CacheStatistics?.CurrentEstimatedSize</li>
+      <li>Hits: @Model.CacheStatistics?.TotalHits</li>
+      <li>Misses: @Model.CacheStatistics?.TotalMisses</li>
+    </ul>
+  </div>
+
+  <div>
+    <form method="post" asp-controller="System" asp-action="ClearCache">
+      <input type="hidden" name="_method" value="DELETE" />
+      <button type="submit" role="menuitem" tabindex="-1" id="user-menu-item-2" class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10">Clear Cache</button>
+    </form>
+  </div>
+</fieldset>
+</div>
