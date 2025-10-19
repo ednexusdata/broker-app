@@ -11,6 +11,8 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
     private readonly EfRepository<T> _sourceRepository;
     private MemoryCacheEntryOptions _cacheOptions;
 
+    public const string LastCachedValue = "LastCachedValue";
+
     public CachedRepository(IMemoryCache cache,
         ILogger<CachedRepository<T>> logger,
         EfRepository<T> sourceRepository)
@@ -67,6 +69,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
+                UpdateLatestCachedValue();
                 _logger.LogInformation($"Fetching source data for {key}");
                 return _sourceRepository.FirstOrDefaultAsync(specification, cancellationToken);
             })!;
@@ -83,6 +86,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
+                UpdateLatestCachedValue();
                 _logger.LogInformation($"Fetching source data for {key}");
                 return _sourceRepository.FirstOrDefaultAsync(specification, cancellationToken);
             })!;
@@ -97,6 +101,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         return _cache.GetOrCreate(key, entry =>
         {
             entry.SetOptions(_cacheOptions);
+            UpdateLatestCachedValue();
             _logger.LogInformation("Fetching source data for " + key);
             return _sourceRepository.GetByIdAsync(id, cancellationToken);
         })!;
@@ -129,6 +134,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         return await _cache.GetOrCreate(key, async entry =>
         {
             entry.SetOptions(_cacheOptions);
+            UpdateLatestCachedValue();
             _logger.LogInformation($"Fetching source data for {key}");
             return await _sourceRepository.ListAsync(cancellationToken);
         })!;
@@ -144,6 +150,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         return _cache.GetOrCreate(key, entry =>
         {
             entry.SetOptions(_cacheOptions);
+            UpdateLatestCachedValue();
             _logger.LogInformation($"Fetching source data for {key}");
             return _sourceRepository.ListAsync(specification, cancellationToken);
         })!;
@@ -161,6 +168,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         return _cache.GetOrCreate(key, entry =>
         {
             entry.SetOptions(_cacheOptions);
+            UpdateLatestCachedValue();
             _logger.LogInformation($"Fetching source data for {key}");
             return _sourceRepository.ListAsync(specification, cancellationToken);
         })!;
@@ -182,6 +190,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
+                UpdateLatestCachedValue();
                 _logger.LogInformation($"Fetching source data for {key}");
                 return _sourceRepository.SingleOrDefaultAsync(specification, cancellationToken);
             })!;
@@ -198,6 +207,7 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
+                UpdateLatestCachedValue();
                 _logger.LogInformation($"Fetching source data for {key}");
                 return _sourceRepository.SingleOrDefaultAsync(specification, cancellationToken);
             })!;
@@ -208,5 +218,10 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
     public Task UpdateAsync(T entity)
     {
         return _sourceRepository.UpdateAsync(entity);
+    }
+
+    private void UpdateLatestCachedValue()
+    {
+        _cache.Set(LastCachedValue, DateTimeOffset.UtcNow, _cacheOptions);
     }
 }

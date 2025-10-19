@@ -3,6 +3,8 @@ using Ardalis.GuardClauses;
 using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Common.Jobs;
+using Microsoft.Extensions.Caching.Memory;
+using EdNexusData.Broker.Core.Services;
 
 namespace EdNexusData.Broker.Worker;
 
@@ -10,11 +12,16 @@ public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IMemoryCache memoryCache;
 
-    public Worker(ILogger<Worker> logger, IServiceProvider serviceProvider)
+    public Worker(
+        ILogger<Worker> logger,
+        IServiceProvider serviceProvider,
+        IMemoryCache memoryCache)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
+        this.memoryCache = memoryCache;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -28,7 +35,25 @@ public class Worker : BackgroundService
             {
                 var dbConnectionService = (DbConnectionService)scoped.ServiceProvider.GetService(typeof(DbConnectionService))!;
                 await dbConnectionService.ThrowIfDatabaseConnectionNotUpAsync();
-                
+
+                var settingsService = (SettingsService)scoped.ServiceProvider.GetService(typeof(SettingsService))!;
+
+                // Clear cache if needed
+                var clearCacheSetting = await settingsService.GetValueAsync("LastCacheClearedAt");
+                if (clearCacheSetting != null)
+                {
+                    var dblastCacheCleared = DateTimeOffset.Parse(clearCacheSetting);
+                    var lastCachedValue = memoryCache.Get<DateTimeOffset?>(CachedRepository<Setting>.LastCachedValue);
+                    if (lastCachedValue is not null && dblastCacheCleared >= lastCachedValue)
+                    {
+                        if (memoryCache is MemoryCache memCache)
+                        {
+                            memCache.Compact(1.0);
+                            _logger.LogInformation("Cache cleared.");
+                        }
+                    }
+                }
+
                 var _jobsRepository = (IRepository<Job>)scoped.ServiceProvider.GetService(typeof(IRepository<Job>))!;
                 var _jobStatusService = (JobStatusService<Worker>)scoped.ServiceProvider.GetService(typeof(JobStatusService<Worker>))!;
 
