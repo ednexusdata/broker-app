@@ -11,10 +11,27 @@
 }
 <form method="post" asp-action="Update" asp-route-id="@Model.RequestId" autocomplete="off">
     <div class="flow-root overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg" x-data="{ }">
+        <div class="flex justify-between bg-white pl-4 py-5 sm:pl-6">
+            <div>
+                <h2 class="text-base font-semibold leading-7 text-gray-900">Releasing School Student Data</h2>
+                <p class="mt-1 text-sm leading-6 text-gray-600">The student data provided by the releasing school.</p>
+                
+            </div>
+            <div class="flex items-center justify-end gap-x-6 bg-white px-4 py-3 sm:px-6">
+                <a asp-controller="Incoming" asp-action="Index" asp-authorize
+                    asp-policy="@TransferIncomingRecords"
+                    class="text-sm font-semibold leading-6 text-gray-900">
+                    Back to Incoming Requests
+                </a>
+                <input name="PayloadContent.RequestId" asp-for="RequestId" type="hidden" />
+                <button type="submit"
+                    class="relative inline-flex items-center rounded-md bg-tertiary-700 px-3 py-2 text-center text-sm font-semibold ring-1 ring-inset ring-tertiary-800 text-white shadow-sm hover:bg-tertiary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tertiary-700 focus:z-10">Save</button>
+            </div>
+        </div>
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                 <table class="min-w-full divide-y divide-gray-300">
-                    <thead class="bg-white">
+                    <thead class="bg-white border-t border-gray-200">
                         <tr>
                             <th scope="col" class="py-3.5 text-left text-sm font-semibold text-gray-900 sm:pl-3">&nbsp;
                             </th>
@@ -130,8 +147,8 @@
         <div class="flex items-center justify-end gap-x-6 border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
             <a asp-controller="Incoming" asp-action="Index" asp-authorize
                 asp-policy="@TransferIncomingRecords"
-                class="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0">
-                Cancel
+                class="text-sm font-semibold leading-6 text-gray-900">
+                Back to Incoming Requests
             </a>
             <input name="PayloadContent.RequestId" asp-for="RequestId" type="hidden" />
             <button type="submit"
