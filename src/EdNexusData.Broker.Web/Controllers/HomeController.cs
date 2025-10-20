@@ -8,6 +8,7 @@ using EdNexusData.Broker.Web.Models;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.ViewModels;
 using EdNexusData.Broker.Common.Jobs;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -107,6 +108,14 @@ public class HomeController : AuthenticatedController<HomeController>
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
+        var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerFeature>();
+        if (exceptionFeature != null)
+        {
+            var exception = exceptionFeature.Error;
+            // You can log it, pass it to the view, or inspect it
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier, Exception = exception });
+        }
+        
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }
