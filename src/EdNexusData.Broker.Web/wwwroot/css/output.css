@@ -2437,6 +2437,15 @@ select {
   max-height: 300px;
 }
 
+.ts-dropdown {
+  text-align: left;
+}
+
+.ts-dropdown-content .optgroup-header {
+  font-weight: bold;
+  background-color: #ccc;
+}
+
 .placeholder\:text-gray-400::-moz-placeholder {
   --tw-text-opacity: 1;
   color: rgb(197 199 201 / var(--tw-text-opacity));

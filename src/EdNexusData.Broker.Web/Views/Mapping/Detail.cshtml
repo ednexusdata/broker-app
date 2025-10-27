@@ -38,8 +38,10 @@
         {
           var optionValues = await Model.MappingLookupService!.SelectAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @Model.MappedValueForProperty(property)?.ToString());
           optionValues.Insert(0, new SelectListItem() { Text = "", Value = "" });
-          <select asp-items="optionValues" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, Model.PropertyCounter, property)" class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm">
+          <div x-init="tomSelectInstance = new TomSelect($refs.@MappingViewModel.InputId(Model.Mapping!.MappingType!, Model.PropertyCounter, property));">
+          <select x-ref="@MappingViewModel.InputId(Model.Mapping!.MappingType!, Model.PropertyCounter, property)" asp-items="optionValues" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, Model.PropertyCounter, property)" class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm">
           </select>
+          </div>
         }
         else
         {

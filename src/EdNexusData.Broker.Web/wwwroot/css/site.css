@@ -8,3 +8,12 @@
 .max-h-select {
     max-height: 300px;
 }
+
+.ts-dropdown {
+    text-align: left;
+}
+
+.ts-dropdown-content .optgroup-header {
+    font-weight: bold;
+    background-color: #eee;
+}
