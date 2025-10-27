@@ -102,20 +102,24 @@ public class MappingController : AuthenticatedController<MappingController>
 
         Guard.Against.Null(mapping.PayloadContentAction, "mapping.Action", "Action missing");
         Guard.Against.Null(mapping.PayloadContentAction.PayloadContent, "mapping.Action.PayloadContent", "Payload content missing");
-        
+
+        var mappingSourceRecords = JsonConvert.DeserializeObject(mapping.JsonSourceMapping.ToJsonString()!, mappingCollectionType)!;
+        var mappingDestinationRecords = JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, mappingCollectionType)!;
+
         var viewModel = new MappingViewModel()
         {
             MappingId = mapping.Id,
-            MappingSourceRecords = JsonConvert.DeserializeObject(mapping.JsonSourceMapping.ToJsonString()!, mappingCollectionType)!,
-            MappingDestinationRecords = JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, mappingCollectionType)!,
-            
             Mapping = mapping,
             MappingLookupService = _serviceProvider.GetService<MappingLookupService>(),
             RequestId = mapping.PayloadContentAction.PayloadContent.RequestId
         };
-
         viewModel.SetProperties(mapping.MappingType!);
 
+        
+
+        viewModel.MappingSourceRecords = mappingSourceRecords;
+        viewModel.MappingDestinationRecords = mappingDestinationRecords;
+        
         viewModel.IsValid = mappingRecordValidatorService.IsValidRecords(viewModel.MappingDestinationRecords);
 
         return View(viewModel);
