@@ -65,7 +65,9 @@
 }
 
 @if (Model.Request?.RequestStatus != EdNexusData.Broker.Common.Jobs.RequestStatus.Closed
-    && Model.Request?.RequestStatus != EdNexusData.Broker.Common.Jobs.RequestStatus.Finished)
+    && Model.Request?.RequestStatus != EdNexusData.Broker.Common.Jobs.RequestStatus.Finished
+    && Model.Request?.RequestStatus != EdNexusData.Broker.Common.Jobs.RequestStatus.WaitingToRequest
+    && Model.Request?.RequestStatus != EdNexusData.Broker.Common.Jobs.RequestStatus.Requesting)
 {
 <form class="mt-4" asp-action="SendMessage" asp-route-id="@Model.Request?.Id">
 <div class="w-full pl-3 pr-1 py-1 rounded-3xl border border-gray-200 items-center gap-2 inline-flex justify-between">

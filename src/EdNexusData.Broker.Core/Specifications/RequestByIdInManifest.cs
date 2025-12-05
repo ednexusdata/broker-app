@@ -8,8 +8,7 @@ public class RequestByIdInManifest : Specification<Request>, ISingleResultSpecif
   {
     Query
         .Where(req => 
-          ((req.RequestManifest != null && req.RequestManifest!.RequestId == requestId) || 
-          (req.ResponseManifest != null && req.ResponseManifest!.RequestId == requestId)) 
+          (req.RequestManifest!.RequestId == requestId || req.ResponseManifest!.RequestId == requestId)
           && req.EducationOrganizationId != educationOrganizationId
         );
   }
