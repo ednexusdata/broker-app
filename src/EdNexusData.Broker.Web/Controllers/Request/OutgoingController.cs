@@ -17,7 +17,6 @@ using Ardalis.GuardClauses;
 using System.Text.Json;
 using EdNexusData.Broker.Web.Utilities;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
-using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Common.Payloads;
 using EdNexusData.Broker.Common.Jobs;
@@ -127,7 +126,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
             ViewBag.JobId = jobId;
         }
         
-        var viewModel = new CreateOutgoingRequestViewModel
+        var viewModel = new CreateOutgoingRequestViewModel()
         {
             RequestId = outgoingRequest.Id,
             RequestReceived = outgoingRequest.CreatedAt,
@@ -138,7 +137,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
             LastSurname = outgoingRequest.Student?.Student?.LastName,
             Grade = outgoingRequest.Student?.Student?.Grade,
             Gender = outgoingRequest.Student?.Student?.Gender,
-            BirthDate = outgoingRequest.Student?.Student?.Birthdate!.Value.ToString("yyyy-MM-dd"),
+            BirthDate = outgoingRequest.Student?.Student?.Birthdate?.ToString("yyyy-MM-dd"),
             ReceivingStudent = outgoingRequest.RequestManifest?.Student,
             ReceivingDistrict = outgoingRequest.RequestManifest?.From?.District,
             ReceivingSchool = outgoingRequest.RequestManifest?.From?.School,

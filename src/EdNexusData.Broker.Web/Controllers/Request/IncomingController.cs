@@ -188,7 +188,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
                 StudentNumber = viewModel.StudentUniqueId,
                 Grade = viewModel.Grade,
                 Gender = viewModel.Gender,
-                Birthdate = DateOnly.Parse(viewModel.BirthDate!)
+                Birthdate = (viewModel.BirthDate is not null) ? DateOnly.Parse(viewModel.BirthDate) : null
             };
 
             var jsonConnector = (viewModel.Additional is not null) ? JsonSerializer.Deserialize<Dictionary<string, object>>(viewModel.Additional) : null;
@@ -255,7 +255,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
             FirstName = incomingRequest.Student?.Student?.FirstName,
             MiddleName = incomingRequest.Student?.Student?.MiddleName,
             LastSurname = incomingRequest.Student?.Student?.LastName,
-            BirthDate = incomingRequest.Student?.Student?.Birthdate!.Value.ToString("yyyy-MM-dd"),
+            BirthDate = incomingRequest.Student?.Student?.Birthdate?.ToString("yyyy-MM-dd"),
             Gender = incomingRequest.Student?.Student?.Gender,
             Grade = incomingRequest.Student?.Student?.Grade,
             Additional = JsonSerializer.Serialize(incomingRequest.Student?.Connectors),
