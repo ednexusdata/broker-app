@@ -2443,7 +2443,7 @@ select {
 
 .ts-dropdown-content .optgroup-header {
   font-weight: bold;
-  background-color: #ccc;
+  background-color: #eee;
 }
 
 .placeholder\:text-gray-400::-moz-placeholder {
