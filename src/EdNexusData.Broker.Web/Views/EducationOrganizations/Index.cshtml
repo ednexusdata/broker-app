@@ -4,6 +4,7 @@
     // Author: Makoa Jacobsen, makoa@makoajacobsen.com
     ViewData["Title"] = "Organizations";
     Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = true;
 }
 
 <div x-data="organizationsIndex" class="grid gap-4">
@@ -17,7 +18,7 @@
                     <label for="searchBy" class="sr-only">Search</label>
                     <div class="flex rounded-md shadow-sm">
                         <div class="flex-grow focus-within:z-10">
-                            <input x-model="searchBy" type="text" name="searchBy" id="searchBy" class="hidden w-full rounded-none rounded-l-md border-0 py-1.5 text-sm leading-6 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:block" placeholder="Search by district, name, or number">
+                            <input x-model="searchBy" type="text" name="searchBy" id="searchBy" value="@Model.SearchBy" class="hidden w-full rounded-none rounded-l-md border-0 py-1.5 text-sm leading-6 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:block" placeholder="Search by district, name, or number">
                         </div>
                         <button type="submit" class="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
                             <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -70,18 +71,6 @@
                     <table class="min-w-full divide-y divide-gray-300">
                         <thead class="bg-white">
                             <tr>
-                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
-                                    <a asp-route-sortBy="district"
-                                       asp-route-sortDir="@(Model.SortBy == "district" && Model.SortDir == "asc" ? "desc" : "asc")"
-                                       class="group inline-flex">
-                                        District
-                                        <span class="ml-2 flex-none rounded @(Model.SortBy == "district" ? "bg-gray-200 text-gray-900 group-hover:bg-gray-300" : "invisible text-gray-400 group-hover:visible group-focus:visible") @(Model.SortBy == "district" && Model.SortDir == "desc" ? "transform rotate-180" : "")">
-                                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                                            </svg>
-                                        </span>
-                                    </a>
-                                </th>
                                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
                                     <a asp-route-sortBy="name"
                                        asp-route-sortDir="@(Model.SortBy == "name" && Model.SortDir == "asc" ? "desc" : "asc")"
@@ -140,8 +129,7 @@
                             @foreach (var organization in Model.Items)
                             {
                                 <tr class="@(even ? "bg-gray-50": "")">
-                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">@organization.ParentOrganization?.Name</td>
-                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">@organization.Name</td>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">@organization.FullName</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@organization.ShortName</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@organization.Number</td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">

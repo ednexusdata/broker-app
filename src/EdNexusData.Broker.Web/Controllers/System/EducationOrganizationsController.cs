@@ -18,13 +18,16 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 {
     private readonly IRepository<Core.EducationOrganization> _educationOrganizationRepository;
     private readonly EducationOrganizationHelper _educationOrganizationHelper;
+    private readonly FocusHelper focusHelper;
+
     public EducationOrganizationsController(
-        IHttpContextAccessor httpContextAccessor,
         IRepository<Core.EducationOrganization> educationOrganizationRepository,
-        EducationOrganizationHelper educationOrganizationHelper)
+        EducationOrganizationHelper educationOrganizationHelper,
+        FocusHelper focusHelper)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
         _educationOrganizationHelper = educationOrganizationHelper;
+        this.focusHelper = focusHelper;
     }
 
     public async Task<IActionResult> Index(
@@ -34,6 +37,9 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
         RefreshSession();
 
         var searchExpressions = model.BuildSearchExpressions();
+
+        var focusedEdOrgs = await focusHelper.GetFocusedEdOrgs();
+        searchExpressions.Add(x => focusedEdOrgs.Contains(x));
 
         var sortExpressions = model.BuildSortExpressions();
 
@@ -78,6 +84,9 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
         var searchExpressions = model.BuildSearchExpressions();
 
+        var schools = await focusHelper.GetFocusedSchools();
+        searchExpressions.Add(x => schools.Contains(x));
+
         var sortExpressions = model.BuildSortExpressions();
 
         var specification = new SearchableWithPaginationSpecification<Core.EducationOrganization>.Builder(model.Page, model.Size)
@@ -113,10 +122,10 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
     }
     public async Task<IActionResult> Create()
     {
-        var educationOrganizations = await _educationOrganizationHelper.GetDistrictsOrganizationsSelectList();
         var viewModel = new CreateEducationOrganizationRequestViewModel
         {
-            EducationOrganizations = educationOrganizations,
+            DistrictEducationOrganizations = await _educationOrganizationHelper.GetDistrictsOrganizationsSelectList(),
+            RegionEducationOrganizations = await _educationOrganizationHelper.GetRegionOrganizationsSelectList(),
             States = States.GetSelectList()
         };
 
@@ -132,10 +141,15 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
         var organization = new Core.EducationOrganization()
         {
             Id = Guid.NewGuid(),
-            ParentOrganizationId = data.EducationOrganizationType == EducationOrganizationType.School ? data.ParentOrganizationId : null,
+            ParentOrganizationId = 
+                data.EducationOrganizationType == EducationOrganizationType.School ? 
+                data.DistrictParentOrganizationId : data.RegionParentOrganizationId,
             Name = data.Name,
             ShortName = data.ShortName,
             Number = data.Number,
+            CeebCode = data.CeebCode,
+            NcesCode = data.NcesCode,
+            StateCode = data.StateCode,
             EducationOrganizationType = data.EducationOrganizationType,
             Address = new Core.Address()
             {
@@ -184,10 +198,15 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
             {
                 EducationOrganizationId = organization.Id,
                 ParentOrganizationId = organization.ParentOrganizationId,
+                DistrictParentOrganizationId = (organization.EducationOrganizationType == EducationOrganizationType.School) ? organization.ParentOrganizationId : null,
+                RegionParentOrganizationId = (organization.EducationOrganizationType != EducationOrganizationType.School) ? organization.ParentOrganizationId : null,
                 Name = organization.Name!,
                 ShortName = organization.ShortName,
                 EducationOrganizationType = organization.EducationOrganizationType,
                 Number = organization.Number!,
+                CeebCode = organization.CeebCode!,
+                NcesCode = organization.NcesCode!,
+                StateCode = organization.StateCode!,
                 StreetNumberName = organization.Address?.StreetNumberName!,
                 City = organization.Address?.City,
                 StateAbbreviation = organization.Address?.StateAbbreviation,
@@ -202,7 +221,8 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
             };
         }
 
-        organizationViewModel.EducationOrganizations = await _educationOrganizationHelper.GetDistrictsOrganizationsSelectList(Id);
+        organizationViewModel.DistrictEducationOrganizations = await _educationOrganizationHelper.GetDistrictsOrganizationsSelectList(Id);
+        organizationViewModel.RegionEducationOrganizations = await _educationOrganizationHelper.GetRegionOrganizationsSelectList(Id);
 
         return View(organizationViewModel);
     }
@@ -232,16 +252,14 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
         // Prepare organization object
         organization.Name = data.Name;
         organization.ShortName = data.ShortName;
-        if (data.EducationOrganizationType == EducationOrganizationType.School)
-        {
-            organization.ParentOrganizationId = data.ParentOrganizationId;
-        }
-        else
-        {
-            organization.ParentOrganizationId = null;
-        }
+        organization.ParentOrganizationId = 
+                data.EducationOrganizationType == EducationOrganizationType.School ? 
+                data.DistrictParentOrganizationId : data.RegionParentOrganizationId;
+        
         organization.Number = data.Number;
-        organization.EducationOrganizationType = data.EducationOrganizationType;
+        organization.CeebCode = data.CeebCode;
+        organization.NcesCode = data.NcesCode;
+        organization.StateCode = data.StateCode;
         organization.Address = new Core.Address()
         {
             StreetNumberName = data.StreetNumberName,

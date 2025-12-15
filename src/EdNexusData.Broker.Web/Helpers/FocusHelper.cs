@@ -54,9 +54,7 @@ public class FocusHelper
             foreach(var organization in organizations)
             {
                 selectListItems.Add(new SelectListItem() {
-                    Text = (organization.EducationOrganizationType == EducationOrganizationType.District) 
-                        ? organization.Name 
-                        : $"{organization.ParentOrganization?.Name} / {organization.Name}",
+                    Text = organization.FullName,
                     Value = organization.Id.ToString(),
                     Selected = _session.GetString(FocusOrganizationKey) == organization.Id.ToString()
                 });
@@ -73,7 +71,7 @@ public class FocusHelper
             foreach(var userRole in userRoles.Where(role => role.EducationOrganization?.ParentOrganizationId is not null))
             {
                 selectListItems.Add(new SelectListItem() {
-                    Text = $"{userRole.EducationOrganization?.ParentOrganization?.Name} / {userRole.EducationOrganization?.Name}",
+                    Text = userRole.EducationOrganization?.FullName,
                     Value = userRole.EducationOrganizationId.ToString(),
                     Selected = _session.GetString(FocusOrganizationKey) == userRole.EducationOrganizationId.ToString()
                 });
@@ -144,13 +142,13 @@ public class FocusHelper
             var userRoles = userWithRoles!.UserRoles;
 
             UserRole? first = null;
-            if (userRoles!.Where(role => role.EducationOrganization?.ParentOrganizationId is not null).Any())
+            if (userRoles!.Any(role => role.EducationOrganization?.ParentOrganizationId is not null))
             {
-                first = userRoles!.Where(role => role.EducationOrganization?.ParentOrganizationId is not null).FirstOrDefault();
+                first = userRoles!.FirstOrDefault(role => role.EducationOrganization?.ParentOrganizationId is not null);
             }
             else
             {
-                first = userRoles!.Where(role => role.EducationOrganizationId is not null).FirstOrDefault()!;
+                first = userRoles!.FirstOrDefault(role => role.EducationOrganizationId is not null)!;
             }
             if (first?.EducationOrganizationId is not null)
             _session.SetString(FocusOrganizationKey, first!.EducationOrganization!.Id.ToString());
@@ -220,6 +218,60 @@ public class FocusHelper
         else
         {
             return false;
+        }
+    }
+
+    public async Task<List<Core.EducationOrganization>> GetFocusedEdOrgs()
+    {
+        if (IsEdOrgAllFocus())
+        {
+            return await _educationOrganizationRepository.ListAsync();
+        }
+        else if (CurrentEdOrgFocus() is not null)
+        {
+            var focusedEdOrgList = new List<Core.EducationOrganization>();
+            var focusedEdOrg = await _educationOrganizationRepository
+                .FirstOrDefaultAsync(new OrganizationWithChildSpec(CurrentEdOrgFocus()!.Value));
+            _ = focusedEdOrg ?? throw new NullReferenceException("Focused Education Organization not found");
+            
+            Func<Core.EducationOrganization, 
+                 List<Core.EducationOrganization>, 
+                 Task<List<Core.EducationOrganization>>> orgRecursion = null!;
+
+            orgRecursion = async (focusedEdOrg, focusedEdOrgList) => 
+            {
+                // Make sure it's actually loaded
+                focusedEdOrg = (await _educationOrganizationRepository
+                    .FirstOrDefaultAsync(new OrganizationWithChildSpec(focusedEdOrg.Id)))!;
+                
+                if (focusedEdOrg.EducationOrganizations != null)
+                {
+                    focusedEdOrgList.Add(focusedEdOrg);
+                    foreach (var childOrg in focusedEdOrg.EducationOrganizations)
+                    {
+                        await orgRecursion(childOrg, focusedEdOrgList);
+                    }
+                    return focusedEdOrgList;
+                }
+                else
+                {
+                   focusedEdOrgList.Add(focusedEdOrg);
+                   return focusedEdOrgList;
+                }
+            };
+
+            return await orgRecursion(focusedEdOrg, focusedEdOrgList);
+        }
+        else
+        {
+            if (CurrentEdOrgFocus().HasValue)
+            {
+                return await _educationOrganizationRepository.ListAsync(new OrganizationByIdWithParentSpec(CurrentEdOrgFocus()!.Value));
+            }
+            else
+            {
+                throw new ForceLogoutException();
+            }
         }
     }
 }

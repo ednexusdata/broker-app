@@ -12,15 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 {
     [DbContext(typeof(PostgresDbContext))]
-    [Migration("20250804233213_AddDistributedCache")]
-    partial class AddDistributedCache
+    [Migration("20251213183858_DistributedCache")]
+    partial class DistributedCache
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.18")
+                .HasAnnotation("ProductVersion", "8.0.22")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -34,6 +34,9 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
                     b.Property<string>("Address")
                         .HasColumnType("jsonb");
+
+                    b.Property<string>("CeebCode")
+                        .HasColumnType("text");
 
                     b.Property<string>("Contacts")
                         .HasColumnType("jsonb");
@@ -54,6 +57,9 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("NcesCode")
+                        .HasColumnType("text");
+
                     b.Property<string>("Number")
                         .HasColumnType("text");
 
@@ -62,6 +68,9 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
                     b.Property<string>("ShortName")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("StateCode")
                         .HasColumnType("text");
 
                     b.Property<string>("TimeZone")
@@ -644,9 +653,8 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
             modelBuilder.Entity("EdNexusData.Broker.Data.DistributedCacheEntry", b =>
                 {
-                    b.Property<Guid?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("AbsoluteExpiration")
                         .HasColumnType("timestamp with time zone");
@@ -654,15 +662,15 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Property<DateTimeOffset?>("ExpiresAtTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset?>("SlidingExpirationInSeconds")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<long>("SlidingExpirationInSeconds")
+                        .HasColumnType("bigint");
 
                     b.Property<byte[]>("Value")
                         .HasColumnType("bytea");
 
                     b.HasKey("Id");
 
-                    b.ToTable("DistributedCache", (string)null);
+                    b.ToTable("DistributedCache");
                 });
 
             modelBuilder.Entity("EdNexusData.Broker.Data.Seed", b =>

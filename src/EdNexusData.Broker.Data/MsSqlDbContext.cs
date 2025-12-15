@@ -5,8 +5,6 @@ namespace EdNexusData.Broker.Data;
 
 public class MsSqlDbContext : BrokerDbContext
 {
-    public DbSet<DistributedCacheEntry> DistributedCache { get; set; }
-
     public MsSqlDbContext(IConfiguration configuration) : base(configuration)
     {
     }

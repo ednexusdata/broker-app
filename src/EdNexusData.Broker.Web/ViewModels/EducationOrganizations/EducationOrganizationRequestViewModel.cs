@@ -11,14 +11,24 @@ public class EducationOrganizationRequestViewModel
     [Display(Name = "Name")]
     public string Name { get; set; } = default!;
 
+    [Display(Name = "Full Name")]
+    public string FullName { get; set; } = default!;
+
     [Required]
     [Display(Name = "Short Name")]
     public string ShortName { get; set; } = default!;
 
+    [Display(Name = "CEEB")]
+    public string? CeebCode { get; set; }
 
-    [Required]
-    [Display(Name = "Number")]
-    public string Number { get; set; } = default!;
+    [Display(Name = "NCES")]
+    public string? NcesCode { get; set; }
+
+    [Display(Name = "State")]
+    public string? StateCode { get; set; }
+
+    [Display(Name = "Other")]
+    public string? Number { get; set; }
 
     [Required]
     [Display(Name = "Type")]
@@ -60,8 +70,12 @@ public class EducationOrganizationRequestViewModel
     {
         Id = educationOrganization.Id;
         Name = educationOrganization.Name;
+        FullName = educationOrganization.FullName;
         ShortName = educationOrganization.ShortName;
         Number = educationOrganization.Number ?? string.Empty;
+        CeebCode = educationOrganization.CeebCode;
+        NcesCode = educationOrganization.NcesCode;
+        StateCode = educationOrganization.StateCode;
         EducationOrganizationType = educationOrganization.EducationOrganizationType;
         ParentOrganizationId = educationOrganization.ParentOrganizationId;
         ParentOrganization = educationOrganization.ParentOrganization ?? new Core.EducationOrganization();
@@ -80,6 +94,9 @@ public class EducationOrganizationRequestViewModel
         string name,
         string shortName,
         string number,
+        string ceebCode,
+        string ncesCode,
+        string stateCode,
         EducationOrganizationType educationOrganizationType,
         Guid? parentOrganizationId)
     {
@@ -87,6 +104,9 @@ public class EducationOrganizationRequestViewModel
         Name = name;
         ShortName = shortName;
         Number = number;
+        CeebCode = ceebCode;
+        NcesCode = ncesCode;
+        StateCode = stateCode;
         EducationOrganizationType = educationOrganizationType;
         ParentOrganizationId = parentOrganizationId;
     }

@@ -17,17 +17,28 @@ public class CreateEducationOrganizationRequestViewModel
     [Display(Name = "Short Name")]
     public string ShortName { get; set; } = default!;
 
-    [Required]
-    [Display(Name = "Number")]
-    public string Number { get; set; } = default!;
+    [Display(Name = "Other")]
+    public string? Number { get; set; } = default!;
+
+    [Display(Name = "NCES")]
+    public string? NcesCode { get; set; } = default!;
+    
+    [Display(Name = "CEEB")]
+    public string? CeebCode { get; set; } = default!;
+
+    [Display(Name = "State")]
+    public string? StateCode { get; set; } = default!;
 
     [Required]
     [Display(Name = "Type")]
     public EducationOrganizationType EducationOrganizationType { get; set; } = default!;
 
-    [Display(Name = "District")]
+    [Display(Name = "Parent Organization")]
     public Guid? ParentOrganizationId { get; set; }
 
+    public Guid? DistrictParentOrganizationId { get; set; }
+    public Guid? RegionParentOrganizationId { get; set; }
+    
     [Display(Name = "Address")]
     public string? StreetNumberName { get; set; }
 
@@ -58,8 +69,9 @@ public class CreateEducationOrganizationRequestViewModel
     [Display(Name = "Email")]
     public string? ContacEmail { get; set; }
 
-    [Display(Name = "Education Organizations")]
-    public IEnumerable<SelectListItem> EducationOrganizations { get; set; } = Enumerable.Empty<SelectListItem>();
+    public IEnumerable<SelectListItem> DistrictEducationOrganizations { get; set; } = Enumerable.Empty<SelectListItem>();
+
+    public IEnumerable<SelectListItem> RegionEducationOrganizations { get; set; } = Enumerable.Empty<SelectListItem>();
 
     [Display(Name = "States")]
     public IEnumerable<SelectListItem> States { get; set; } = Enumerable.Empty<SelectListItem>();

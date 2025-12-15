@@ -4,7 +4,9 @@
     // Author: Makoa Jacobsen, makoa@makoajacobsen.com
     ViewData["Title"] = "Add Organization";
     Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = true;
+    ViewData["FocusBarReadOnly"] = true;
 }
 <form id="organization-form" method="post" asp-action="Create" autocomplete="off">
-    <partial name="_form" for="@Model" />
+    <partial name="_form" for="@Model" view-data="ViewData" />
 </form>

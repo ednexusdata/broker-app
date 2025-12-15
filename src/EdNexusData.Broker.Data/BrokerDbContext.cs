@@ -8,6 +8,7 @@ using EdNexusData.Broker.Core;
 using Microsoft.Extensions.Configuration;
 using EdNexusData.Broker.Core.Worker;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using EdNexusData.Broker.Data.Migrations.MsSql;
 
 namespace EdNexusData.Broker.Data;
 
@@ -27,6 +28,7 @@ public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRol
     public DbSet<Request>? Requests { get; set; }
     public DbSet<Job>? WorkerJobs { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+    public DbSet<DistributedCacheEntry> DistributedCache { get; set; } = null!;
     public DbSet<Setting>? Settings { get; set; }
     public DbSet<Seed>? Seeds { get; set; }
 

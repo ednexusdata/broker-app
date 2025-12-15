@@ -21,8 +21,7 @@ public class EducationOrganizationRequestModel : SearchableModelWithPagination
         var sortBy = SortBy?.ToLower();
         Expression<Func<Core.EducationOrganization, object>> ValueToAdd = sortBy switch
         {
-            "district" => educationOrganization => educationOrganization.ParentOrganization.Name,
-            "name" => educationOrganization => educationOrganization.Name,
+            "name" => educationOrganization => educationOrganization.ParentOrganization.Name + educationOrganization.Name,
             "number" => educationOrganization => educationOrganization.Number,
             "type" => educationOrganization => educationOrganization.EducationOrganizationType,
             _ => null,
