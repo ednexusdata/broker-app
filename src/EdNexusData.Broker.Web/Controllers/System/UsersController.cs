@@ -10,6 +10,7 @@ using EdNexusData.Broker.Web.Models.Paginations;
 using EdNexusData.Broker.Web.Models.Users;
 using EdNexusData.Broker.Web.Specifications;
 using EdNexusData.Broker.Web.ViewModels.Users;
+using EdNexusData.Broker.Web.Helpers;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -19,16 +20,18 @@ public class UsersController : AuthenticatedController<UsersController>
     private readonly IRepository<User> _userRepository;
     private readonly BrokerDbContext _brokerDbContext;
     private readonly UserManager<IdentityUser<Guid>> _userManager;
+    private readonly FocusHelper focusHelper;
 
     public UsersController(
-        IHttpContextAccessor httpContextAccessor,
         IRepository<User> userRepository,
         BrokerDbContext brokerDbContext,
-        UserManager<IdentityUser<Guid>> userManager)
+        UserManager<IdentityUser<Guid>> userManager,
+        FocusHelper focusHelper)
     {
         _userRepository = userRepository;
         _brokerDbContext = brokerDbContext;
         _userManager = userManager;
+        this.focusHelper = focusHelper;
     }
 
     public async Task<IActionResult> Index(
@@ -38,6 +41,17 @@ public class UsersController : AuthenticatedController<UsersController>
         RefreshSession();
 
         var searchExpressions = model.BuildSearchExpressions();
+
+        if (!focusHelper.IsEdOrgAllFocus()) {
+            var focusedEdOrgs = await focusHelper.GetFocusedEdOrgs();
+            searchExpressions.Add(
+                u => u.UserRoles != null 
+                && u.UserRoles.Any(
+                    r => r.EducationOrganization != null 
+                        && focusedEdOrgs.Contains(r.EducationOrganization)
+                )
+            );
+        }
 
         var sortExpression = model.BuildSortExpression();
         var identityUsers = await _brokerDbContext.Users.ToListAsync(cancellationToken);
