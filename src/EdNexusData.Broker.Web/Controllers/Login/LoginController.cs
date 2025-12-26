@@ -13,6 +13,7 @@ using System.Security.Claims;
 using EdNexusData.Broker.Core.Resolvers;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -55,10 +56,19 @@ public class LoginController : AuthenticatedController<LoginController>
     public async Task<IActionResult> Index(string? returnUrl = null)
     {
         ViewData["ReturnUrl"] = returnUrl;
+
         var loginViewModel = new LogInViewModel()
         {
-            ExternalLogins = await _signInManager.GetExternalAuthenticationSchemesAsync()
+            ExternalLogins = await _signInManager.GetExternalAuthenticationSchemesAsync(),
+            Environment = environment,
+            AllowAnonymousLogin = _configuration["Authentication:Anonymous"] == "Yes" && !environment.IsProductionEnvironment()
         };
+
+        // Get all users if allow anonymous logins is enabled
+        if (_configuration["Authentication:Anonymous"] == "Yes" && !environment.IsProductionEnvironment())
+        {
+            loginViewModel.AllLogins = await _userManager.Users.ToListAsync();
+        }
 
         return View(loginViewModel);
     }
@@ -325,19 +335,25 @@ public class LoginController : AuthenticatedController<LoginController>
 }
 
 public class LogInViewModel
-    {
-        [Required]
-        [EmailAddress]
-        public string? Email { get; set; }
+{
+    [Required]
+    [EmailAddress]
+    public string? Email { get; set; }
 
-        [Required]
-        [DataType(DataType.Password)]
-        public string? Password { get; set; }
+    [Required]
+    [DataType(DataType.Password)]
+    public string? Password { get; set; }
 
-        [Required]
-        public string? TotpCode { get; set; }
+    [Required]
+    public string? TotpCode { get; set; }
 
-        public string? ReturnUrl { get; set; }
+    public string? ReturnUrl { get; set; }
 
-        public IEnumerable<AuthenticationScheme>? ExternalLogins { get; set; }
-    }
+    public IEnumerable<AuthenticationScheme>? ExternalLogins { get; set; }
+
+    public Core.Environment? Environment { get; set; }
+
+    public List<IdentityUser<Guid>>? AllLogins { get; set; }
+
+    public bool AllowAnonymousLogin { get; set; } = false;
+}
