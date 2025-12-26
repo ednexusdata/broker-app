@@ -19,7 +19,7 @@
         <p class="text-center text-sm text-gray-600">@Assembly.GetExecutingAssembly().GetName().Version</p>
       </div>
       <div>
-        <div class="border border-gray-200 px-4 py-8 sm:rounded-lg sm:px-10">
+        <div class="border border-gray-200 px-4 py-4 sm:rounded-lg sm:px-10">
             <partial name="_Alert"></partial>
 
             @if (Model.AllowAnonymousLogin)
@@ -49,9 +49,9 @@
             <div x-data="{ open: false }">
 
                 <div class="relative mt-5" @@click="open = !open">
-                    <div class="relative flex justify-center gap-2 text-sm font-medium leading-6 cursor-pointer">
+                    <div class="relative flex justify-center gap-1 text-sm font-medium leading-6 cursor-pointer">
                         <svg class="w-4 transition-transform" :class="open ? 'rotate-180' : 'rotate-0'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" > <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /> </svg>
-                        <span class="bg-white px-6 text-gray-900">Continue with email</span>
+                        <span class="bg-white px-1 text-gray-900">Continue with email</span>
                     </div>
                 </div>
 
