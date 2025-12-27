@@ -183,25 +183,14 @@ public class FocusHelper
 
     public async Task<List<Core.EducationOrganization>> GetFocusedSchools()
     {
-        if (IsEdOrgAllFocus())
-        {
-            return await _educationOrganizationRepository.ListAsync(new OrganizationByTypeSpec(EducationOrganizationType.School));
-        }
-        else if (await CurrentDistrictEdOrgFocus() is not null)
-        {
-            return await _educationOrganizationRepository.ListAsync(new OrganizationByParentSpec((await CurrentDistrictEdOrgFocus()).Value));
-        }
-        else
-        {
-            if (CurrentEdOrgFocus().HasValue)
-            {
-                return await _educationOrganizationRepository.ListAsync(new OrganizationByIdWithParentSpec(CurrentEdOrgFocus()!.Value));
-            }
-            else
-            {
-                throw new ForceLogoutException();
-            }
-        }
+        var focusedEdOrgs = await GetFocusedEdOrgs();
+
+        var focusedSchools = focusedEdOrgs
+            .Where(edOrg => edOrg.EducationOrganizationType == EducationOrganizationType.School)
+            .ToList();
+        
+        
+        return focusedSchools;
     }
 
     public bool IsEdOrgAllFocus()
