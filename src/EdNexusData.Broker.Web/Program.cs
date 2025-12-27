@@ -190,7 +190,12 @@ builder.Services.AddAuthorization(options => {
       policy => policy.RequireClaim(AllEducationOrganizations, PermissionType.Read.ToString(), PermissionType.Write.ToString())
     );
     options.AddPolicy("TransferRecords",
-      policy => policy.RequireClaim("TransferRecords", "true")
+      policy => policy.RequireAssertion(context => 
+            context.User.HasClaim(c => 
+                (c.Type == TransferIncomingRecords && c.Value == "true") ||
+                (c.Type == TransferOutgoingRecords && c.Value == "true")
+            )
+        )
     );
     options.AddPolicy(TransferIncomingRecords,
       policy => policy.RequireClaim(TransferIncomingRecords, "true")
