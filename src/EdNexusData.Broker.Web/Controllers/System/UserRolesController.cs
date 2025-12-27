@@ -5,10 +5,11 @@ using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.Models;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Common.EducationOrganizations;
+using EdNexusData.Broker.Web.Constants.Claims;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
-[Authorize(Policy = "SuperAdmin")]
+[Authorize(Policy = CustomClaimType.SystemAdministrator)]
 public class UserRolesController : AuthenticatedController<UserRolesController>
 {
     private readonly IRepository<UserRole> _userRoleRepo;

@@ -10,10 +10,11 @@ using System.Linq.Expressions;
 using EdNexusData.Broker.Web.Extensions.States;
 using EdNexusData.Broker.Web.Specifications;
 using EdNexusData.Broker.Common.EducationOrganizations;
+using EdNexusData.Broker.Web.Constants.Claims;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
-[Authorize(Policy = "SuperAdmin")]
+[Authorize(Policy = CustomClaimType.SystemAdministrator)]
 public class EducationOrganizationsController : AuthenticatedController<EducationOrganizationsController>
 {
     private readonly IRepository<Core.EducationOrganization> _educationOrganizationRepository;

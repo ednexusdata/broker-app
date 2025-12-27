@@ -26,5 +26,8 @@ public enum Role
     Processor,
 
     [Display(Name = "Read-Only Processor")]
-    ReadOnlyProcessor
+    ReadOnlyProcessor,
+
+    [Display(Name = "System Administrator")]
+    SystemAdministrator
 }

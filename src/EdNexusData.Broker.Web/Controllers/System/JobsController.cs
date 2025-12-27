@@ -14,6 +14,7 @@ using EdNexusData.Broker.Web.Models.Paginations;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
+using EdNexusData.Broker.Web.Constants.Claims;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -97,7 +98,7 @@ public class JobsController : AuthenticatedController<JobsController>
         return View(result);
     }
 
-    [Authorize(Policy = "SuperAdmin")]
+    [Authorize(Policy = CustomClaimType.SystemAdministrator)]
     public async Task<IActionResult> SystemIndex(
         JobModel model,
         CancellationToken cancellationToken,

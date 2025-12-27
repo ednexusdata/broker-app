@@ -32,17 +32,24 @@ public class FocusHelper
         var selectListItems = new List<SelectListItem>();
 
         // Get currently logged in user
-        var currentUser = _session.GetObjectFromJson<User>("User.Current");
-        var allEdOrgs = currentUser?.AllEducationOrganizations;
-
-        if (currentUser?.Id == null)
+        var currentSessionUser = _session.GetObjectFromJson<User>("User.Current");
+        if (currentSessionUser is null || currentSessionUser?.Id == null)
         {
             throw new ForceLogoutException();
         }
 
-        var organizations = await _educationOrganizationRepository.ListAsync();
-        organizations = organizations.OrderBy(x => x.ParentOrganization?.Name).ThenBy(x => x.Name).ToList();
+        // Requery for full user object from repo
+        var currentUser = await _userRepo.FirstOrDefaultAsync(new UserWithUserRolesByUserSpec(currentSessionUser!.Id));
+        if (currentUser is null)
+        {
+            throw new ForceLogoutException();
+        }
+        
 
+        // var organizations = await _educationOrganizationRepository.ListAsync();
+        // organizations = organizations.OrderBy(x => x.ParentOrganization?.Name).ThenBy(x => x.Name).ToList();
+
+        var allEdOrgs = currentUser?.AllEducationOrganizations;
         if (allEdOrgs == PermissionType.Read || allEdOrgs == PermissionType.Write)
         { 
             selectListItems.Add(new SelectListItem() {
@@ -50,34 +57,23 @@ public class FocusHelper
                     Value = "ALL",
                     Selected = _session.GetString(FocusOrganizationKey) == "ALL"
                 });
-            
-            foreach(var organization in organizations)
-            {
-                selectListItems.Add(new SelectListItem() {
-                    Text = organization.FullName,
-                    Value = organization.Id.ToString(),
-                    Selected = _session.GetString(FocusOrganizationKey) == organization.Id.ToString()
-                });
-            }
         }
-        else
+
+        // var userRoleSpec = new UserWithUserRolesByUserSpec(currentUser.Id);
+        // var user = await _userRepo.FirstOrDefaultAsync(userRoleSpec);
+        // var userRoles = user?.UserRoles;
+
+        // _ = userRoles ?? throw new NullReferenceException("No user roles assigned");
+
+        foreach(var edOrg in await GetFocusableEdOrgs(currentUser!))
         {
-            var userRoleSpec = new UserWithUserRolesByUserSpec(currentUser.Id);
-            var user = await _userRepo.FirstOrDefaultAsync(userRoleSpec);
-            var userRoles = user?.UserRoles;
-
-            _ = userRoles ?? throw new NullReferenceException("No user roles assigned");
-
-            foreach(var userRole in userRoles.Where(role => role.EducationOrganization?.ParentOrganizationId is not null))
-            {
-                selectListItems.Add(new SelectListItem() {
-                    Text = userRole.EducationOrganization?.FullName,
-                    Value = userRole.EducationOrganizationId.ToString(),
-                    Selected = _session.GetString(FocusOrganizationKey) == userRole.EducationOrganizationId.ToString()
-                });
-            }
+            selectListItems.Add(new SelectListItem() {
+                Text = edOrg?.FullName,
+                Value = edOrg?.Id.ToString(),
+                Selected = _session.GetString(FocusOrganizationKey) == edOrg?.Id.ToString()
+            });
         }
-
+        
         selectListItems = selectListItems.OrderBy(x => x.Text).ToList();
 
         var focusOrganizationId = _session.GetString(FocusOrganizationKey);
@@ -244,7 +240,7 @@ public class FocusHelper
                 focusedEdOrg = (await _educationOrganizationRepository
                     .FirstOrDefaultAsync(new OrganizationWithChildSpec(focusedEdOrg.Id)))!;
                 
-                if (focusedEdOrg.EducationOrganizations != null)
+                if (focusedEdOrg.EducationOrganizations != null && focusedEdOrg.EducationOrganizations.Count > 0)
                 {
                     focusedEdOrgList.Add(focusedEdOrg);
                     foreach (var childOrg in focusedEdOrg.EducationOrganizations)
@@ -274,4 +270,56 @@ public class FocusHelper
             }
         }
     }
+
+    public async Task<List<Core.EducationOrganization>> GetFocusableEdOrgs(User currentUser)
+    {
+        if (currentUser.AllEducationOrganizations == PermissionType.Read || currentUser.AllEducationOrganizations == PermissionType.Write)
+        {
+            return await _educationOrganizationRepository.ListAsync();
+        }
+        else
+        {
+            var focusableEdOrgList = new List<Core.EducationOrganization>();
+            
+            Func<Core.EducationOrganization, 
+                 List<Core.EducationOrganization>, 
+                 Task<List<Core.EducationOrganization>>> orgRecursion = null!;
+
+            orgRecursion = async (focusedEdOrg, focusableEdOrgList) => 
+            {
+                // Make sure it's actually loaded
+                focusedEdOrg = (await _educationOrganizationRepository
+                    .FirstOrDefaultAsync(new OrganizationWithChildSpec(focusedEdOrg.Id)))!;
+                
+                if (focusedEdOrg.EducationOrganizations != null && focusedEdOrg.EducationOrganizations.Count > 0)
+                {
+                    focusableEdOrgList.Add(focusedEdOrg);
+                    foreach (var childOrg in focusedEdOrg.EducationOrganizations)
+                    {
+                        await orgRecursion(childOrg, focusableEdOrgList);
+                    }
+                    return focusableEdOrgList;
+                }
+                else
+                {
+                   focusableEdOrgList.Add(focusedEdOrg);
+                   return focusableEdOrgList;
+                }
+            };
+
+            // Get list of orgs in user roles
+            var userRoles = currentUser.UserRoles;
+
+            // Loop through each user role and add to org list
+            if (currentUser.UserRoles is not null)
+            foreach (var userRole in currentUser.UserRoles)
+            {
+                if (userRole.EducationOrganization is not null)
+                    await orgRecursion(userRole.EducationOrganization, focusableEdOrgList);
+            }
+
+            return focusableEdOrgList;
+        }
+    }
+
 }

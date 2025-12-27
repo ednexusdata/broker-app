@@ -183,11 +183,11 @@ if (builder.Configuration["Authentication:Microsoft:ClientId"] is not null &&
     
 
 builder.Services.AddAuthorization(options => {
-    options.AddPolicy("SuperAdmin",
-      policy => policy.RequireClaim("SuperAdmin", "true")
+    options.AddPolicy(SuperAdmin,
+      policy => policy.RequireClaim(SuperAdmin, "true")
     );
-    options.AddPolicy("AllEducationOrganizations",
-      policy => policy.RequireClaim("AllEducationOrganizations", PermissionType.Read.ToString(), PermissionType.Write.ToString())
+    options.AddPolicy(AllEducationOrganizations,
+      policy => policy.RequireClaim(AllEducationOrganizations, PermissionType.Read.ToString(), PermissionType.Write.ToString())
     );
     options.AddPolicy("TransferRecords",
       policy => policy.RequireClaim("TransferRecords", "true")
@@ -197,6 +197,9 @@ builder.Services.AddAuthorization(options => {
     );
     options.AddPolicy(TransferOutgoingRecords,
       policy => policy.RequireClaim(TransferOutgoingRecords, "true")
+    );
+    options.AddPolicy(SystemAdministrator,
+      policy => policy.RequireClaim(SystemAdministrator, "true")
     );
 
     // var defaultAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder(
@@ -367,6 +370,7 @@ app.Use(async (context, next) =>
 //     Secure = CookieSecurePolicy.Always,
 //     MinimumSameSitePolicy = SameSiteMode.Lax
 // });
+
 
 app.UseAuthentication();
 app.UseAuthorization();

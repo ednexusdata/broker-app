@@ -11,10 +11,11 @@ using EdNexusData.Broker.Web.Models.Users;
 using EdNexusData.Broker.Web.Specifications;
 using EdNexusData.Broker.Web.ViewModels.Users;
 using EdNexusData.Broker.Web.Helpers;
+using EdNexusData.Broker.Web.Constants.Claims;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
-[Authorize(Policy = "SuperAdmin")]
+[Authorize(Policy = CustomClaimType.SystemAdministrator)]
 public class UsersController : AuthenticatedController<UsersController>
 {
     private readonly IRepository<User> _userRepository;

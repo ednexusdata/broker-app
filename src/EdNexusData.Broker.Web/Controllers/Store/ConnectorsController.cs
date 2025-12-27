@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.ViewModels;
+using EdNexusData.Broker.Web.Constants.Claims;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
-[Authorize(Policy = "SuperAdmin")]
+[Authorize(Policy = CustomClaimType.SuperAdmin)]
 public class ConnectorsController : AuthenticatedController<ConnectorsController>
 {
     private readonly ConnectorService connectorService;

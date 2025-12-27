@@ -5,18 +5,23 @@ using System.Data;
 using System.Security.Claims;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 using EdNexusData.Broker.Core.Specifications;
+using EdNexusData.Broker.Web.Helpers;
 
 namespace EdNexusData.Broker.Web;
 
 public class BrokerClaimsTransformation : IClaimsTransformation
 {
-    private readonly IRepository<User> _userRepo;
+    private readonly IReadRepository<User> _userRepo;
     private readonly UserManager<IdentityUser<Guid>> _userManager;
     private readonly ILogger<BrokerClaimsTransformation> _logger;
 
     private User? _user;
 
-    public BrokerClaimsTransformation(ILogger<BrokerClaimsTransformation> logger, UserManager<IdentityUser<Guid>> userManager, IRepository<User> userRepo)
+    public BrokerClaimsTransformation(
+        ILogger<BrokerClaimsTransformation> logger, 
+        UserManager<IdentityUser<Guid>> userManager, 
+        IReadRepository<User> userRepo
+    )
     {
         _logger = logger;
         _userManager = userManager;
@@ -30,59 +35,61 @@ public class BrokerClaimsTransformation : IClaimsTransformation
 
         // Attempt to load user
         var currentUser = await GetCurrentUser(principal);
-
         if (_user is null) { return principal; }
-
-        // Get user-specific settings
-        var claimType = "SuperAdmin";
         if (currentUser is null) return principal;
-         
-        if (!principal.HasClaim(claim => claim.Type == claimType))
+
+        // If super admin, allow all claims
+        if (currentUser.IsSuperAdmin == true)
         {
-            if (currentUser.IsSuperAdmin == true)
-            {
-                claims.Add(new Claim(SuperAdmin, "true"));
-                claims.Add(new Claim(TransferIncomingRecords, "true"));
-                claims.Add(new Claim(TransferOutgoingRecords, "true"));
-            }
+            claims.Add(new Claim(SuperAdmin, "true"));
+            claims.Add(new Claim(TransferIncomingRecords, "true"));
+            claims.Add(new Claim(TransferOutgoingRecords, "true"));
+            claims.Add(new Claim(SystemAdministrator, "true"));
+            claims.Add(new Claim(AllEducationOrganizations, PermissionType.Write.ToString()));
         }
 
-        claimType = "AllEducationOrganizations";
-        if (!principal.HasClaim(claim => claim.Type == claimType))
+        // Get user-specific settings
+        if (!principal.HasClaim(claim => claim.Type == AllEducationOrganizations))
         {
             if (currentUser.AllEducationOrganizations != PermissionType.None)
             {
-                claims.Add(new Claim(claimType, currentUser.AllEducationOrganizations.ToString()));
+                claims.Add(new Claim(AllEducationOrganizations, currentUser.AllEducationOrganizations.ToString()));
             }
         }
 
-        var userRoles = currentUser?.UserRoles;
-        if (userRoles is not null && userRoles.Any(
-            role => role.Role.ToString() == "IncomingProcessor"
-            || role.Role.ToString() == "Processor") 
-        )
+        // Loop through all UserRoles for user
+        if (currentUser.UserRoles is not null)
         {
-            claims.Add(new Claim(TransferIncomingRecords, "true"));
-        }
-
-        if (userRoles is not null && userRoles.Any(
-            role => role.Role.ToString() == "OutgoingProcessor"
-            || role.Role.ToString() == "Processor")
-        )
-        {
-            claims.Add(new Claim(TransferOutgoingRecords, "true"));
-        }
-
-        claimType = "TransferRecords";
-        // Get userroles
-        if (!principal.HasClaim(claim => claim.Type == claimType))
-        {
-            if (userRoles?.Count > 0 || currentUser?.AllEducationOrganizations != PermissionType.None)
+            foreach(var userRole in currentUser.UserRoles)  
             {
-                claims.Add(new Claim(claimType, "true"));
+                switch (userRole?.Role)
+                {
+                    case Role.Processor:
+                        //if (!principal.HasClaim(claim => claim.Type == TransferIncomingRecords))
+                            claims.Add(new Claim(TransferIncomingRecords, "true"));
+                        //if (!principal.HasClaim(claim => claim.Type == TransferOutgoingRecords))
+                            claims.Add(new Claim(TransferOutgoingRecords, "true"));
+                        break;
+                    case Role.IncomingProcessor:
+                        //if (!principal.HasClaim(claim => claim.Type == TransferIncomingRecords))
+                            claims.Add(new Claim(TransferIncomingRecords, "true"));
+                        break;
+                    case Role.OutgoingProcessor:
+                        //if (!principal.HasClaim(claim => claim.Type == TransferOutgoingRecords))
+                            claims.Add(new Claim(TransferOutgoingRecords, "true"));
+                        break;
+                    case Role.SystemAdministrator:
+                            claims.Add(new Claim(SystemAdministrator, "true"));
+                        //if (!principal.HasClaim(claim => claim.Type == TransferIncomingRecords))
+                            claims.Add(new Claim(TransferIncomingRecords, "true"));
+                        //if (!principal.HasClaim(claim => claim.Type == TransferOutgoingRecords))
+                            claims.Add(new Claim(TransferOutgoingRecords, "true"));
+                        break;
+                }
             }
         }
 
+        // Append claims to ClaimIdentity and then to Principal
         if (claims.Count > 0)
         {
             ClaimsIdentity claimsIdentity = new ClaimsIdentity();

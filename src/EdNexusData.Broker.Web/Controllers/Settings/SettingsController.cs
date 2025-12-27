@@ -1,17 +1,16 @@
 using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Serializers;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Web.Models;
-using EdNexusData.Broker.Common;
 using EdNexusData.Broker.Core.Resolvers;
+using EdNexusData.Broker.Web.Constants.Claims;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
-[Authorize(Policy = "SuperAdmin")]
+[Authorize(Policy = CustomClaimType.SystemAdministrator)]
 public partial class SettingsController : AuthenticatedController<SettingsController>
 {
     private readonly ConnectorLoader _connectorLoader;

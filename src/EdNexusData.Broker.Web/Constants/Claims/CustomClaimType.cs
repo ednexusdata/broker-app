@@ -5,5 +5,8 @@ public class CustomClaimType
     public const string TransferIncomingRecords = "TransferIncomingRecords";
     public const string TransferOutgoingRecords = "TransferOutgoingRecords";
     public const string SuperAdmin = "SuperAdmin";
+    public const string SystemAdministrator = "SystemAdministrator";
+
+    public const string AllEducationOrganizations = "AllEducationOrganizations";
 }
 

@@ -1,5 +1,5 @@
-using System.Threading.Tasks;
 using EdNexusData.Broker.Core.Services;
+using EdNexusData.Broker.Web.Constants.Claims;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.ViewModels.System;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
-[Authorize(Policy = "SuperAdmin")]
+[Authorize(Policy = CustomClaimType.SuperAdmin)]
 public class SystemController : AuthenticatedController<SystemController>
 {
     private readonly ILogger<SystemController> logger;

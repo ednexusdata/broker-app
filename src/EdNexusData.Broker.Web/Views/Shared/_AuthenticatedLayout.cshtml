@@ -20,9 +20,10 @@
               
               <a asp-controller="Outgoing" asp-action="Index" asp-authorize asp-policy="@TransferOutgoingRecords" class="@Html.ActiveClass("Outgoing", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Outgoing</a>
 
-              <a asp-controller="Settings" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="@Html.ActiveClass("Settings", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Settings</a>
+              <a asp-controller="Settings" asp-action="Index" asp-authorize asp-policy="@SystemAdministrator" class="@Html.ActiveClass("Settings", "Index", "border-tertiary-500 text-gray-900 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium", "border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium")">Settings</a>
 
-              @if ((await AuthorizationService.AuthorizeAsync(User, null, "SuperAdmin")).Succeeded)
+              @if ((await AuthorizationService.AuthorizeAsync(User, null, policyName: @SystemAdministrator)).Succeeded ||
+                  (await AuthorizationService.AuthorizeAsync(User, null, policyName: @SuperAdmin)).Succeeded)
               {
               <div class="relative border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium" x-data="{
             open: false,
@@ -62,10 +63,10 @@
             :id="$id('dropdown-button')"
             style="display: none;">
                   <a asp-controller="Connectors" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="block px-4 py-2 text-sm text-gray-700">Connector Store</a>
-                  <a asp-controller="Jobs" asp-action="SystemIndex" asp-authorize asp-policy="SuperAdmin" class="block px-4 py-2 text-sm text-gray-700">Jobs</a>
-                  <a asp-controller="EducationOrganizations" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="block px-4 py-2 text-sm text-gray-700">Organizations</a>
+                  <a asp-controller="Jobs" asp-action="SystemIndex" asp-authorize asp-policy="SystemAdministrator" class="block px-4 py-2 text-sm text-gray-700">Jobs</a>
+                  <a asp-controller="EducationOrganizations" asp-action="Index" asp-authorize asp-policy="SystemAdministrator" class="block px-4 py-2 text-sm text-gray-700">Organizations</a>
                   <a asp-controller="System" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="block px-4 py-2 text-sm text-gray-700">System</a>
-                  <a asp-controller="Users" asp-action="Index" asp-authorize asp-policy="SuperAdmin" class="block px-4 py-2 text-sm text-gray-700">Users</a>
+                  <a asp-controller="Users" asp-action="Index" asp-authorize asp-policy="SystemAdministrator" class="block px-4 py-2 text-sm text-gray-700">Users</a>
                 </div>
               </div>
               }
