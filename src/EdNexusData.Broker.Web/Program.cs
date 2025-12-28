@@ -24,6 +24,8 @@ using Community.Microsoft.Extensions.Caching.PostgreSql;
 using System.Net;
 using EdNexusData.Broker.Web.Models.Configuration;
 using Microsoft.AspNetCore.Http.Features;
+using EdNexusData.Broker.Web.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -207,6 +209,11 @@ builder.Services.AddAuthorization(options => {
       policy => policy.RequireClaim(SystemAdministrator, "true")
     );
 
+    options.AddPolicy("RecordAllowed", policy =>
+    {
+        policy.Requirements.Add(new RecordAllowedRequirement());
+    });
+
     // var defaultAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder(
     //     CookieAuthenticationDefaults.AuthenticationScheme
     //     // "Identity.Application",
@@ -218,6 +225,7 @@ builder.Services.AddAuthorization(options => {
 });
 
 builder.Services.AddTransient<IClaimsTransformation, BrokerClaimsTransformation>();
+builder.Services.AddTransient<IAuthorizationHandler, RecordAuthorizationHandler>();
 
 builder.Services.AddExceptionHandler<ForceLogoutExceptionHandler>();
 
@@ -376,10 +384,10 @@ app.Use(async (context, next) =>
 //     MinimumSameSitePolicy = SameSiteMode.Lax
 // });
 
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseSession();
 
 app.MapControllerRoutes("system/organizations", "EducationOrganizations");
 app.MapControllerRoutes("incoming-requests", "Incoming");
@@ -394,6 +402,12 @@ app.MapControllerRoutes("settings", "Settings");
 app.MapControllerRoutes("login", "Login");
 app.MapControllerRoutes("focus", "Focus");
 app.MapControllerRoutes("profile", "Profile");
+
+app.MapControllerRoute(
+    name: "accessdenied",
+    pattern: "AccessDenied",
+    defaults: new { controller = "Home", action = "AccessDenied" }
+);
 
 app.MapControllerRoute(
     name: "default",

@@ -1,17 +1,18 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using EdNexusData.Broker.Core;
 using System.Data;
 using System.Security.Claims;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
-using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Web.Helpers;
+using static EdNexusData.Broker.Web.Constants.Sessions.SessionKey;
 
-namespace EdNexusData.Broker.Web;
+namespace EdNexusData.Broker.Web.Authorization;
 
 public class BrokerClaimsTransformation : IClaimsTransformation
 {
     private readonly IReadRepository<User> _userRepo;
+    private readonly IReadRepository<EducationOrganization> educationOrganizationRepository;
+    private readonly IHttpContextAccessor httpContextAccessor;
     private readonly UserManager<IdentityUser<Guid>> _userManager;
     private readonly ILogger<BrokerClaimsTransformation> _logger;
 
@@ -20,12 +21,16 @@ public class BrokerClaimsTransformation : IClaimsTransformation
     public BrokerClaimsTransformation(
         ILogger<BrokerClaimsTransformation> logger, 
         UserManager<IdentityUser<Guid>> userManager, 
-        IReadRepository<User> userRepo
+        IReadRepository<User> userRepo,
+        IReadRepository<EducationOrganization> educationOrganizationRepository,
+        IHttpContextAccessor httpContextAccessor
     )
     {
         _logger = logger;
         _userManager = userManager;
         _userRepo = userRepo;
+        this.educationOrganizationRepository = educationOrganizationRepository;
+        this.httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
@@ -37,6 +42,13 @@ public class BrokerClaimsTransformation : IClaimsTransformation
         var currentUser = await GetCurrentUser(principal);
         if (_user is null) { return principal; }
         if (currentUser is null) return principal;
+
+        if (httpContextAccessor.HttpContext is not null)
+        {
+            string? sessionValue = httpContextAccessor.HttpContext.Session.GetString(FocusOrganizationKey);
+
+            Console.WriteLine("Session Value in Claims Transformation Handler: " + sessionValue);
+        }
 
         // If super admin, allow all claims
         if (currentUser.IsSuperAdmin == true)
@@ -57,10 +69,32 @@ public class BrokerClaimsTransformation : IClaimsTransformation
             }
         }
 
-        // Loop through all UserRoles for user
+        // Loop through all user roles for user and focused org
         if (currentUser.UserRoles is not null)
         {
-            foreach(var userRole in currentUser.UserRoles)  
+            var currentUserRolesToProcess = new List<UserRole?>();
+            
+            var currentEdOrgFocus = FocusHelper.CurrentEdOrgFocus(httpContextAccessor.HttpContext!.Session);
+
+            // See if there's a user group at the focused org
+            var currentUserRole = currentUser.UserRoles
+                .FirstOrDefault(ur => ur?.EducationOrganizationId == currentEdOrgFocus);
+            if (currentUserRole is not null)
+                currentUserRolesToProcess.Add(currentUserRole);
+
+            // See if there's a user group up the stack
+            var focusedEdOrgs = await FocusHelper.GetParentEdOrgs(httpContextAccessor.HttpContext!.Session, educationOrganizationRepository);
+
+            var foundUserRoles = currentUser.UserRoles
+                .Where(ur => ur?.EducationOrganizationId != null 
+                    && focusedEdOrgs.Any(edOrg => edOrg.Id == ur.EducationOrganizationId))
+                .ToList();
+            if (foundUserRoles.Any())
+            {
+                currentUserRolesToProcess.AddRange(foundUserRoles);
+            }
+
+            foreach(var userRole in currentUserRolesToProcess)  
             {
                 switch (userRole?.Role)
                 {

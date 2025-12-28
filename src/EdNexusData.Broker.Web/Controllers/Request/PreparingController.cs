@@ -19,6 +19,7 @@ using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = TransferIncomingRecords)]
+[Authorize(Policy = "RecordAllowed")]
 public class PreparingController : AuthenticatedController<RequestsController>
 {
     private readonly IRepository<Request> _requestRepository;

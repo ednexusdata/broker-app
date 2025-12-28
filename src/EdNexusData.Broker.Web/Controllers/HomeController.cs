@@ -118,4 +118,18 @@ public class HomeController : AuthenticatedController<HomeController>
         
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult AccessDenied()
+    {
+        var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerFeature>();
+        if (exceptionFeature != null)
+        {
+            var exception = exceptionFeature.Error;
+            // You can log it, pass it to the view, or inspect it
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier, Exception = exception });
+        }
+        
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
 }

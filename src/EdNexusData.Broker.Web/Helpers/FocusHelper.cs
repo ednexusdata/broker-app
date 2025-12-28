@@ -153,10 +153,14 @@ public class FocusHelper
 
     public Guid? CurrentEdOrgFocus()
     {
-        var currentEdOrgFocus = _session.GetString(FocusOrganizationKey);
+        return CurrentEdOrgFocus(_session);
+    }
+
+    public static Guid? CurrentEdOrgFocus(ISession session)
+    {
+        var currentEdOrgFocus = session.GetString(FocusOrganizationKey);
         if (currentEdOrgFocus != "ALL")
         {
-
             if (Guid.TryParse(currentEdOrgFocus, out Guid currentEdOrgFocusGuid))
             {
                 return currentEdOrgFocusGuid;
@@ -195,7 +199,12 @@ public class FocusHelper
 
     public bool IsEdOrgAllFocus()
     {
-        var currentEdOrgFocus = _session.GetString(FocusOrganizationKey);
+        return IsEdOrgAllFocus(_session);
+    }
+
+    public static bool IsEdOrgAllFocus(ISession session)
+    {
+        var currentEdOrgFocus = session.GetString(FocusOrganizationKey);
         if (currentEdOrgFocus == "ALL")
         {
             return true;
@@ -203,6 +212,52 @@ public class FocusHelper
         else
         {
             return false;
+        }
+    }
+
+    public static async Task<List<Core.EducationOrganization>> GetParentEdOrgs(
+        ISession session,
+        IReadRepository<Core.EducationOrganization> educationOrganizationRepository
+    )
+    {
+        if (IsEdOrgAllFocus(session))
+        {
+            return await educationOrganizationRepository.ListAsync();
+        }
+        else if (CurrentEdOrgFocus(session) is not null)
+        {
+            var focusedEdOrgList = new List<Core.EducationOrganization>();
+            var focusedEdOrg = await educationOrganizationRepository
+                .FirstOrDefaultAsync(new OrganizationWithChildSpec(CurrentEdOrgFocus(session)!.Value));
+            _ = focusedEdOrg ?? throw new NullReferenceException("Focused Education Organization not found");
+            
+            Func<Core.EducationOrganization, 
+                 List<Core.EducationOrganization>, 
+                 Task<List<Core.EducationOrganization>>> orgRecursion = null!;
+
+            orgRecursion = async (focusedEdOrg, focusedEdOrgList) => 
+            {
+                // Make sure it's actually loaded
+                focusedEdOrg = (await educationOrganizationRepository
+                    .FirstOrDefaultAsync(new OrganizationByIdWithParentSpec(focusedEdOrg.Id)))!;
+                
+                if (focusedEdOrg.ParentOrganization != null)
+                {
+                    focusedEdOrgList.Add(focusedEdOrg.ParentOrganization);
+                    await orgRecursion(focusedEdOrg.ParentOrganization, focusedEdOrgList);
+                    return focusedEdOrgList;
+                }
+                else
+                {
+                   return focusedEdOrgList;
+                }
+            };
+
+            return await orgRecursion(focusedEdOrg, focusedEdOrgList);
+        }
+        else
+        {
+            throw new ForceLogoutException();
         }
     }
 
@@ -252,6 +307,62 @@ public class FocusHelper
             if (CurrentEdOrgFocus().HasValue)
             {
                 return await _educationOrganizationRepository.ListAsync(new OrganizationByIdWithParentSpec(CurrentEdOrgFocus()!.Value));
+            }
+            else
+            {
+                throw new ForceLogoutException();
+            }
+        }
+    }
+
+    public static async Task<List<Core.EducationOrganization>> GetFocusedEdOrgs(
+        ISession session, 
+        IReadRepository<Core.EducationOrganization> educationOrganizationRepository)
+    {
+        if (IsEdOrgAllFocus(session))
+        {
+            return await educationOrganizationRepository.ListAsync();
+        }
+        else if (CurrentEdOrgFocus(session) is not null)
+        {
+            var focusedEdOrgList = new List<Core.EducationOrganization>();
+            var focusedEdOrg = await educationOrganizationRepository
+                .FirstOrDefaultAsync(new OrganizationWithChildSpec(CurrentEdOrgFocus(session)!.Value));
+            _ = focusedEdOrg ?? throw new NullReferenceException("Focused Education Organization not found");
+            
+            Func<Core.EducationOrganization, 
+                 List<Core.EducationOrganization>, 
+                 Task<List<Core.EducationOrganization>>> orgRecursion = null!;
+
+            orgRecursion = async (focusedEdOrg, focusedEdOrgList) => 
+            {
+                // Make sure it's actually loaded
+                focusedEdOrg = (await educationOrganizationRepository
+                    .FirstOrDefaultAsync(new OrganizationWithChildSpec(focusedEdOrg.Id)))!;
+                
+                if (focusedEdOrg.EducationOrganizations != null && focusedEdOrg.EducationOrganizations.Count > 0)
+                {
+                    focusedEdOrgList.Add(focusedEdOrg);
+                    foreach (var childOrg in focusedEdOrg.EducationOrganizations)
+                    {
+                        await orgRecursion(childOrg, focusedEdOrgList);
+                    }
+                    return focusedEdOrgList;
+                }
+                else
+                {
+                   focusedEdOrgList.Add(focusedEdOrg);
+                   return focusedEdOrgList;
+                }
+            };
+
+            return await orgRecursion(focusedEdOrg, focusedEdOrgList);
+        }
+        else
+        {
+            if (CurrentEdOrgFocus(session).HasValue)
+            {
+                return await educationOrganizationRepository.ListAsync(new OrganizationByIdWithParentSpec(CurrentEdOrgFocus(session)!.Value));
             }
             else
             {

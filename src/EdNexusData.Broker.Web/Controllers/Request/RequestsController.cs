@@ -15,6 +15,7 @@ using EdNexusData.Broker.Core.Interfaces;
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = "TransferRecords")]
+[Authorize(Policy = "RecordAllowed")]
 public class RequestsController : AuthenticatedController<RequestsController>
 {
     private readonly IReadRepository<Request> _requestRepository;

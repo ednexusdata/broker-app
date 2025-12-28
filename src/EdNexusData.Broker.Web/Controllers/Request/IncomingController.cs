@@ -26,10 +26,12 @@ using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.Payloads;
 using EdNexusData.Broker.Core.Lookup;
 using System.Net;
+using EdNexusData.Broker.Web.Authorization;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = TransferIncomingRecords)]
+[Authorize(Policy = "RecordAllowed")]
 public class IncomingController : AuthenticatedController<IncomingController>
 {
     private readonly IReadRepository<EducationOrganization> _educationOrganizationRepository;
@@ -69,7 +71,8 @@ public class IncomingController : AuthenticatedController<IncomingController>
         this.directoryLookupService = directoryLookupService;
         this.studentLookupService = studentLookupService;
     }
-
+    
+    //[CanAccessEducationOrganization]
     public async Task<IActionResult> Index(
         IncomingRequestModel model,
         CancellationToken cancellationToken)

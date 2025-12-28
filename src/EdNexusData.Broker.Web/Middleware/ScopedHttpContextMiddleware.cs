@@ -1,19 +1,19 @@
-using EdNexusData.Broker.Web.Services;
+// using EdNexusData.Broker.Web.Services;
 
-namespace EdNexusData.Broker.Web;
+// namespace EdNexusData.Broker.Web;
 
-public class ScopedHttpContextMiddleware 
-{
-    private readonly RequestDelegate _next;
+// public class ScopedHttpContextMiddleware 
+// {
+//     private readonly RequestDelegate _next;
 
-    public ScopedHttpContextMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
+//     public ScopedHttpContextMiddleware(RequestDelegate next)
+//     {
+//         _next = next;
+//     }
 
-    public Task InvokeAsync(HttpContext context, ScopedHttpContext scopedContext)
-    {
-        scopedContext.HttpContext = context;
-        return _next(context);
-    }
-}
+//     public Task InvokeAsync(HttpContext context, ScopedHttpContext scopedContext)
+//     {
+//         scopedContext.HttpContext = context;
+//         return _next(context);
+//     }
+// }

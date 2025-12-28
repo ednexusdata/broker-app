@@ -23,6 +23,7 @@ using EdNexusData.Broker.Common.Jobs;
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = TransferOutgoingRecords)]
+[Authorize(Policy = "RecordAllowed")]
 public class OutgoingController : AuthenticatedController<OutgoingController>
 {
     private readonly IRepository<Request> _outgoingRequestRepository;

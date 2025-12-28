@@ -16,6 +16,7 @@ using EdNexusData.Broker.Common.Configuration;
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = TransferIncomingRecords)]
+[Authorize(Policy = "RecordAllowed")]
 public class MappingController : AuthenticatedController<MappingController>
 {
     private readonly IReadRepository<EducationOrganization> _educationOrganizationRepository;
