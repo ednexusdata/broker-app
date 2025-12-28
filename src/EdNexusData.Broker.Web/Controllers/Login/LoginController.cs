@@ -61,11 +61,11 @@ public class LoginController : AuthenticatedController<LoginController>
         {
             ExternalLogins = await _signInManager.GetExternalAuthenticationSchemesAsync(),
             Environment = environment,
-            AllowAnonymousLogin = _configuration["Authentication:Anonymous"] == "Yes" && !environment.IsProductionEnvironment()
+            AllowAnonymousLogin = _configuration["Authentication:Anonymous"] == "Yes" && environment.IsNonProductionToLocalEnvironment()
         };
 
         // Get all users if allow anonymous logins is enabled
-        if (_configuration["Authentication:Anonymous"] == "Yes" && !environment.IsProductionEnvironment())
+        if (loginViewModel.AllowAnonymousLogin)
         {
             loginViewModel.AllLogins = await _userManager.Users.ToListAsync();
         }
@@ -138,44 +138,46 @@ public class LoginController : AuthenticatedController<LoginController>
     [Route("login/anonymous")]
     public async Task<IActionResult> AnonymousLogin(string email)
     {
-        if (_configuration["Authentication:Anonymous"] is null
-           || _configuration["Authentication:Anonymous"] != "Yes"
-           || environment.IsProductionEnvironment())
+        if (_configuration["Authentication:Anonymous"] is not null
+           && _configuration["Authentication:Anonymous"] == "Yes"
+           && environment.IsNonProductionToLocalEnvironment())
+        {
+            Guard.Against.Null(email, "email", $"Missing email in force login");
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user is null)
+            {
+                _logger.LogInformation("{Email} not found in database.", email);
+                return RedirectToAction("Index");
+            }
+
+            var currentUser = await _userRepo.GetByIdAsync(user.Id);
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Email!),
+                new Claim(ClaimTypes.Email, user.Email!)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(
+                claims, IdentityConstants.ApplicationScheme);
+
+            await HttpContext!.SignInAsync(
+                IdentityConstants.ApplicationScheme,
+                new ClaimsPrincipal(claimsIdentity));
+            
+            HttpContext?.Session?.SetObjectAsJson(UserCurrent, currentUser!);
+            await _focusHelper.SetInitialFocus();
+            HttpContext?.Session?.SetString(LastAccessedKey, $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}");
+
+            return LocalRedirect("~/");
+        }
+        else
         {
             return NotFound();
         }
-        
-        Guard.Against.Null(email, "email", $"Missing email in force login");
-
-        var user = await _userManager.FindByEmailAsync(email);
-
-        if (user is null)
-        {
-            _logger.LogInformation("{Email} not found in database.", email);
-            return RedirectToAction("Index");
-        }
-
-        var currentUser = await _userRepo.GetByIdAsync(user.Id);
-
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Email!),
-            new Claim(ClaimTypes.Email, user.Email!)
-        };
-
-        var claimsIdentity = new ClaimsIdentity(
-            claims, IdentityConstants.ApplicationScheme);
-
-        await HttpContext!.SignInAsync(
-            IdentityConstants.ApplicationScheme,
-            new ClaimsPrincipal(claimsIdentity));
-        
-        HttpContext?.Session?.SetObjectAsJson(UserCurrent, currentUser!);
-        await _focusHelper.SetInitialFocus();
-        HttpContext?.Session?.SetString(LastAccessedKey, $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}");
-
-        return LocalRedirect("~/");
     }
 
     [HttpPost]

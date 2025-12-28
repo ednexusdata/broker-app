@@ -47,7 +47,7 @@ public class BrokerClaimsTransformation : IClaimsTransformation
         {
             string? sessionValue = httpContextAccessor.HttpContext.Session.GetString(FocusOrganizationKey);
 
-            Console.WriteLine("Session Value in Claims Transformation Handler: " + sessionValue);
+            _logger.LogInformation($"Session Value in Claims Transformation Handler: {sessionValue}");
         }
 
         // If super admin, allow all claims
@@ -70,7 +70,7 @@ public class BrokerClaimsTransformation : IClaimsTransformation
         }
 
         // Loop through all user roles for user and focused org
-        if (currentUser.UserRoles is not null)
+        if (currentUser.UserRoles is not null && currentUser.UserRoles.Count > 0)
         {
             var currentUserRolesToProcess = new List<UserRole?>();
             

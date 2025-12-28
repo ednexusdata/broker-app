@@ -258,6 +258,7 @@ public class FocusHelper
         else
         {
             throw new ForceLogoutException();
+            //return new List<Core.EducationOrganization>();
         }
     }
 
