@@ -15,6 +15,8 @@ public class MappingViewModel
 
     public Guid? RequestId { get; set; }
 
+    public Request? Request { get; set; }
+
     public bool IsValid = true;
 
     public List<Core.Mapping>? RequestMappings { get; set; }

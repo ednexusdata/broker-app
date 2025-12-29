@@ -83,7 +83,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
         {
             RequestId = id,
             RequestStatus = request.RequestStatus,
-            Open = request.Open
+            Open = request.Open,
+            Request = request
         };
 
         if (request.PayloadContents is not null)
