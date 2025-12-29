@@ -25,7 +25,7 @@ public class ProfileController : AuthenticatedController<ProfileController>
 
         Guard.Against.Null(user, "user", "Unable to find user.");
 
-        user.TimeZone = user.TimeZone.IsNullOrEmpty() ? ((TimeZoneInfo.Local.Id == "Etc/UTC") ? TimeZoneInfo.Utc.Id : TimeZoneInfo.Local.Id) : user.TimeZone;
+        user.TimeZone = string.IsNullOrEmpty(user.TimeZone) ? ((TimeZoneInfo.Local.Id == "Etc/UTC") ? TimeZoneInfo.Utc.Id : TimeZoneInfo.Local.Id) : user.TimeZone;
         return View(user);
     }
 
@@ -36,7 +36,7 @@ public class ProfileController : AuthenticatedController<ProfileController>
 
         Guard.Against.Null(userRepo, "userRepo", "Unable to find user.");
 
-        userRepo.TimeZone = user.TimeZone.IsNullOrEmpty() ? ((TimeZoneInfo.Local.Id == "Etc/UTC") ? TimeZoneInfo.Utc.Id : TimeZoneInfo.Local.Id) : user.TimeZone;
+        userRepo.TimeZone = string.IsNullOrEmpty(user.TimeZone) ? ((TimeZoneInfo.Local.Id == "Etc/UTC") ? TimeZoneInfo.Utc.Id : TimeZoneInfo.Local.Id) : user.TimeZone;
 
         await userRepository.UpdateAsync(userRepo);
 
