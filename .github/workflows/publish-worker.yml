@@ -55,7 +55,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.x
+          dotnet-version: 10.x
 
       - name: Restore dependencies
         run: dotnet restore /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Worker/EdNexusData.Broker.Worker.csproj
@@ -67,7 +67,7 @@ jobs:
           release_name="EdNexusData.Broker.Worker-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Worker/EdNexusData.Broker.Worker.csproj --framework net8.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish /home/runner/work/broker-app/broker-app/src/EdNexusData.Broker.Worker/EdNexusData.Broker.Worker.csproj --framework net10.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
