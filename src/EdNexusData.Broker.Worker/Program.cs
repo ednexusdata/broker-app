@@ -75,11 +75,11 @@ builder.ConfigureServices((hostContext, services) =>
     X509Certificate2 certificate;
     if (hostContext.Configuration["DataProtection:PfxCertPassword"] == "null")
     {
-        certificate = new X509Certificate2(hostContext.Configuration["DataProtection:PfxCertPath"]!);
+        certificate = X509CertificateLoader.LoadPkcs12FromFile(hostContext.Configuration["DataProtection:PfxCertPath"]!, null);
     }
     else
     {
-        certificate = new X509Certificate2(hostContext.Configuration["DataProtection:PfxCertPath"]!, hostContext.Configuration["DataProtection:PfxCertPassword"]!);
+        certificate = X509CertificateLoader.LoadPkcs12FromFile(hostContext.Configuration["DataProtection:PfxCertPath"]!, hostContext.Configuration["DataProtection:PfxCertPassword"]!);
     }
     
     services.AddDataProtection()

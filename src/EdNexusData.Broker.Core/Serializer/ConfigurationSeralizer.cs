@@ -1,11 +1,8 @@
-using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Specifications;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
-using System.Dynamic;
 using EdNexusData.Broker.Common.Configuration;
 using Microsoft.AspNetCore.DataProtection;
-using System.Buffers.Text;
 
 namespace EdNexusData.Broker.Core.Serializers;
 
@@ -29,6 +26,7 @@ public class ConfigurationSerializer
     {
         var iconfigModel = ActivatorUtilities.CreateInstance(_serviceProvider, connectorConfigType) as IConfiguration;
         var objTypeName = iconfigModel!.GetType().FullName;
+        _ = objTypeName ?? throw new ArgumentNullException($"Type name for {objTypeName} is null");
         
         // Get existing object
         if (connectorConfigType.Assembly.GetName().Name! != null) {
@@ -36,8 +34,10 @@ public class ConfigurationSerializer
             var repoConnectorSettings = await _repo.FirstOrDefaultAsync(connectorSpec);
             if (repoConnectorSettings is not null && repoConnectorSettings?.Settings != null)
             {
-                var configSettings = Newtonsoft.Json.Linq.JObject.Parse(repoConnectorSettings?.Settings?.RootElement.GetRawText());
-                var encconfigSettingsObj = configSettings[objTypeName].ToString();
+                var configSettings = Newtonsoft.Json.Linq.JObject.Parse(repoConnectorSettings?.Settings?.RootElement.GetRawText()!);
+                _ = configSettings[objTypeName] ?? throw new ArgumentNullException($"Configuration settings for {objTypeName} is null");
+                
+                var encconfigSettingsObj = configSettings[objTypeName]!.ToString();
 
                 if (!encconfigSettingsObj.Contains("{"))
                 {

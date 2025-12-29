@@ -84,7 +84,7 @@ public class PayloadContentActionJob : IJob
             if (payloadContentAction.PayloadContent.Request.Student.Connectors!.Count > 0)
             {
                 var foundStudentType = payloadContentAction.PayloadContent.Request.Student.Connectors.Where(x => x.Key == connectorStudentType.FullName).FirstOrDefault();
-                connectorStudent = JsonConvert.DeserializeObject(foundStudentType.Value.ToString(), connectorStudentType)!;
+                connectorStudent = JsonConvert.DeserializeObject(foundStudentType.Value.ToString()!, connectorStudentType)!;
             }
         }
 
@@ -95,7 +95,7 @@ public class PayloadContentActionJob : IJob
         _ = mappingType ?? throw new ArgumentNullException($"Unable to load mapping type {mapping.MappingType}");
 
         var listMappingType = typeof(List<>).MakeGenericType(mappingType);
-        dynamic? mappingObject = JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString(), listMappingType)!;
+        dynamic? mappingObject = JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, listMappingType)!;
         dynamic? mappingObjectsToImport = ActivatorUtilities.CreateInstance(_serviceProvider, listMappingType);
 
         // keep objects that are not to be imported

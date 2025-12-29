@@ -67,16 +67,14 @@ switch (builder.Configuration["DatabaseProvider"])
         break;
 }
 
-Console.WriteLine("PfxCertPath: " + builder.Configuration["DataProtection:PfxCertPath"]);
-
 X509Certificate2 certificate;
 if (builder.Configuration["DataProtection:PfxCertPassword"] == "null")
 {
-    certificate = new X509Certificate2(builder.Configuration["DataProtection:PfxCertPath"]!);
+    certificate = X509CertificateLoader.LoadPkcs12FromFile(builder.Configuration["DataProtection:PfxCertPath"]!, null);
 }
 else
 {
-    certificate = new X509Certificate2(builder.Configuration["DataProtection:PfxCertPath"]!, builder.Configuration["DataProtection:PfxCertPassword"]!);
+    certificate = X509CertificateLoader.LoadPkcs12FromFile(builder.Configuration["DataProtection:PfxCertPath"]!, builder.Configuration["DataProtection:PfxCertPassword"]!);
 }
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<BrokerDbContext>()
@@ -299,10 +297,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
                 IPAddress.TryParse(network.Prefix, out var ipAddress);
                 if (ipAddress is not null)
-                options.KnownNetworks.Add(new Microsoft.AspNetCore.HttpOverrides.IPNetwork(
-                    ipAddress,
-                    network.PrefixLength
-                ));
+                {
+                    options.KnownIPNetworks.Add(new System.Net.IPNetwork(ipAddress!, network.PrefixLength));
+                }
             }
             // if (fhConfig.KnownNetworks.Count == 0)
             // {
@@ -318,6 +315,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 var app = builder.Build();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+logger.LogInformation("PfxCertPath: " + builder.Configuration["DataProtection:PfxCertPath"]);
 
 //app.UseHttpLogging();
 using (var service = app.Services.CreateAsyncScope())

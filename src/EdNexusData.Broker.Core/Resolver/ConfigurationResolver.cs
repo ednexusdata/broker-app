@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Specifications;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Common.Configuration;
@@ -73,10 +72,12 @@ public class ConfigurationResolver : IConfigurationResolver
         var objTypeName = iconfigModel.GetType().FullName;
         
         Guard.Against.Null(typeof(T).Assembly.GetName().Name);
+        _ = objTypeName ?? throw new ArgumentNullException($"Type name for {objTypeName} is null");
 
-        var configSettings = Newtonsoft.Json.Linq.JObject.Parse(repoConnectorSettings?.Settings?.RootElement.GetRawText());
+        var configSettings = Newtonsoft.Json.Linq.JObject.Parse(repoConnectorSettings?.Settings?.RootElement.GetRawText()!);
+        _ = configSettings[objTypeName] ?? throw new ArgumentNullException($"Configuration settings for {objTypeName} is null");
 
-        var encconfigSettingsObj = configSettings[objTypeName].ToString();
+        var encconfigSettingsObj = configSettings[objTypeName]!.ToString();
 
         var dp = dataProtectionProvider.CreateProtector("SecureConnectionString");
         var decryptedSerializedConfig = dp.Unprotect(encconfigSettingsObj);
