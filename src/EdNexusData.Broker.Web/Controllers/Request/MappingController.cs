@@ -112,7 +112,8 @@ public class MappingController : AuthenticatedController<MappingController>
             MappingId = mapping.Id,
             Mapping = mapping,
             MappingLookupService = _serviceProvider.GetService<MappingLookupService>(),
-            RequestId = mapping.PayloadContentAction.PayloadContent.RequestId
+            RequestId = mapping.PayloadContentAction.PayloadContent.RequestId,
+            Request = await _incomingRequestRepository.GetByIdAsync(mapping.PayloadContentAction.PayloadContent.RequestId)
         };
         viewModel.SetProperties(mapping.MappingType!);
 

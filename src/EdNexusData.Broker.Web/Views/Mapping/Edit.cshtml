@@ -52,8 +52,8 @@
         <div class="grid gap-6 px-4 py-6 sm:p-8">
           <div class="flex justify-between">
             <div>
-                <h2 class="text-base font-semibold leading-7 text-gray-900">Releasing School Student Data</h2>
-                <p class="mt-1 text-sm leading-6 text-gray-600">The student data provided by the releasing school.</p>
+                <h1 class="font-bold text-xl mb-3">@Model.Request?.Student?.Student?.FirstName @Model.Request?.Student?.Student?.MiddleName @Model.Request?.Student?.Student?.LastName</h1>
+                <div class="mb-3">Student ID: @Model.Request?.Student?.Student?.StudentNumber | DOB: @Model.Request?.Student?.Student?.Birthdate | Grade: @Model.Request?.Student?.Student?.Grade | Gender: @Model.Request?.Student?.Student?.Gender</div>
             </div>
             <div>
                 <div class="flex items-center justify-end gap-x-6 pl-4 py-4">
