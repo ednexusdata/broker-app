@@ -730,3 +730,40 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20251230211519_AddEdOrgCodes'
+)
+BEGIN
+    ALTER TABLE [EducationOrganizations] ADD [CeebCode] nvarchar(max) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20251230211519_AddEdOrgCodes'
+)
+BEGIN
+    ALTER TABLE [EducationOrganizations] ADD [NcesCode] nvarchar(max) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20251230211519_AddEdOrgCodes'
+)
+BEGIN
+    ALTER TABLE [EducationOrganizations] ADD [StateCode] nvarchar(max) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20251230211519_AddEdOrgCodes'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20251230211519_AddEdOrgCodes', N'10.0.1');
+END;
+
+COMMIT;
+GO
+
