@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <Version>0.0.51</Version>
+    <Version>0.0.52</Version>
   </PropertyGroup>
 
   <ItemGroup>
