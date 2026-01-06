@@ -83,7 +83,7 @@ public class BrokerClaimsTransformation : IClaimsTransformation
                 currentUserRolesToProcess.Add(currentUserRole);
 
             // See if there's a user group up the stack
-            var focusedEdOrgs = await FocusHelper.GetParentEdOrgs(httpContextAccessor.HttpContext!.Session, educationOrganizationRepository);
+            var focusedEdOrgs = await FocusHelper.GetParentEdOrgs(httpContextAccessor.HttpContext!.Session, httpContextAccessor, educationOrganizationRepository);
 
             var foundUserRoles = currentUser.UserRoles
                 .Where(ur => ur?.EducationOrganizationId != null 

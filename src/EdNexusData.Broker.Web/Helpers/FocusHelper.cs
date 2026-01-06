@@ -13,16 +13,21 @@ public class FocusHelper
     private readonly IReadRepository<Core.EducationOrganization> _educationOrganizationRepository;
     private readonly IRepository<UserRole> _userRoleRepo;
     private readonly IRepository<User> _userRepo;
+    private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly SessionHelper sessionHelper;
     private readonly ISession _session;
 
     public FocusHelper(
         IReadRepository<Core.EducationOrganization> educationOrganizationRepository,
         IRepository<UserRole> userRoleRepo,
         IRepository<User> userRepo,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        SessionHelper sessionHelper)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
         _userRepo = userRepo;
+        this.httpContextAccessor = httpContextAccessor;
+        this.sessionHelper = sessionHelper;
         _userRoleRepo = userRoleRepo;
         _session = httpContextAccessor!.HttpContext?.Session!;
     }
@@ -217,6 +222,7 @@ public class FocusHelper
 
     public static async Task<List<Core.EducationOrganization>> GetParentEdOrgs(
         ISession session,
+        IHttpContextAccessor httpContextAccessor,
         IReadRepository<Core.EducationOrganization> educationOrganizationRepository
     )
     {
@@ -257,8 +263,8 @@ public class FocusHelper
         }
         else
         {
-            throw new ForceLogoutException();
-            //return new List<Core.EducationOrganization>();
+            await SessionHelper.InvalidateUserSessionAsync(httpContextAccessor);
+            return new List<Core.EducationOrganization>();
         }
     }
 
@@ -311,7 +317,8 @@ public class FocusHelper
             }
             else
             {
-                throw new ForceLogoutException();
+                await sessionHelper.InvalidateUserSessionAsync();
+                return new List<Core.EducationOrganization>();
             }
         }
     }

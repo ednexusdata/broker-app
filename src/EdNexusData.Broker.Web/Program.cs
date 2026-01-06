@@ -26,6 +26,7 @@ using EdNexusData.Broker.Web.Models.Configuration;
 using Microsoft.AspNetCore.Http.Features;
 using EdNexusData.Broker.Web.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using EdNexusData.Broker.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -225,7 +226,7 @@ builder.Services.AddAuthorization(options => {
 builder.Services.AddTransient<IClaimsTransformation, BrokerClaimsTransformation>();
 builder.Services.AddTransient<IAuthorizationHandler, RecordAuthorizationHandler>();
 
-builder.Services.AddExceptionHandler<ForceLogoutExceptionHandler>();
+//builder.Services.AddExceptionHandler<ForceLogoutExceptionHandler>();
 
 builder.Services.AddControllersWithViews();
 
@@ -387,6 +388,8 @@ app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ActiveBrokerSessionMiddleware>();
 
 app.MapControllerRoutes("system/organizations", "EducationOrganizations");
 app.MapControllerRoutes("incoming-requests", "Incoming");
