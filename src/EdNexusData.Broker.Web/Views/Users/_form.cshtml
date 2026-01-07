@@ -1,5 +1,10 @@
 @using EdNexusData.Broker.Core;
+@using EdNexusData.Broker.Web.Constants.Claims
 @model EdNexusData.Broker.Web.ViewModels.Users.CreateUserRequestViewModel
+@{
+    var controllerName = ViewContext.RouteData.Values["controller"];
+    var actionName = ViewContext.RouteData.Values["action"]?.ToString();
+}
 
 <div class="space-y-10 divide-y divide-gray-900/10">
   <div class="px-4 sm:px-0">
@@ -34,6 +39,8 @@
             </div>
           </div>
         </div>
+        @if(User.HasClaim(CustomClaimType.SuperAdmin, "true"))
+        {
         <div class="grid gap-6 pb-8">
           <div>
             <h2 class="text-base font-semibold leading-7 text-gray-900">Privileges</h2>
@@ -61,13 +68,32 @@
             </div>
           </div>
         </div>
+        }
+        @if(actionName == "Create")
+        {
+        <div class="grid gap-6 pb-8">
+            <div>
+                <h2 class="text-base font-semibold leading-7 text-gray-900">Initial User Role</h2>
+                <p class="mt-1 text-sm leading-6 text-gray-600">Intiial user role to add to the user that is created.</p>
+            </div>
+            <div class="grid gap-2 text-sm font-medium">
+                <label asp-for="InitialUserRole.EducationOrganizationId" class="leading-6">Organization</label>
+                <select asp-for="InitialUserRole.EducationOrganizationId" asp-items="Model.EducationOrganizations" class="block w-full rounded-md border-0 py-1.5 px-2.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6"></select>
+            </div>
+            <div class="grid gap-2 text-sm font-medium">
+                <label asp-for="InitialUserRole.Role" class="leading-6">Role</label>
+                <select asp-for="InitialUserRole.Role" asp-items="Html.GetEnumSelectList<Role>()" class="block w-full rounded-md border-0 px-2.5 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm sm:leading-6"></select>
+            </div>
+        </div>
+        }
       </div>
+      
       <div class="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
         <a
           asp-controller="Users"
           asp-action="Index"
           asp-authorize
-          asp-policy="SuperAdmin"
+          asp-policy="@CustomClaimType.SystemAdministrator"
           class="text-sm font-semibold leading-6 text-gray-900"
         >
           Cancel

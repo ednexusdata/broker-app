@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using EdNexusData.Broker.Core;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace EdNexusData.Broker.Web.ViewModels.Users;
 
@@ -32,5 +33,9 @@ namespace EdNexusData.Broker.Web.ViewModels.Users;
     public PermissionType AllEducationOrganizations { get; set; } = PermissionType.None;
 
     public bool PasswordSet { get; set; } = false;
+
+    public UserRole? InitialUserRole { get; set; }
+
+    public IEnumerable<SelectListItem>? EducationOrganizations { get; set; }
 }
 

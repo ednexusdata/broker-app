@@ -19,20 +19,26 @@ namespace EdNexusData.Broker.Web.Controllers;
 public class UsersController : AuthenticatedController<UsersController>
 {
     private readonly IRepository<User> _userRepository;
+    private readonly IRepository<UserRole> userRoleRepository;
     private readonly BrokerDbContext _brokerDbContext;
     private readonly UserManager<IdentityUser<Guid>> _userManager;
     private readonly FocusHelper focusHelper;
+    private readonly EducationOrganizationHelper educationOrganizationHelper;
 
     public UsersController(
         IRepository<User> userRepository,
+        IRepository<UserRole> userRoleRepository,
         BrokerDbContext brokerDbContext,
         UserManager<IdentityUser<Guid>> userManager,
-        FocusHelper focusHelper)
+        FocusHelper focusHelper,
+        EducationOrganizationHelper educationOrganizationHelper)
     {
         _userRepository = userRepository;
+        this.userRoleRepository = userRoleRepository;
         _brokerDbContext = brokerDbContext;
         _userManager = userManager;
         this.focusHelper = focusHelper;
+        this.educationOrganizationHelper = educationOrganizationHelper;
     }
 
     public async Task<IActionResult> Index(
@@ -88,9 +94,14 @@ public class UsersController : AuthenticatedController<UsersController>
         return View(result);
     }
 
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
-        return View();
+        var model = new CreateUserRequestViewModel()
+        {
+            EducationOrganizations = await focusHelper.GetFocusableEducationOrganizationsSelectList()
+        };
+        
+        return View(model);
     }
 
     [ValidateAntiForgeryToken]
@@ -115,6 +126,18 @@ public class UsersController : AuthenticatedController<UsersController>
         };
 
         await _userRepository.AddAsync(user);
+
+        // Add intial role if specified
+        if (data.InitialUserRole is not null)
+        {
+            var userRole = new UserRole()
+            {
+                UserId = user.Id,
+                Role = data.InitialUserRole.Role,
+                EducationOrganizationId = data.InitialUserRole.EducationOrganizationId
+            };
+            await userRoleRepository.AddAsync(userRole);
+        }
 
         TempData[VoiceTone.Positive] = $"Created user {data.Email} ({user.Id}).";
 
