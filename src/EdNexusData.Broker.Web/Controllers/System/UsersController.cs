@@ -98,7 +98,7 @@ public class UsersController : AuthenticatedController<UsersController>
     {
         var model = new CreateUserRequestViewModel()
         {
-            EducationOrganizations = await focusHelper.GetFocusableEducationOrganizationsSelectList()
+            EducationOrganizations = await focusHelper.GetFocusableEducationOrganizationsSelectList(true)
         };
         
         return View(model);
@@ -108,7 +108,7 @@ public class UsersController : AuthenticatedController<UsersController>
     [HttpPost]
     public async Task<IActionResult> Create(CreateUserRequestViewModel data)
     {
-        if (!ModelState.IsValid) { TempData[VoiceTone.Critical] = "User not created."; return View("Add"); }
+        if (!ModelState.IsValid) { TempData[VoiceTone.Critical] = "User not created."; return View("Create"); }
 
         var identityUser = new IdentityUser<Guid> { UserName = data.Email, Email = data.Email }; 
         var result = await _userManager.CreateAsync(identityUser);
@@ -128,7 +128,7 @@ public class UsersController : AuthenticatedController<UsersController>
         await _userRepository.AddAsync(user);
 
         // Add intial role if specified
-        if (data.InitialUserRole is not null)
+        if (data.IsSuperAdmin != true && data.InitialUserRole is not null)
         {
             var userRole = new UserRole()
             {

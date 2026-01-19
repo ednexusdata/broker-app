@@ -9,7 +9,7 @@
 <div class="space-y-10 divide-y divide-gray-900/10">
   <div class="px-4 sm:px-0">
     <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
-      <div class="px-4 py-6 sm:p-8 grid gap-8">
+      <div class="px-4 py-6 sm:p-8 grid gap-8" x-data="{ superAdmin: false }">
         <div class="grid gap-6 border-b border-gray-900/10 pb-8">
           <div>
             <h2 class="text-base font-semibold leading-7 text-gray-900">Basic information</h2>
@@ -57,7 +57,7 @@
             <div class="sm:col-span-3 grid items-end">
               <div class="relative flex items-start">
                 <div class="flex h-6 items-center">
-                    <input asp-for="IsSuperAdmin" aria-describedby="is-super-admin-description" class="h-4 w-4 rounded border-gray-300 text-tertiary-600 focus:ring-tertiary-600">
+                    <input asp-for="IsSuperAdmin" x-model.boolean="superAdmin" aria-describedby="is-super-admin-description" class="h-4 w-4 rounded border-gray-300 text-tertiary-600 focus:ring-tertiary-600">
                 </div>
                 <div class="ml-3 text-sm leading-6">
                     <label asp-for="IsSuperAdmin" class="font-medium text-gray-900">Super Admin</label>
@@ -71,7 +71,7 @@
         }
         @if(actionName == "Create")
         {
-        <div class="grid gap-6 pb-8">
+        <div class="grid gap-6 pb-8" x-show="!superAdmin">
             <div>
                 <h2 class="text-base font-semibold leading-7 text-gray-900">Initial User Role</h2>
                 <p class="mt-1 text-sm leading-6 text-gray-600">Intiial user role to add to the user that is created.</p>

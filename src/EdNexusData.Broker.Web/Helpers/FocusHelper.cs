@@ -35,7 +35,7 @@ public class FocusHelper
         _session = httpContextAccessor!.HttpContext?.Session!;
     }
 
-    public async Task<IEnumerable<SelectListItem>> GetFocusableEducationOrganizationsSelectList()
+    public async Task<IEnumerable<SelectListItem>> GetFocusableEducationOrganizationsSelectList(bool removeAll = false)
     {
         var selectListItems = new List<SelectListItem>();
 
@@ -56,15 +56,17 @@ public class FocusHelper
 
         // var organizations = await _educationOrganizationRepository.ListAsync();
         // organizations = organizations.OrderBy(x => x.ParentOrganization?.Name).ThenBy(x => x.Name).ToList();
-
-        var allEdOrgs = currentUser?.AllEducationOrganizations;
-        if (allEdOrgs == PermissionType.Read || allEdOrgs == PermissionType.Write)
-        { 
-            selectListItems.Add(new SelectListItem() {
-                    Text = "All",
-                    Value = "ALL",
-                    Selected = _session.GetString(FocusOrganizationKey) == "ALL"
-                });
+        if (removeAll == false)
+        {
+            var allEdOrgs = currentUser?.AllEducationOrganizations;
+            if (allEdOrgs == PermissionType.Read || allEdOrgs == PermissionType.Write)
+            { 
+                selectListItems.Add(new SelectListItem() {
+                        Text = "All",
+                        Value = "ALL",
+                        Selected = _session.GetString(FocusOrganizationKey) == "ALL"
+                    });
+            }
         }
 
         // var userRoleSpec = new UserWithUserRolesByUserSpec(currentUser.Id);
