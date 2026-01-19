@@ -42,7 +42,10 @@ public class ActiveBrokerSessionMiddleware
                     return;
                 }
             }
-            logger.LogInformation("In anonymous endpoint.");
+            else
+            {
+                logger.LogInformation("In anonymous endpoint.");
+            }
         }
 
         await next(context);
