@@ -39,7 +39,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
         var searchExpressions = model.BuildSearchExpressions();
 
-        var focusedEdOrgs = await focusHelper.GetFocusedEdOrgs();
+        var focusedEdOrgs = await focusHelper.GetFocusedEdOrgs(true);
         searchExpressions.Add(x => focusedEdOrgs.Contains(x));
 
         var sortExpressions = model.BuildSortExpressions();

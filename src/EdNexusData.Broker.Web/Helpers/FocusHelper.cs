@@ -10,7 +10,8 @@ namespace EdNexusData.Broker.Web.Helpers;
 
 public class FocusHelper
 {
-    private readonly IReadRepository<Core.EducationOrganization> _educationOrganizationRepository;
+    private readonly IReadRepository<Core.EducationOrganization> educationOrganizationReadRepository;
+    private readonly IRepository<Core.EducationOrganization> educationOrganizationRepository;
     private readonly IRepository<UserRole> _userRoleRepo;
     private readonly IRepository<User> _userRepo;
     private readonly IHttpContextAccessor httpContextAccessor;
@@ -18,13 +19,15 @@ public class FocusHelper
     private readonly ISession _session;
 
     public FocusHelper(
-        IReadRepository<Core.EducationOrganization> educationOrganizationRepository,
+        IReadRepository<Core.EducationOrganization> educationOrganizationReadRepository,
+        IRepository<Core.EducationOrganization> educationOrganizationRepository,
         IRepository<UserRole> userRoleRepo,
         IRepository<User> userRepo,
         IHttpContextAccessor httpContextAccessor,
         SessionHelper sessionHelper)
     {
-        _educationOrganizationRepository = educationOrganizationRepository;
+        this.educationOrganizationReadRepository = educationOrganizationReadRepository;
+        this.educationOrganizationRepository = educationOrganizationRepository;
         _userRepo = userRepo;
         this.httpContextAccessor = httpContextAccessor;
         this.sessionHelper = sessionHelper;
@@ -100,7 +103,7 @@ public class FocusHelper
                         .Include(educationOrganization => educationOrganization.ParentOrganization))
                     .Build();
 
-                var educationOrganizations = await _educationOrganizationRepository.ListAsync(specification, CancellationToken.None);
+                var educationOrganizations = await educationOrganizationReadRepository.ListAsync(specification, CancellationToken.None);
                 var organization = educationOrganizations.FirstOrDefault();
 
                 if (organization != null)
@@ -181,7 +184,7 @@ public class FocusHelper
         // Check if district
         if (currentEdOrgFocus.HasValue)
         {
-            var edOrg = await _educationOrganizationRepository.GetByIdAsync(currentEdOrgFocus.Value);
+            var edOrg = await educationOrganizationReadRepository.GetByIdAsync(currentEdOrgFocus.Value);
             if (edOrg is not null && edOrg.EducationOrganizationType == EducationOrganizationType.District)
             {
                 return currentEdOrgFocus;
@@ -268,16 +271,21 @@ public class FocusHelper
         }
     }
 
-    public async Task<List<Core.EducationOrganization>> GetFocusedEdOrgs()
+    public async Task<List<Core.EducationOrganization>> GetFocusedEdOrgs(bool ignoreCache = false)
     {
         if (IsEdOrgAllFocus())
         {
-            return await _educationOrganizationRepository.ListAsync();
+            if (ignoreCache == true)
+            {
+                return await educationOrganizationRepository.ListAsync();
+            }
+
+            return await educationOrganizationReadRepository.ListAsync();
         }
         else if (CurrentEdOrgFocus() is not null)
         {
             var focusedEdOrgList = new List<Core.EducationOrganization>();
-            var focusedEdOrg = await _educationOrganizationRepository
+            var focusedEdOrg = await educationOrganizationReadRepository
                 .FirstOrDefaultAsync(new OrganizationWithChildSpec(CurrentEdOrgFocus()!.Value));
             _ = focusedEdOrg ?? throw new NullReferenceException("Focused Education Organization not found");
             
@@ -288,7 +296,7 @@ public class FocusHelper
             orgRecursion = async (focusedEdOrg, focusedEdOrgList) => 
             {
                 // Make sure it's actually loaded
-                focusedEdOrg = (await _educationOrganizationRepository
+                focusedEdOrg = (await educationOrganizationReadRepository
                     .FirstOrDefaultAsync(new OrganizationWithChildSpec(focusedEdOrg.Id)))!;
                 
                 if (focusedEdOrg.EducationOrganizations != null && focusedEdOrg.EducationOrganizations.Count > 0)
@@ -313,7 +321,7 @@ public class FocusHelper
         {
             if (CurrentEdOrgFocus().HasValue)
             {
-                return await _educationOrganizationRepository.ListAsync(new OrganizationByIdWithParentSpec(CurrentEdOrgFocus()!.Value));
+                return await educationOrganizationReadRepository.ListAsync(new OrganizationByIdWithParentSpec(CurrentEdOrgFocus()!.Value));
             }
             else
             {
@@ -383,7 +391,7 @@ public class FocusHelper
     {
         if (currentUser.AllEducationOrganizations == PermissionType.Read || currentUser.AllEducationOrganizations == PermissionType.Write)
         {
-            return await _educationOrganizationRepository.ListAsync();
+            return await educationOrganizationReadRepository.ListAsync();
         }
         else
         {
@@ -396,7 +404,7 @@ public class FocusHelper
             orgRecursion = async (focusedEdOrg, focusableEdOrgList) => 
             {
                 // Make sure it's actually loaded
-                focusedEdOrg = (await _educationOrganizationRepository
+                focusedEdOrg = (await educationOrganizationReadRepository
                     .FirstOrDefaultAsync(new OrganizationWithChildSpec(focusedEdOrg.Id)))!;
                 
                 if (focusedEdOrg.EducationOrganizations != null && focusedEdOrg.EducationOrganizations.Count > 0)
