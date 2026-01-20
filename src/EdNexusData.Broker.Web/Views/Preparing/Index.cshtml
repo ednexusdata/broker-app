@@ -38,7 +38,8 @@
                                 class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">Received
                                 Date</th>
                             <th scope="col"
-                                class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">File Name
+                                class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">File Name 
+                                    <a asp-controller="Requests" asp-action="DownloadAll" asp-route-id="@Model.RequestId" target="_blank" class="ml-2 text-xs text-gray-500">Download All</a>
                             </th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Type</th>
                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Received</th>

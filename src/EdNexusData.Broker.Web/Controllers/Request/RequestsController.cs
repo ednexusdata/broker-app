@@ -11,6 +11,11 @@ using EdNexusData.Broker.Core.Services;
 using System.Text.Json;
 using EdNexusData.Broker.Core.Messages;
 using EdNexusData.Broker.Core.Interfaces;
+using System.IO.Compression;
+using System.Text;
+using EdNexusData.Broker.Common.Payloads;
+using Microsoft.Data.SqlClient;
+using System.Xml;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -269,5 +274,57 @@ public class RequestsController : AuthenticatedController<RequestsController>
 
         TempData[VoiceTone.Positive] = $"Request closed.";
         return RedirectToAction(nameof(View), "Requests", new { id = id });
+    }
+    
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> DownloadAll(Guid id)
+    { 
+        var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdWithMessagesPayloadContents(id));
+
+        if (request is not null && request.PayloadContents is not null && request.PayloadContents.Count > 0)
+        {
+            using var memoryStream = new MemoryStream(); 
+            using (var zip = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+            { 
+                foreach (var payloadContent in request.PayloadContents)
+                {
+                    var fileName = payloadContent.FileName; 
+                    var entry = zip.CreateEntry(fileName ?? "file", CompressionLevel.Fastest); 
+                    using var entryStream = entry.Open();
+
+                    byte[] content = Array.Empty<byte>();
+
+                    if (payloadContent.JsonContent is not null)
+                        content = Encoding.UTF8.GetBytes(payloadContent.JsonContent.ToJsonString()!);
+                    if (payloadContent.XmlContent is not null)
+                    {
+                        var sb = new StringBuilder(); 
+                        var settings = new XmlWriterSettings
+                        { 
+                            Indent = true, 
+                            OmitXmlDeclaration = false 
+                        }; 
+                        using (var writer = XmlWriter.Create(sb, settings))
+                        { 
+                            payloadContent.XmlContent.WriteTo(writer);
+                        }
+                        string xml = sb.ToString();
+                        content = Encoding.UTF8.GetBytes(xml);
+                    }
+                    if (payloadContent.BlobContent is not null)
+                        content = payloadContent.BlobContent;
+
+                    using var fileStream = new MemoryStream(content);
+                    fileStream.CopyTo(entryStream); 
+                } 
+            } 
+            
+            memoryStream.Position = 0; 
+            
+            return File( memoryStream.ToArray(), "application/zip", "AllFiles.zip" );
+        }
+
+        return Ok("No files found");
     }
 }
