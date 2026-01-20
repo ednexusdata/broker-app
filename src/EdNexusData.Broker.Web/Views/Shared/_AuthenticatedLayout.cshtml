@@ -1,11 +1,15 @@
 @using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 @using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
-
+@inject EdNexusData.Broker.Core.Environment environment
 @{
     Layout = "_Layout";
 }
 <div class="min-h-full">
+@if(!@environment.IsProductionEnvironment())
+{
+<div class="text-gray-900 font-bold text-xs bg-yellow-300 p-1 text-center">@environment.EnvironmentName</div>
+}
   <nav class="border-b border-gray-200 bg-white">
     <div class="px-8">
       <div class="flex h-16 items-center justify-between">
