@@ -18,5 +18,8 @@ internal class UserRoleSharedConfiguration : IEntityTypeConfiguration<UserRole>
 
         // Create unique key constraint for EducationOrganizationid and UserId
         builder.HasIndex(x => new { x.EducationOrganizationId, x.UserId } ).IsUnique();
+
+        builder.HasOne(ur => ur.User).WithMany(u => u.UserRoles).HasForeignKey(ur => ur.UserId);
+        builder.HasOne(e => e.CreatedByUser).WithMany().HasForeignKey(e => e.CreatedBy).OnDelete(DeleteBehavior.Restrict);
     }
 }

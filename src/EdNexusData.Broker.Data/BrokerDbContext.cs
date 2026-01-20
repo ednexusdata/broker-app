@@ -63,5 +63,31 @@ public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRol
                 Activator.CreateInstance(configType)
             });
         }
+
+        // Bind CreatedBy to CreatedByUser for each entity
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
+        {
+            // Skip the User entity itself 
+            if (entity.ClrType == typeof(User)) continue;
+            
+            // Look for a property named "CreatedBy"
+            var createdByProp = entity.FindProperty("CreatedBy");
+            if (createdByProp == null)
+                continue;
+
+            // Look for the navigation property "CreatedByUser"
+            var nav = entity.FindNavigation("CreatedByUser");
+            if (nav == null)
+                continue;
+
+            modelBuilder.Entity(entity.ClrType).Property<Guid?>("CreatedBy");
+
+            // Configure the relationship
+            modelBuilder.Entity(entity.ClrType)
+                .HasOne(typeof(User), "CreatedByUser")
+                .WithMany()
+                .HasForeignKey("CreatedBy")
+                .OnDelete(DeleteBehavior.Restrict);      
+        }
     }
 }

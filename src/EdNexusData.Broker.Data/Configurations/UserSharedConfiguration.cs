@@ -24,5 +24,7 @@ internal class UserSharedConfiguration : IEntityTypeConfiguration<User>
         builder.HasOne<IdentityUser<Guid>>().WithOne()
             .HasPrincipalKey<IdentityUser<Guid>>(x => x.Id)
             .HasForeignKey<User>(x => x.Id);
+
+        builder.HasOne(e => e.CreatedByUser).WithMany().HasForeignKey(e => e.CreatedBy).OnDelete(DeleteBehavior.Restrict);
     }
 }

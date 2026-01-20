@@ -15,6 +15,8 @@ using Ardalis.GuardClauses;
 using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Constants.Claims;
+using EdNexusData.Broker.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -23,19 +25,28 @@ public class JobsController : AuthenticatedController<JobsController>
 {
     private readonly ILogger<JobsController> logger;
     private readonly IRepository<Job> jobsRepository;
+    private readonly IRepository<User> userRepository;
     private readonly CurrentUserHelper currentUserHelper;
+    private readonly FocusHelper focusHelper;
     private readonly JobService jobService;
+    private readonly BrokerDbContext context;
 
     public JobsController(
         ILogger<JobsController> logger,
         IRepository<Job> jobsRepository,
+        IRepository<User> userRepository,
         CurrentUserHelper currentUserHelper,
-        JobService jobService)
+        FocusHelper focusHelper,
+        JobService jobService,
+        BrokerDbContext context)
     {
         this.logger = logger;
         this.jobsRepository = jobsRepository;
+        this.userRepository = userRepository;
         this.currentUserHelper = currentUserHelper;
+        this.focusHelper = focusHelper;
         this.jobService = jobService;
+        this.context = context;
     }
 
     public async Task<IActionResult> Index(
@@ -51,7 +62,7 @@ public class JobsController : AuthenticatedController<JobsController>
         var searchExpressions = new List<Expression<Func<Job, bool>>>
         {
             // Must restrict to currently logged in user
-            x => x.CreatedBy == currentUserHelper.CurrentUserId()!.Value
+            x => x.CreatedBy == currentUserHelper.CurrentUserId()!.Value || x.InitiatedUserId == currentUserHelper.CurrentUserId()!.Value
         };
 
         searchExpressions = model.BuildSearchExpressions();
@@ -109,7 +120,23 @@ public class JobsController : AuthenticatedController<JobsController>
             ViewBag.JobId = jobId;
         }
 
-        var searchExpressions = model.BuildSearchExpressions();
+        var searchExpressions = new List<Expression<Func<Job, bool>>>();
+
+        if (!focusHelper.IsEdOrgAllFocus()) {
+            var focusedEdOrgs = await focusHelper.GetFocusedEdOrgs();
+            searchExpressions.Add(
+                u => u.CreatedByUser != null && u.CreatedByUser.UserRoles != null && u.CreatedByUser.UserRoles.Any(
+                    r => focusedEdOrgs.Contains(r.EducationOrganization!)
+                )
+            );
+            searchExpressions.Add(
+                u => u.InitiatedUser != null && u.InitiatedUser.UserRoles != null && u.InitiatedUser.UserRoles.Any(
+                    r => focusedEdOrgs.Contains(r.EducationOrganization!)
+                )
+            );
+        }
+
+        searchExpressions = model.BuildSearchExpressions();
 
         var sortExpression = model.BuildSortExpression();
 
@@ -119,6 +146,9 @@ public class JobsController : AuthenticatedController<JobsController>
             .WithSearchExpressions(searchExpressions)
             .WithIncludeEntities(builder => builder
                 .Include(job => job.InitiatedUser)
+                .ThenInclude(x => x.UserRoles)
+                .Include(x => x.CreatedByUser)
+                .ThenInclude(x => x.UserRoles)
             )
             .Build();
 

@@ -2,11 +2,20 @@
 @using EdNexusData.Broker.Core.Extensions;
 @model EdNexusData.Broker.Web.Models.Paginations.PaginatedViewModel<EdNexusData.Broker.Web.Models.JobViewModel>;
 @{
+    var actionName = ViewContext.RouteData.Values["action"]?.ToString();
     // Copyright: 2023 Education Nexus Oregon
     // Author: Makoa Jacobsen, makoa@makoajacobsen.com
     ViewData["Title"] = "Jobs";
     Layout = "_AuthenticatedLayout";
-    ViewData["FocusBar"] = false;
+    if (actionName == "SystemIndex")
+    {
+        ViewData["FocusBar"] = true;
+    }
+    else
+    {
+        ViewData["FocusBar"] = false;
+    }
+    
 }
 
 <div x-data="jobsIndex" class="grid gap-4">
