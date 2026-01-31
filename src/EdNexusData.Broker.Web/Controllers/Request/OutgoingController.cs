@@ -117,9 +117,10 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         return View(result);
     }
 
-    public async Task<IActionResult> Update(Guid requestId, Guid? jobId)
+    [Route("/Update/{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, Guid? jobId)
     {
-        var outgoingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdWithPayloadContents(requestId));
+        var outgoingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdWithPayloadContents(id));
         if (outgoingRequest is null) return NotFound();
 
         if (outgoingRequest.RequestStatus != RequestStatus.Extracted)
