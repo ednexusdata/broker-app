@@ -117,7 +117,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         return View(result);
     }
 
-    [Route("/Update/{id:guid}")]
+    [Route("/outgoing-requests/edit/{id:guid}")]
     public async Task<IActionResult> Update(Guid id, Guid? jobId)
     {
         var outgoingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdWithPayloadContents(id));
@@ -160,6 +160,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
+    [Route("/outgoing-requests/edit/{id:guid}")]
     public async Task<IActionResult> Update(CreateOutgoingRequestViewModel viewModel)
     {
         if (ModelState.IsValid)
