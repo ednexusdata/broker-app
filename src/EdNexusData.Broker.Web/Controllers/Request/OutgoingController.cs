@@ -342,7 +342,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         var job = await _jobService.CreateJobAsync(typeof(PayloadLoaderJob), typeof(Request), outgoingRequest.Id, _currentUser.AuthenticatedUserId());
 
         TempData[VoiceTone.Positive] = $"Request set to load outgoing payload ({outgoingRequest.Id}).";
-        return RedirectToAction(nameof(Update), new { requestId = id, jobId = job.Id });
+        return RedirectToAction(nameof(Update), new { id = id, jobId = job.Id });
     }
 
     [HttpPut]
