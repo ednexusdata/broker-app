@@ -8,10 +8,6 @@ using EdNexusData.Broker.Core;
 using Microsoft.Extensions.Configuration;
 using EdNexusData.Broker.Core.Worker;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
-using EdNexusData.Broker.Data.Migrations.MsSql;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal;
-using Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal;
 
 namespace EdNexusData.Broker.Data;
 
@@ -94,17 +90,17 @@ public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRol
         }
     }
 
-    public static bool IsPostgreSql(DbContext context)
-    {
-        return context.Database.GetService<IDbContextOptions>()
-            .Extensions
-            .Any(extension => extension is NpgsqlOptionsExtension);
+}
+
+public static class BrokerDbContextExtensions
+{
+    public static bool IsPostgreSql(this BrokerDbContext context)
+    {   
+        return context is PostgresDbContext;
     }
 
-    public static bool IsSqlServer(DbContext context)
+    public static bool IsSqlServer(this BrokerDbContext context)
     {
-        return context.Database.GetService<IDbContextOptions>()
-            .Extensions
-            .Any(extension => extension is SqlServerOptionsExtension);
+        return context is MsSqlDbContext;
     }
 }

@@ -66,10 +66,10 @@ public class Worker : BackgroundService
                 {
                     var sql = "";
 
-                    if (BrokerDbContext.IsSqlServer(_context))
+                    if (_context.IsSqlServer())
                     {
-                        sql = "SELECT * FROM Worker_Jobs WITH (UPDLOCK, NOWAIT) WHERE JobStatus = '0' ORDER BY QueueDateTime LIMIT 1";
-                    } else if (BrokerDbContext.IsPostgreSql(_context))
+                        sql = "SELECT TOP 1 * FROM Worker_Jobs WITH (UPDLOCK, NOWAIT) WHERE JobStatus = '0' ORDER BY QueueDateTime";
+                    } else if (_context.IsPostgreSql())
                     {
                         sql = "SELECT * FROM \"Worker_Jobs\" WHERE \"JobStatus\" = '0' ORDER BY \"QueueDateTime\" LIMIT 1 FOR UPDATE SKIP LOCKED";
                     } else
