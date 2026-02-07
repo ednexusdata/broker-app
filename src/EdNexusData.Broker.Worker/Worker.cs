@@ -5,6 +5,9 @@ using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Common.Jobs;
 using Microsoft.Extensions.Caching.Memory;
 using EdNexusData.Broker.Core.Services;
+using EdNexusData.Broker.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace EdNexusData.Broker.Worker;
 
@@ -54,64 +57,115 @@ public class Worker : BackgroundService
                     }
                 }
 
-                var _jobsRepository = (IRepository<Job>)scoped.ServiceProvider.GetService(typeof(IRepository<Job>))!;
-                var _jobStatusService = (JobStatusService<Worker>)scoped.ServiceProvider.GetService(typeof(JobStatusService<Worker>))!;
+                var _context = (BrokerDbContext)scoped.ServiceProvider.GetService(typeof(BrokerDbContext))!;
+                Job? job = null;
 
-                var jobRecord = await _jobsRepository.FirstOrDefaultAsync(new JobsWaitingToProcess());
+                await using var transaction = await _context.Database.BeginTransactionAsync();
 
-                if (jobRecord is not null)
+                try
                 {
-                    jobRecord.WorkerState = "Begin Job Run";
-                    jobRecord.WorkerInstance = System.Environment.MachineName;
-                    jobRecord.JobStatus = JobStatus.Running;
-                    jobRecord.StartDateTime = DateTime.UtcNow;
+                    var sql = "";
 
-                    await _jobsRepository.UpdateAsync(jobRecord);
-
-                    _logger.LogInformation("Captured {jobRecordId}.", jobRecord.Id);
-
-                    // Run job
-                    try
+                    if (BrokerDbContext.IsSqlServer(_context))
                     {
-                        _logger.LogInformation("Resolving job type for {jobRecordId}.", jobRecord.Id);
-
-                        // Get job type
-                        var jobType = AppDomain.CurrentDomain.GetAssemblies()
-                            .SelectMany(s => s.GetExportedTypes())
-                            .Where(p => p.FullName == jobRecord.JobType!).FirstOrDefault();
-
-                        Guard.Against.Null(jobType, "jobType", $"Unable to find job type: {jobRecord.JobType!}");
-
-                        _logger.LogInformation("Resolved job type for {jobRecordId} to {jobType}.", jobRecord.Id, jobType.FullName);
-
-                        // Instantiate and cast as IJob
-                        var job = (IJob)ActivatorUtilities.CreateInstance(scoped.ServiceProvider, jobType);
-                        
-                        await _jobStatusService.UpdateJobStatus(jobRecord, JobStatus.Running, "Begin running.");
-                        _logger.LogInformation("Begin running {jobRecordId}.", jobRecord.Id);
-
-                        await job.ProcessAsync(jobRecord);
-                        await _jobStatusService.UpdateJobStatus(jobRecord, JobStatus.Complete, "Complete.");
-                        _logger.LogInformation("{jobRecordId} completed.", jobRecord.Id);
-
-                    } catch (Exception e)
+                        sql = "SELECT * FROM Worker_Jobs WITH (UPDLOCK, NOWAIT) WHERE JobStatus = '0' ORDER BY QueueDateTime LIMIT 1";
+                    } else if (BrokerDbContext.IsPostgreSql(_context))
                     {
-                        using (var exScope = _serviceProvider.CreateScope())
-                        {
-                            var exJobStatusService = (JobStatusService<Worker>)exScope.ServiceProvider.GetService(typeof(JobStatusService<Worker>))!;
+                        sql = "SELECT * FROM \"Worker_Jobs\" WHERE \"JobStatus\" = '0' ORDER BY \"QueueDateTime\" LIMIT 1 FOR UPDATE SKIP LOCKED";
+                    } else
+                    {
+                        throw new Exception("Unable to detect BrokerDbContext driver.");
+                    }
 
-                            var messageToSave = e.Message + "\n\n" + e.StackTrace?.ToString();
-                            
-                            if (e.InnerException is not null)
-                            {
-                                messageToSave += "\n\n=========================\n\n" + e.InnerException.Message + "\n\n" + e.InnerException.StackTrace?.ToString();
-                            }
-                            
-                            await exJobStatusService.UpdateJobStatus(jobRecord, JobStatus.Failed, messageToSave);
-                            _logger.LogInformation("{jobRecordId} failed.", jobRecord.Id);
-                        }
+                    job = (await _context.WorkerJobs!
+                        .FromSqlRaw(sql)
+                        .ToListAsync())
+                        .FirstOrDefault();
+
+                    if (job != null)
+                    {
+                        // Capture the job
+                        job.JobStatus = JobStatus.Running;
+                        job.StartDateTime = DateTime.UtcNow;
+                        _context.WorkerJobs?.Update(job);
+                        await _context.SaveChangesAsync();
+
+                        await transaction.CommitAsync();
+                        _logger.LogInformation($"Processed Job ID: {job.Id}");
+                    }
+                    else
+                    {
+                        _logger.LogInformation("No available jobs to process.");
                     }
                 }
+                catch (Exception)
+                {
+                    // Rollback the transaction in case of an error
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+
+                if (job is not null)
+                {
+                    await ProcessJob(scoped, job);
+                }
+            }
+        }
+    }
+
+    private async Task ProcessJob(IServiceScope scoped, Job jobRecord)
+    {
+        var _jobsRepository = (IRepository<Job>)scoped.ServiceProvider.GetService(typeof(IRepository<Job>))!;
+        var _jobStatusService = (JobStatusService<Worker>)scoped.ServiceProvider.GetService(typeof(JobStatusService<Worker>))!; 
+        
+        jobRecord.WorkerState = "Begin Job Run";
+        jobRecord.WorkerInstance = System.Environment.MachineName;
+        jobRecord.JobStatus = JobStatus.Running;
+        jobRecord.StartDateTime = DateTime.UtcNow;
+
+        await _jobsRepository.UpdateAsync(jobRecord);
+
+        _logger.LogInformation("Captured {jobRecordId}.", jobRecord.Id);
+
+        // Run job
+        try
+        {
+            _logger.LogInformation("Resolving job type for {jobRecordId}.", jobRecord.Id);
+
+            // Get job type
+            var jobType = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetExportedTypes())
+                .FirstOrDefault(p => p.FullName == jobRecord.JobType!);
+
+            Guard.Against.Null(jobType, "jobType", $"Unable to find job type: {jobRecord.JobType!}");
+
+            _logger.LogInformation("Resolved job type for {jobRecordId} to {jobType}.", jobRecord.Id, jobType.FullName);
+
+            // Instantiate and cast as IJob
+            var job = (IJob)ActivatorUtilities.CreateInstance(scoped.ServiceProvider, jobType);
+            
+            await _jobStatusService.UpdateJobStatus(jobRecord, JobStatus.Running, "Begin running.");
+            _logger.LogInformation("Begin running {jobRecordId}.", jobRecord.Id);
+
+            await job.ProcessAsync(jobRecord);
+            await _jobStatusService.UpdateJobStatus(jobRecord, JobStatus.Complete, "Complete.");
+            _logger.LogInformation("{jobRecordId} completed.", jobRecord.Id);
+
+        } catch (Exception e)
+        {
+            using (var exScope = _serviceProvider.CreateScope())
+            {
+                var exJobStatusService = (JobStatusService<Worker>)exScope.ServiceProvider.GetService(typeof(JobStatusService<Worker>))!;
+
+                var messageToSave = e.Message + "\n\n" + e.StackTrace?.ToString();
+                
+                if (e.InnerException is not null)
+                {
+                    messageToSave += "\n\n=========================\n\n" + e.InnerException.Message + "\n\n" + e.InnerException.StackTrace?.ToString();
+                }
+                
+                await exJobStatusService.UpdateJobStatus(jobRecord, JobStatus.Failed, messageToSave);
+                _logger.LogInformation("{jobRecordId} failed.", jobRecord.Id);
             }
         }
     }

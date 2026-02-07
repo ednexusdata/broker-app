@@ -9,6 +9,9 @@ using Microsoft.Extensions.Configuration;
 using EdNexusData.Broker.Core.Worker;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using EdNexusData.Broker.Data.Migrations.MsSql;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.Internal;
+using Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal;
 
 namespace EdNexusData.Broker.Data;
 
@@ -89,5 +92,19 @@ public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRol
                 .HasForeignKey("CreatedBy")
                 .OnDelete(DeleteBehavior.Restrict);      
         }
+    }
+
+    public static bool IsPostgreSql(DbContext context)
+    {
+        return context.Database.GetService<IDbContextOptions>()
+            .Extensions
+            .Any(extension => extension is NpgsqlOptionsExtension);
+    }
+
+    public static bool IsSqlServer(DbContext context)
+    {
+        return context.Database.GetService<IDbContextOptions>()
+            .Extensions
+            .Any(extension => extension is SqlServerOptionsExtension);
     }
 }
