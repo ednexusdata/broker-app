@@ -26,7 +26,6 @@ using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.Payloads;
 using EdNexusData.Broker.Core.Lookup;
 using System.Net;
-using EdNexusData.Broker.Web.Authorization;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -454,6 +453,14 @@ public class IncomingController : AuthenticatedController<IncomingController>
         var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));
 
         Guard.Against.Null(incomingRequest);
+
+        if (incomingRequest.RequestManifest?.To?.School?.Id is null
+        || incomingRequest.Student is null 
+        || incomingRequest.Student?.Connectors?.Count == 0)
+        {
+            TempData[VoiceTone.Critical] = "Request missing information to send.";
+            return RedirectToAction(nameof(Update), new { id });
+        }
 
         incomingRequest.RequestStatus = RequestStatus.WaitingToRequest;
         incomingRequest.RequestProcessUserId = _currentUser.AuthenticatedUserId();
