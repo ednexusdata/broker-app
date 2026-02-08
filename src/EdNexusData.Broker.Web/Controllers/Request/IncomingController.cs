@@ -455,6 +455,14 @@ public class IncomingController : AuthenticatedController<IncomingController>
 
         Guard.Against.Null(incomingRequest);
 
+        if (incomingRequest.RequestManifest?.To?.School?.Id is null
+        || incomingRequest.Student is null 
+        || incomingRequest.Student?.Connectors?.Count == 0)
+        {
+            TempData[VoiceTone.Critical] = "Request missing information to send.";
+            return RedirectToAction(nameof(Update), new { id });
+        }
+
         incomingRequest.RequestStatus = RequestStatus.WaitingToRequest;
         incomingRequest.RequestProcessUserId = _currentUser.AuthenticatedUserId();
 
