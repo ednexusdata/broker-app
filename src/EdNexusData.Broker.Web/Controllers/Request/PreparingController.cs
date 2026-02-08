@@ -190,6 +190,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
 
     [Route("/Preparing/{id:guid}")]
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(Guid id, CreateRequestManifestViewModel PayloadContent)
     {
         if (PayloadContent.Items is not null && PayloadContent.Items.Any())

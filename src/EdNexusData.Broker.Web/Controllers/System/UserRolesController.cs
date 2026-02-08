@@ -72,6 +72,7 @@ public class UserRolesController : AuthenticatedController<UserRolesController>
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(UserRolesViewModel model)
     {
         if (!ModelState.IsValid)

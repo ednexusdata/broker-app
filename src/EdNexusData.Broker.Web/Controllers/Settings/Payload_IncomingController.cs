@@ -38,6 +38,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     }
 
     [HttpPost("/Settings/IncomingPayload/{payload}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateIncomingPayload([FromRoute] string payload)
     {
         var result = await FocusedToDistrict();

@@ -75,6 +75,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(IEnumerable<string> connectorsEnabled)
     {
         if (await FocusedToDistrict() is not null) return View();
@@ -147,6 +148,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     }
 
     [HttpPost("/Settings/Configuration/{assembly}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateConfiguration(IFormCollection collection)
     {
         var result = await FocusedToDistrict();

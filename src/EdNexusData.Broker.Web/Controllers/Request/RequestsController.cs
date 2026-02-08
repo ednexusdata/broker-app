@@ -2,7 +2,6 @@ using Ardalis.GuardClauses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EdNexusData.Broker.Web.ViewModels.Requests;
-using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
@@ -13,8 +12,6 @@ using EdNexusData.Broker.Core.Messages;
 using EdNexusData.Broker.Core.Interfaces;
 using System.IO.Compression;
 using System.Text;
-using EdNexusData.Broker.Common.Payloads;
-using Microsoft.Data.SqlClient;
 using System.Xml;
 
 namespace EdNexusData.Broker.Web.Controllers;
@@ -181,6 +178,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> SendMessage(Guid id, string messageText)
     {
         var message = await messageService.CreateChatMessage(id, messageText, currentUser.AuthenticatedUserId()!.Value);
@@ -192,6 +190,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
     }
 
     [HttpPut]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Open(Guid id)
     {
         var request = await requestService.Open(id);
@@ -221,6 +220,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
     }
 
     [HttpPut]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Finish(Guid id)
     {
         var request = await requestService.Close(id, RequestStatus.Finished);
@@ -249,6 +249,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
     }
 
     [HttpPut]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Close(Guid id)
     {
         var request = await requestService.Close(id, RequestStatus.Closed);

@@ -10,7 +10,6 @@ using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Core.Services;
-using EdNexusData.Broker.Core.Resolvers;
 using EdNexusData.Broker.Common.Configuration;
 
 namespace EdNexusData.Broker.Web.Controllers;
@@ -68,6 +67,7 @@ public class MappingController : AuthenticatedController<MappingController>
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Prepare(Guid id)
     {
         var action = await _actionRepository.FirstOrDefaultAsync(new PayloadContentActionWithPayloadContent(id));
@@ -128,6 +128,7 @@ public class MappingController : AuthenticatedController<MappingController>
     }
 
     [HttpPut]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(Guid mappingId, IFormCollection form)
     {
         var mapping = await _mappingRepository.GetByIdAsync(mappingId);

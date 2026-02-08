@@ -65,6 +65,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     }
 
     [HttpPost("/Settings/OutgoingPayload/{payload}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateOutgoingPayload([FromRoute] string payload, [FromForm] CreateOutgoingPayloadSettingsViewModel input)
     {
         var result = await FocusedToDistrict();
@@ -107,6 +108,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     }
 
     [HttpPost("/Settings/OutgoingPayloadContents/{payload}")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateOutgoingPayloadContents([FromRoute] string payload, [FromForm] string settings)
     {
         var result = await FocusedToDistrict();

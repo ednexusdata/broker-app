@@ -38,6 +38,7 @@ public class SystemController : AuthenticatedController<SystemController>
     }
 
     [HttpDelete]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ClearCache()
     {
         if (cache is MemoryCache memCache)
@@ -53,6 +54,7 @@ public class SystemController : AuthenticatedController<SystemController>
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Settings(List<Setting> settings)
     {
         var changeCount = 0;

@@ -12,7 +12,6 @@ using EdNexusData.Broker.Web.Models.Jobs;
 using EdNexusData.Broker.Web.Models;
 using EdNexusData.Broker.Web.Models.Paginations;
 using Ardalis.GuardClauses;
-using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Constants.Claims;
 using EdNexusData.Broker.Data;
@@ -146,9 +145,9 @@ public class JobsController : AuthenticatedController<JobsController>
             .WithSearchExpressions(searchExpressions)
             .WithIncludeEntities(builder => builder
                 .Include(job => job.InitiatedUser)
-                .ThenInclude(x => x.UserRoles)
+                .ThenInclude(x => x!.UserRoles)
                 .Include(x => x.CreatedByUser)
-                .ThenInclude(x => x.UserRoles)
+                .ThenInclude(x => x!.UserRoles)
             )
             .Build();
 

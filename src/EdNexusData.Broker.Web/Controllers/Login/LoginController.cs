@@ -74,6 +74,7 @@ public class LoginController : AuthenticatedController<LoginController>
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [Route("login")]
     public async Task<IActionResult> Login(LogInViewModel loginViewModel)
     {
