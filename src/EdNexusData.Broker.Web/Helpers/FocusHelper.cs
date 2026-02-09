@@ -195,6 +195,18 @@ public class FocusHelper
         return null;
     }
 
+    public async Task<EducationOrganizationType?> CurrentEdOrgFocusType()
+    {
+        var currentEdOrgFocus = CurrentEdOrgFocus();
+
+        if (currentEdOrgFocus.HasValue)
+        {
+            var edOrg = await educationOrganizationReadRepository.GetByIdAsync(currentEdOrgFocus.Value);
+            return edOrg?.EducationOrganizationType;
+        }
+        return null;
+    }
+
     public async Task<List<Core.EducationOrganization>> GetFocusedSchools()
     {
         var focusedEdOrgs = await GetFocusedEdOrgs();

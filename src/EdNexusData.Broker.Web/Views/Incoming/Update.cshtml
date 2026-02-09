@@ -18,7 +18,8 @@
 
 @section HeaderAction
 {
-  @if (Model.RequestStatus == EdNexusData.Broker.Common.Jobs.RequestStatus.Draft)
+  @if (Model.RequestStatus == EdNexusData.Broker.Common.Jobs.RequestStatus.Draft
+  && Model.StudentUniqueId is not null && Model.ToSchool is not null)
   {
     <form method="post" asp-action="Send" asp-route-id="@Model.RequestId" autocomplete="off">
       <input type="hidden" name="_METHOD" value="PUT" />

@@ -1,5 +1,6 @@
 ﻿@using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 @using EdNexusData.Broker.Core.Extensions;
+@inject EdNexusData.Broker.Web.Helpers.FocusHelper focusHelper;
 @model EdNexusData.Broker.Web.Models.Paginations.PaginatedViewModel<EdNexusData.Broker.Web.ViewModels.IncomingRequests.IncomingRequestViewModel>;
 @{
     // Copyright: 2023 Education Nexus Oregon
@@ -7,6 +8,8 @@
     ViewData["Title"] = "Incoming Record Requests";
     Layout = "_AuthenticatedLayout";
     ViewData["FocusBar"] = true;
+    var isAllCurrentFocus = focusHelper.IsEdOrgAllFocus();
+    var focusEdOrgType = await focusHelper.CurrentEdOrgFocusType();
 }
 
 <div
@@ -271,6 +274,8 @@
 
 @section HeaderAction
 {
+    @if (!isAllCurrentFocus && focusEdOrgType.HasValue && focusEdOrgType.Value != EdNexusData.Broker.Common.EducationOrganizations.EducationOrganizationType.Region)
+    {
 <a
     asp-controller="Incoming"
     asp-action="Create"
@@ -280,6 +285,7 @@
 >
     Start Incoming Request
 </a>
+    }
 }
 
 @section scripts
