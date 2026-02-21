@@ -133,7 +133,7 @@ public class PayloadContentActionJob : IJob
             if (payloadContentActionJobObject is DelayedPayloadContentActionJob)
             {
                 DelayedPayloadContentActionJob delayedJobToExecute = (DelayedPayloadContentActionJob)payloadContentActionJobObject!;
-                delayedJobToExecute.JobStatusService = new JobStatusServiceProxy<PayloadContentActionJob>(jobStatusService, jobInstance, payloadContentAction.PayloadContent.Request);
+                delayedJobToExecute.JobStatusService = new JobStatusServiceProxy<PayloadContentActionJob>(jobStatusService, jobInstance, payloadContentAction, payloadContentAction.PayloadContent.Request);
 
                 var startResult = await delayedJobToExecute.StartAsync(
                     mappingObjectsToImport,
@@ -175,7 +175,7 @@ public class PayloadContentActionJob : IJob
                     connectorStudent!,
                     payloadContentAction.PayloadContent.Request.Student!.Student!.ToCommon(),
                     payloadContentAction.PayloadContent.Request.EducationOrganization.ToCommon(),
-                    new JobStatusServiceProxy<PayloadContentActionJob>(jobStatusService, jobInstance, payloadContentAction.PayloadContent.Request)
+                    new JobStatusServiceProxy<PayloadContentActionJob>(jobStatusService, jobInstance, payloadContentAction, payloadContentAction.PayloadContent.Request)
                 );
             }
 
