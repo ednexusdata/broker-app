@@ -14,7 +14,7 @@
           </span>
       </div>
   </div>
-  <form method="post" action="@Url.Action("IncomingPayload", "Settings", new { payload = Model.Payload.FullName })">
+  <form method="post" action="@Url.Action("IncomingPayload", "Settings", new { payload = Model.Payload.FullName })" asp-antiforgery="true">
     <input type="hidden" name="PayloadType" value="@Model.Payload.FullName">
     <div class="sm:col-span-4 my-4">
     <label for="StudentInformationSystem" class="block text-sm font-medium leading-6 text-gray-900">Student Information System</label>

@@ -19,7 +19,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         var result = await FocusedToDistrict();
         if (result != null) return result;
 
-        var payloadAssembly = _connectorLoader.Payloads.Where(x => x.FullName == payload).First();
+        var payloadAssembly = _connectorLoader.Payloads.First(x => x.FullName == payload);
 
         var currentPayload = await _educationOrganizationPayloadSettings
             .FirstOrDefaultAsync(new PayloadSettingsByNameAndEdOrgIdSpec(payload, _focusedDistrictEdOrg!.Value));
@@ -38,7 +38,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
             {
                 settings.Add(new PayloadSettingsViewModel() {
                     FullName = currentSettings.PayloadContentType,
-                    DisplayName = contentTypes.Where(a => a.FullName == currentSettings.PayloadContentType).FirstOrDefault()!.DisplayName,
+                    DisplayName = contentTypes.FirstOrDefault(a => a.FullName == currentSettings.PayloadContentType)!.DisplayName,
                     JobId = currentSettings.JobId,
                     Configuration = currentSettings.Settings
                 });

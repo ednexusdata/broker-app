@@ -118,7 +118,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
         var result = await FocusedToDistrict();
         if (result != null) return result;
 
-        var connectorDictionary = _connectorLoader.Assemblies.Where(x => x.Key == assembly).FirstOrDefault();
+        var connectorDictionary = _connectorLoader.Assemblies.FirstOrDefault(x => x.Key == assembly);
         ArgumentException.ThrowIfNullOrEmpty(assembly);
         var connector = connectorDictionary.Value;
 
@@ -133,12 +133,12 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
             {
                 var configModel = await _configurationSerializer.DeseralizeAsync(configType, _focusedDistrictEdOrg!.Value);
 
-                var displayName = (DisplayNameAttribute)configType.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault()!;
+                var displayName = (DisplayNameAttribute)configType.GetCustomAttributes(false).FirstOrDefault(x => x.GetType() == typeof(DisplayNameAttribute))!;
 
                 forms.Add(
                     new { 
                         displayName = displayName.DisplayName, 
-                        html = await modelFormBuilderHelper.HtmlForModel(configModel, assembly) 
+                        html = await modelFormBuilderHelper.HtmlForModel(configModel, assembly, HttpContext) 
                     }
                 );
             }

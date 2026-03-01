@@ -4,24 +4,35 @@ using System.ComponentModel;
 using EdNexusData.Broker.Common.Lookup;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using EdNexusData.Broker.Core.Lookup;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace EdNexusData.Broker.Web.Helpers;
 
 public class ModelFormBuilderHelper
 {
     private readonly MappingLookupService mappingLookupService;
+    private readonly IAntiforgery antiforgery;
 
-    public ModelFormBuilderHelper(MappingLookupService mappingLookupService)
+    public ModelFormBuilderHelper(MappingLookupService mappingLookupService, IAntiforgery antiforgery)
     {
         this.mappingLookupService = mappingLookupService;
+        this.antiforgery = antiforgery;
     }
 
-    public async Task<string> HtmlForModel(IConfiguration model, string assemblyName)
+    public async Task<string> HtmlForModel(IConfiguration model, string assemblyName, Microsoft.AspNetCore.Http.HttpContext httpContent)
     {
+        var tokens = antiforgery.GetAndStoreTokens(httpContent);
+        if (tokens is null) throw new ArgumentNullException("Unable to generate CSRF tokens.");
+
+        // The actual token string you need to inject into your form
+        var tokenValue = tokens.RequestToken;
+        if (tokenValue is null) throw new ArgumentNullException("Unable to get request token.");
+        
         var formHTML = $"""
 <form method="post" action="/Settings/Configuration/{assemblyName}">
 <input type="hidden" name="ConnectorConfigurationType" value="{model.GetType().FullName}">
 <input type="hidden" name="ConnectorConfigurationTypeAssembly" value="{model.GetType().AssemblyQualifiedName}">
+<input type="hidden" name="{tokens.FormFieldName}" value="{tokenValue}" />
 """; // start form html output
 
         // Get type of incoming model
