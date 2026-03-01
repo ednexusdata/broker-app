@@ -70,6 +70,7 @@ public static class BrokerServiceCollection
         services.AddScoped<DbConnectionService>();
         services.AddScoped<MappingRecordValidatorService>();
         services.AddScoped<SettingsService>();
+        services.AddScoped<PayloadContentActionJobService>();
 
         // Wrappers
         services.AddSingleton<INowWrapper, NowWrapper>();
@@ -93,6 +94,7 @@ public static class BrokerServiceCollection
         services.AddScoped<EducationOrganizationContactService>();
         services.AddScoped<DbConnectionService>();
         services.AddScoped<SettingsService>();
+        services.AddScoped<PayloadContentActionJobService>();
         
         // Resolvers
         services.AddScoped<IConfigurationResolver, ConfigurationResolver>();

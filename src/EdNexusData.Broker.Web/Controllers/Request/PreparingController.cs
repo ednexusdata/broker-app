@@ -32,27 +32,24 @@ public class PreparingController : AuthenticatedController<RequestsController>
     private readonly ICurrentUser currentUser;
     private readonly INowWrapper nowWrapper;
     private readonly JobStatusService<PreparingController> jobStatusService;
-    private readonly IRepository<EducationOrganizationConnectorSettings> edOrgConnectorSettingsRepo;
-    private readonly ConnectorLoader _connectorLoader;
+    private readonly PayloadContentActionJobService payloadContentActionJobService;
 
     public PreparingController(
         IRepository<Request> requestRepository, 
         IRepository<PayloadContent> payloadContentRepository, 
         IRepository<PayloadContentAction> actionRepository,
         IRepository<Mapping> mappingRepository,
-        ConnectorLoader connectorLoader,
         JobService jobService,
         CurrentUserHelper currentUserHelper,
         EducationOrganizationContactService educationOrganizationContactService,
         ICurrentUser currentUser,
         INowWrapper nowWrapper,
         JobStatusService<PreparingController> jobStatusService,
-        IRepository<EducationOrganizationConnectorSettings> edOrgConnectorSettingsRepo)
+        PayloadContentActionJobService payloadContentActionJobService)
     {
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
         _actionRepository = actionRepository;
-        _connectorLoader = connectorLoader;
         _mappingRepository = mappingRepository;
         _actionRepository = actionRepository;
         _jobService = jobService;
@@ -61,7 +58,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
         this.currentUser = currentUser;
         this.nowWrapper = nowWrapper;
         this.jobStatusService = jobStatusService;
-        this.edOrgConnectorSettingsRepo = edOrgConnectorSettingsRepo;
+        this.payloadContentActionJobService = payloadContentActionJobService;
     }
 
     [Route("/Preparing/{id:guid}")]
@@ -109,55 +106,37 @@ public class PreparingController : AuthenticatedController<RequestsController>
                 }
 
                 // Determine payload content actions that can respond to this payload content
-                foreach (var contentPayloadAction in _connectorLoader.GetPayloadContentActions()!)
+                var respondingPayloadContentActionJobs = await payloadContentActionJobService.RespondsToNew(file, request.EducationOrganization!.ParentOrganization!);
+                if (respondingPayloadContentActionJobs is not null)
                 {
-                    var connectorNameForPayloadAction = contentPayloadAction.Assembly.GetName().Name;
-
-                    // If connector is enabled
-                    var enabledConnectors = await edOrgConnectorSettingsRepo.ListAsync(new EnabledConnectorsByEdOrgSpec(request.EducationOrganization!.ParentOrganizationId!.Value));
-                    if (enabledConnectors.Where(x => x.Connector == connectorNameForPayloadAction).Count() == 0)
-                    {
-                        continue;
-                    }
-                    
-                    // and if the connector has a transformer that responds to this payload content
-                    if (file.ContentType == "application/json" && file.JsonContent is not null)
-                    {
-                        var payloadContentObject = DataPayloadContentSerializer.Deseralize(file.JsonContent.ToJsonString()!);
-                        var payloadContentSchema = payloadContentObject.Schema;
-                    
-                        var transformerType = _connectorLoader.Transformers.Where(x => 
-                            x.Key == $"{contentPayloadAction.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}").ToDictionary();
-
-                        if (transformerType.Count > 0)
+                    // Loop through each and format
+                    foreach (var contentPayloadAction in respondingPayloadContentActionJobs)
+                    {                    
+                        var connectorType = contentPayloadAction.Assembly.GetExportedTypes().FirstOrDefault(p => p.IsAssignableTo(typeof(IConnector)));                    
+                        var displayNameType = connectorType?.GetCustomAttributes(false).FirstOrDefault(x => x.GetType() == typeof(DisplayNameAttribute));
+                        var displayName = "";
+                        if (displayNameType is not null)
                         {
-                            var connectorType = contentPayloadAction.Assembly.GetExportedTypes().Where(p => p.IsAssignableTo(typeof(IConnector))).FirstOrDefault();
-                            
-                            var displayNameType = connectorType?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault();
-                            var displayName = "";
-                            if (displayNameType is not null)
-                            {
-                                displayName = ((DisplayNameAttribute)displayNameType).DisplayName;
-                            }
-
-                            var contentPayloadActionDisplayNameType = contentPayloadAction?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault();
-                            var contentPayloadActionDisplayName = "";
-                            if (contentPayloadActionDisplayNameType is not null)
-                            {
-                                contentPayloadActionDisplayName = ((DisplayNameAttribute)contentPayloadActionDisplayNameType).DisplayName;
-                            }
-
-                            resolvedPayloadContentActions.Add(
-                                new SelectListItem() {
-                                    Text = $"{displayName} / {contentPayloadActionDisplayName}",
-                                    Value = contentPayloadAction?.FullName
-                                }
-                            );
+                            displayName = ((DisplayNameAttribute)displayNameType).DisplayName;
                         }
-                    }
-                }
 
-                resolvedPayloadContentActions = resolvedPayloadContentActions.OrderBy(x => x.Text).ToList();
+                        var contentPayloadActionDisplayNameType = contentPayloadAction?.GetCustomAttributes(false).FirstOrDefault(x => x.GetType() == typeof(DisplayNameAttribute));
+                        var contentPayloadActionDisplayName = "";
+                        if (contentPayloadActionDisplayNameType is not null)
+                        {
+                            contentPayloadActionDisplayName = ((DisplayNameAttribute)contentPayloadActionDisplayNameType).DisplayName;
+                        }
+
+                        resolvedPayloadContentActions.Add(
+                            new SelectListItem() {
+                                Text = $"{displayName} / {contentPayloadActionDisplayName}",
+                                Value = contentPayloadAction?.FullName
+                            }
+                        );
+                    }
+
+                    resolvedPayloadContentActions = resolvedPayloadContentActions.OrderBy(x => x.Text).ToList();
+                }
 
                 resolvedPayloadContentActions.Insert(0, 
                     new SelectListItem() {
