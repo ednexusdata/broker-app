@@ -9,6 +9,7 @@ using EdNexusData.Broker.Common.Jobs;
 using Newtonsoft.Json;
 using System.Text.Json.Nodes;
 using EdNexusData.Broker.Core.Serializers;
+using EdNexusData.Broker.Common;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -121,7 +122,7 @@ public class PrepareMappingJob : IJob
         // dynamic payloadContentObject = Convert.ChangeType(jsondeserialize, payloadContentSchemaType)!;
 
         // Find appropriate transformer
-        var transformerType = _connectorLoader.Transformers.Where(x => x.Key == $"{payloadContentActionType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}").FirstOrDefault().Value;
+        var transformerType = _connectorLoader.Transformers.FirstOrDefault(x => x.Key == $"{payloadContentActionType.Assembly.GetName().Name}::{payloadContentSchema?.Schema}::{payloadContentSchema?.SchemaVersion}").Value;
         if (transformerType is null)
         { 
             await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, action, PayloadContentActionStatus.Error, "Error");
@@ -171,30 +172,64 @@ public class PrepareMappingJob : IJob
 
             var awaitedResult = await result;
 
-            recordType = awaitedResult.GetType();
-
             var transformResult = awaitedResult;
             dynamic awaitedTransformedResult = transformResult;
 
-            if (transformMethodInfo is not null)
+            Type transformedResultType = transformResult.GetType();
+            //if (transformedResultType.IsGenericType && transformedResultType.GetGenericTypeDefinition() == typeof(List<>))
+            var genericListTransformerType = transformerType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IListTransformer<,>));
+            if (genericListTransformerType)
             {
-                transformResult = transformMethodInfo!.Invoke(transformer, new object[] {
-                    correctRecordType,
-                    payloadContent.Request.RequestManifest?.Student?.ToCommon()!,
-                    payloadContent.Request.EducationOrganization?.ToCommon()!,
-                    payloadContent.Request.ResponseManifest?.ToCommon()!,
-                    jobStatusService,
-                    payloadContentObject.AdditionalContents!
-                });
+                foreach(var awaitedTransformedResultRow in awaitedTransformedResult)
+                {
+                    if (transformMethodInfo is not null)
+                    {
+                        dynamic transformResultRows = transformMethodInfo!.Invoke(transformer, new object[] {
+                            awaitedTransformedResultRow,
+                            payloadContent.Request.RequestManifest?.Student?.ToCommon()!,
+                            payloadContent.Request.EducationOrganization?.ToCommon()!,
+                            payloadContent.Request.ResponseManifest?.ToCommon()!,
+                            jobStatusService,
+                            payloadContentObject.AdditionalContents!
+                        });
 
-                awaitedTransformedResult = await transformResult;
+                        awaitedTransformedResult = await transformResultRows;
 
-                awaitedTransformedResult.BrokerId = awaitedResult.BrokerId;
+                        awaitedTransformedResult.BrokerId = awaitedTransformedResult.BrokerId;
+
+                        recordType = awaitedTransformedResultRow.GetType();
+
+                        records.Add(awaitedTransformedResultRow);
+                        transformedRecords.Add(awaitedTransformedResult);
+                    }
+                }
+            }
+            else
+            {
+                if (transformMethodInfo is not null)
+                {
+                    transformResult = transformMethodInfo!.Invoke(transformer, new object[] {
+                        correctRecordType,
+                        payloadContent.Request.RequestManifest?.Student?.ToCommon()!,
+                        payloadContent.Request.EducationOrganization?.ToCommon()!,
+                        payloadContent.Request.ResponseManifest?.ToCommon()!,
+                        jobStatusService,
+                        payloadContentObject.AdditionalContents!
+                    });
+
+                    awaitedTransformedResult = await transformResult;
+
+                    recordType = awaitedTransformedResult.GetType();
+
+                    awaitedTransformedResult.BrokerId = awaitedResult.BrokerId;
+                }
+
+                // Save each
+                records.Add(awaitedResult);
+                transformedRecords.Add(awaitedTransformedResult);
             }
 
-            // Save each
-            records.Add(awaitedResult);
-            transformedRecords.Add(awaitedTransformedResult);
+
         }
 
         List<dynamic>? outRecords = null;
