@@ -17,7 +17,7 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -552,6 +552,8 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedBy");
+
                     b.ToTable("Users", (string)null);
                 });
 
@@ -585,6 +587,8 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedBy");
+
                     b.HasIndex("UserId");
 
                     b.HasIndex("EducationOrganizationId", "UserId")
@@ -605,6 +609,10 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                         .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatedBy");
+
+                    b.Property<Guid?>("EducationOrganizationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset?>("FinishDateTime")
@@ -650,6 +658,10 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("EducationOrganizationId");
 
                     b.HasIndex("InitiatedUserId");
 
@@ -948,7 +960,9 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
                             b1.ToTable("EducationOrganizationPayloadSettings");
 
-                            b1.ToJson("IncomingPayloadSettings");
+                            b1
+                                .ToJson("IncomingPayloadSettings")
+                                .HasColumnType("nvarchar(max)");
 
                             b1.WithOwner()
                                 .HasForeignKey("EducationOrganizationPayloadSettingsId");
@@ -988,7 +1002,9 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
                             b1.ToTable("EducationOrganizationPayloadSettings");
 
-                            b1.ToJson("OutgoingPayloadSettings");
+                            b1
+                                .ToJson("OutgoingPayloadSettings")
+                                .HasColumnType("nvarchar(max)");
 
                             b1.WithOwner()
                                 .HasForeignKey("EducationOrganizationPayloadSettingsId");
@@ -1102,15 +1118,27 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
             modelBuilder.Entity("EdNexusData.Broker.Core.User", b =>
                 {
+                    b.HasOne("EdNexusData.Broker.Core.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser<System.Guid>", null)
                         .WithOne()
                         .HasForeignKey("EdNexusData.Broker.Core.User", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CreatedByUser");
                 });
 
             modelBuilder.Entity("EdNexusData.Broker.Core.UserRole", b =>
                 {
+                    b.HasOne("EdNexusData.Broker.Core.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
                         .WithMany()
                         .HasForeignKey("EducationOrganizationId");
@@ -1119,6 +1147,8 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId");
 
+                    b.Navigation("CreatedByUser");
+
                     b.Navigation("EducationOrganization");
 
                     b.Navigation("User");
@@ -1126,9 +1156,22 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
             modelBuilder.Entity("EdNexusData.Broker.Core.Worker.Job", b =>
                 {
+                    b.HasOne("EdNexusData.Broker.Core.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
+                        .WithMany()
+                        .HasForeignKey("EducationOrganizationId");
+
                     b.HasOne("EdNexusData.Broker.Core.User", "InitiatedUser")
                         .WithMany()
                         .HasForeignKey("InitiatedUserId");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("EducationOrganization");
 
                     b.Navigation("InitiatedUser");
                 });

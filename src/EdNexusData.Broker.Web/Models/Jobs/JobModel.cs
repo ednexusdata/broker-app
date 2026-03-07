@@ -32,12 +32,21 @@ public class JobModel : SearchableModelWithPagination
         return sortExpression;
     }
 
-    public List<Expression<Func<Job, bool>>> BuildSearchExpressions()
+    public List<Expression<Func<Job, bool>>> BuildSearchExpressions(Guid? currentUserId)
     {
         var searchExpressions = new List<Expression<Func<Job, bool>>>
         {
             //request => request.RequestProcessUserId.HasValue
         };
+
+        if (currentUserId is not null)
+        {
+            searchExpressions.Add(
+                x => x.CreatedBy != null && 
+                     x.InitiatedUserId != null && 
+                     (x.CreatedBy == currentUserId || x.InitiatedUserId == currentUserId)
+            );
+        }
 
         if (!string.IsNullOrWhiteSpace(SearchBy))
         {
