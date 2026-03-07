@@ -18,7 +18,8 @@ public class JobService
         Type? referenceType = null, 
         Guid? referenceGuid = null, 
         Guid? initiatedUser = null, 
-        JsonDocument? jobParameters = null
+        JsonDocument? jobParameters = null,
+        Guid? educationOrganizationId = null
     )
     {
         if (jobType.GetInterface(nameof(IJob)) == null)
@@ -34,6 +35,7 @@ public class JobService
             ReferenceType = (referenceType is not null) ? referenceType.FullName : null,
             ReferenceGuid = (referenceGuid is not null) ? referenceGuid : null,
             InitiatedUserId = (initiatedUser is not null) ? initiatedUser : null,
+            EducationOrganizationId = (educationOrganizationId is not null) ? educationOrganizationId : null,
             JobStatus = JobStatus.Waiting
         };
 

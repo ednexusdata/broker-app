@@ -76,7 +76,7 @@ public class MappingController : AuthenticatedController<MappingController>
         Guard.Against.Null(action.PayloadContent, "action.PayloadContent", "Invalid payload content to action");
 
         // Prepare mapping
-        var createdJob = await _jobService.CreateJobAsync(typeof(PrepareMappingJob), typeof(PayloadContentAction), action.Id, currentUserHelper.CurrentUserId()!.Value);
+        var createdJob = await _jobService.CreateJobAsync(typeof(PrepareMappingJob), typeof(PayloadContentAction), action.Id, currentUserHelper.CurrentUserId()!.Value, null, action.PayloadContent.Request?.EducationOrganizationId);
 
         action.PayloadContentActionStatus = PayloadContentActionStatus.WaitingToPrepare;
         await _actionRepository.UpdateAsync(action);
@@ -201,11 +201,18 @@ public class MappingController : AuthenticatedController<MappingController>
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Import(Guid id, Guid MappingId)
     {
-        var payloadContentAction = await _actionRepository.GetByIdAsync(id);
+        var payloadContentAction = await _actionRepository.FirstOrDefaultAsync(new PayloadContentActionWithPayloadContent(id));
         Guard.Against.Null(payloadContentAction, "payloadContentAction", "Unable to find payload content action.");
 
         // Create job
-        var createdJob = await _jobService.CreateJobAsync(typeof(PayloadContentActionJob), typeof(PayloadContentAction), payloadContentAction.Id, currentUserHelper.CurrentUserId()!.Value);
+        var createdJob = await _jobService.CreateJobAsync(
+            typeof(PayloadContentActionJob), 
+            typeof(PayloadContentAction), 
+            payloadContentAction.Id, 
+            currentUserHelper.CurrentUserId()!.Value, 
+            null, 
+            payloadContentAction.PayloadContent?.Request?.EducationOrganizationId
+        );
 
         payloadContentAction.PayloadContentActionStatus = PayloadContentActionStatus.WaitingToImport;
         await _actionRepository.UpdateAsync(payloadContentAction);

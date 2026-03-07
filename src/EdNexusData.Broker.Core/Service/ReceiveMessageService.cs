@@ -135,7 +135,7 @@ public class ReceiveMessageService
             },
             ModelType = typeof(RecordsRequestViewModel).FullName
         };
-        var emailjob = await jobService.CreateJobAsync(typeof(SendEmailJob), typeof(Request), request?.Id, null, JsonSerializer.SerializeToDocument(emailData));
+        var emailjob = await jobService.CreateJobAsync(typeof(SendEmailJob), typeof(Request), request?.Id, null, JsonSerializer.SerializeToDocument(emailData), request?.EducationOrganizationId);
 
         return returnMessageContent;
     }
@@ -207,7 +207,7 @@ public class ReceiveMessageService
             },
             ModelType = typeof(RecordsSentViewModel).FullName
         };
-        var emailjob = await jobService.CreateJobAsync(typeof(SendEmailJob), typeof(Request), request?.Id, null, JsonSerializer.SerializeToDocument(emailData));
+        var emailjob = await jobService.CreateJobAsync(typeof(SendEmailJob), typeof(Request), request?.Id, null, JsonSerializer.SerializeToDocument(emailData), request?.EducationOrganizationId);
 
         return returnMessageContent;
     }

@@ -18,6 +18,14 @@ internal class JobSharedConfiguration : IEntityTypeConfiguration<Job>
         // Json Fields
         builder.Property(i => i.JobParameters).HasJsonConversion();
 
-        //SharedEntityTypeConfiguration<Job>.ConfigureCreatedUser(builder);
+        // Force mapping for Job only
+        // Explicitly map it to a column
+        builder.Property(j => j.CreatedBy).HasColumnName("CreatedBy"); 
+
+        // // If it is a Foreign Key, define the relationship
+        builder.HasOne(j => j.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(j => j.CreatedBy)
+            .IsRequired(false);
     }
 }

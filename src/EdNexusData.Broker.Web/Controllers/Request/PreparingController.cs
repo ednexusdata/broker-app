@@ -227,7 +227,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     typeof(Request), 
                     payloadContent.RequestId, 
                     currentUserHelper.CurrentUserId()!.Value, 
-                    JsonSerializer.SerializeToDocument(jobData)
+                    JsonSerializer.SerializeToDocument(jobData),
+                    request.EducationOrganizationId
                 );
 
                 await jobStatusService.UpdateRequestStatus(request, RequestStatus.InProgress, "Started setting payload content actions");

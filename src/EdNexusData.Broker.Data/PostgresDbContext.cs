@@ -16,6 +16,9 @@ public class PostgresDbContext : BrokerDbContext
         options.UseNpgsql(Configuration.GetConnectionString("PostgreSqlConnection"));
         options.EnableSensitiveDataLogging();
         //options.UseLoggerFactory(LoggerFactory.Create(builder => { builder.AddConsole(); }));
+        //options.LogTo(Console.WriteLine); // Log to Console
+        // OR
+        //options.LogTo(message => System.Diagnostics.Debug.WriteLine(message)); // Log to Debug window
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

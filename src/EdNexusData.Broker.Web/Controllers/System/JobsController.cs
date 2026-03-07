@@ -58,13 +58,7 @@ public class JobsController : AuthenticatedController<JobsController>
             ViewBag.JobId = jobId;
         }
 
-        var searchExpressions = new List<Expression<Func<Job, bool>>>
-        {
-            // Must restrict to currently logged in user
-            x => x.CreatedBy == currentUserHelper.CurrentUserId()!.Value || x.InitiatedUserId == currentUserHelper.CurrentUserId()!.Value
-        };
-
-        searchExpressions = model.BuildSearchExpressions();
+        var searchExpressions = model.BuildSearchExpressions(currentUserHelper.CurrentUserId()!.Value);
 
         var sortExpression = model.BuildSortExpression();
 
@@ -121,21 +115,14 @@ public class JobsController : AuthenticatedController<JobsController>
 
         var searchExpressions = new List<Expression<Func<Job, bool>>>();
 
+        searchExpressions = model.BuildSearchExpressions(null);
+
         if (!focusHelper.IsEdOrgAllFocus()) {
             var focusedEdOrgs = await focusHelper.GetFocusedEdOrgs();
             searchExpressions.Add(
-                u => u.CreatedByUser != null && u.CreatedByUser.UserRoles != null && u.CreatedByUser.UserRoles.Any(
-                    r => focusedEdOrgs.Contains(r.EducationOrganization!)
-                )
-            );
-            searchExpressions.Add(
-                u => u.InitiatedUser != null && u.InitiatedUser.UserRoles != null && u.InitiatedUser.UserRoles.Any(
-                    r => focusedEdOrgs.Contains(r.EducationOrganization!)
-                )
+                u => focusedEdOrgs.Contains(u.EducationOrganization!)
             );
         }
-
-        searchExpressions = model.BuildSearchExpressions();
 
         var sortExpression = model.BuildSortExpression();
 
@@ -192,18 +179,25 @@ public class JobsController : AuthenticatedController<JobsController>
 
         var jobType = AppDomain.CurrentDomain.GetAssemblies()
                             .SelectMany(s => s.GetExportedTypes())
-                            .Where(p => p.FullName == job.JobType!).FirstOrDefault();
+                            .FirstOrDefault(p => p.FullName == job.JobType!);
 
         Type? referenceType = null; 
         if (job.ReferenceType is not null)
         {
             referenceType = AppDomain.CurrentDomain.GetAssemblies()
                             .SelectMany(s => s.GetExportedTypes())
-                            .Where(p => p.FullName == job.ReferenceType!).FirstOrDefault();
+                            .FirstOrDefault(p => p.FullName == job.ReferenceType!);
         }
         
         // Create job
-        var createdJob = await jobService.CreateJobAsync(jobType!, referenceType, job.ReferenceGuid, job.InitiatedUserId, job.JobParameters);
+        var createdJob = await jobService.CreateJobAsync(
+            jobType!, 
+            referenceType, 
+            job.ReferenceGuid, 
+            job.InitiatedUserId, 
+            job.JobParameters,
+            job.EducationOrganizationId
+        );
 
         TempData[VoiceTone.Positive] = $"Restarting job ({job.Id}).";
         return RedirectToAction(nameof(Index), new { JobId = createdJob.Id });
@@ -211,7 +205,7 @@ public class JobsController : AuthenticatedController<JobsController>
 
     public async Task<IActionResult> View(Guid id)
     {
-        var job = await jobsRepository.GetByIdAsync(id);
+        var job = await jobsRepository.FirstOrDefaultAsync(new JobsWithEdOrgById(id));
 
         return View(job);
     }

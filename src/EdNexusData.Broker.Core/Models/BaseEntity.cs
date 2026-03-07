@@ -2,7 +2,6 @@
 // Author: Makoa Jacobsen, makoa@makoajacobsen.com
 
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 
 namespace EdNexusData.Broker.Core;
 
@@ -16,7 +15,7 @@ public abstract class BaseEntity
     public Guid? CreatedBy { get; set; }
     public Guid? UpdatedBy { get; set; }
 
-    // [NotMapped]
+    [NotMapped]
     public User? CreatedByUser { get; set; }
 
     [NotMapped]

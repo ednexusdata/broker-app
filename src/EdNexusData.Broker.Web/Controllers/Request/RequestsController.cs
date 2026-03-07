@@ -181,9 +181,9 @@ public class RequestsController : AuthenticatedController<RequestsController>
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SendMessage(Guid id, string messageText)
     {
-        var message = await messageService.CreateChatMessage(id, messageText, currentUser.AuthenticatedUserId()!.Value);
+        var (message, request) = await messageService.CreateChatMessage(id, messageText, currentUser.AuthenticatedUserId()!.Value);
         
-        var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Message), message.Id, currentUser.AuthenticatedUserId());
+        var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Message), message.Id, currentUser.AuthenticatedUserId(), null, request?.EducationOrganizationId);
         
         TempData[VoiceTone.Positive] = $"Message submitted to send.";
         return RedirectToAction(nameof(View), "Requests", new { id = id, jobId = job.Id });
@@ -211,7 +211,8 @@ public class RequestsController : AuthenticatedController<RequestsController>
             typeof(Request), 
             id, 
             currentUserHelper.CurrentUserId()!.Value, 
-            JsonSerializer.SerializeToDocument(jobData)
+            JsonSerializer.SerializeToDocument(jobData),
+            request?.EducationOrganizationId
         );
 
         TempData[VoiceTone.Positive] = $"Request reopened.";
@@ -241,7 +242,8 @@ public class RequestsController : AuthenticatedController<RequestsController>
             typeof(Request), 
             id, 
             currentUserHelper.CurrentUserId()!.Value, 
-            JsonSerializer.SerializeToDocument(jobData)
+            JsonSerializer.SerializeToDocument(jobData),
+            request?.EducationOrganizationId
         );
 
         TempData[VoiceTone.Positive] = $"Request finished.";
@@ -270,7 +272,8 @@ public class RequestsController : AuthenticatedController<RequestsController>
             typeof(Request), 
             id, 
             currentUserHelper.CurrentUserId()!.Value, 
-            JsonSerializer.SerializeToDocument(jobData)
+            JsonSerializer.SerializeToDocument(jobData),
+            request?.EducationOrganizationId
         );
 
         TempData[VoiceTone.Positive] = $"Request closed.";

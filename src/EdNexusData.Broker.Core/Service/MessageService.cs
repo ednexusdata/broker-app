@@ -276,7 +276,7 @@ public class MessageService
         };
     }
 
-    public async Task<Message> CreateChatMessage(Guid id, string messageText, Guid fromUserId)
+    public async Task<(Message, Request)> CreateChatMessage(Guid id, string messageText, Guid fromUserId)
     {
         var request = await _requestRepo.GetByIdAsync(id);
         _ = request ?? throw new NullReferenceException($"Unable to find request {id}");
@@ -302,7 +302,7 @@ public class MessageService
 
         await _messageRepo.AddAsync(message);
 
-        return message;
+        return (message, request);
     }
 
     public async Task<Message> MarkSent(Message message, HttpResponseMessage httpResponseMessage, RequestStatus? requestStatus, Job? job = null)

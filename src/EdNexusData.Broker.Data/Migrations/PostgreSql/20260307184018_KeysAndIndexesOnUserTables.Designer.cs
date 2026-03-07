@@ -3,6 +3,7 @@ using System;
 using EdNexusData.Broker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 {
     [DbContext(typeof(PostgresDbContext))]
-    partial class PostgresDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260307184018_KeysAndIndexesOnUserTables")]
+    partial class KeysAndIndexesOnUserTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -604,9 +607,6 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                         .HasColumnType("uuid")
                         .HasColumnName("CreatedBy");
 
-                    b.Property<Guid?>("EducationOrganizationId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTimeOffset?>("FinishDateTime")
                         .HasColumnType("timestamp with time zone");
 
@@ -652,8 +652,6 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedBy");
-
-                    b.HasIndex("EducationOrganizationId");
 
                     b.HasIndex("InitiatedUserId");
 
@@ -1145,17 +1143,11 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                         .HasForeignKey("CreatedBy")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
-                        .WithMany()
-                        .HasForeignKey("EducationOrganizationId");
-
                     b.HasOne("EdNexusData.Broker.Core.User", "InitiatedUser")
                         .WithMany()
                         .HasForeignKey("InitiatedUserId");
 
                     b.Navigation("CreatedByUser");
-
-                    b.Navigation("EducationOrganization");
 
                     b.Navigation("InitiatedUser");
                 });

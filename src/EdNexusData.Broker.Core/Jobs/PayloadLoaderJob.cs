@@ -219,7 +219,7 @@ public class PayloadLoaderJob : IJob
             EducationOrganizationId = request?.EducationOrganizationId,
             MessageType = typeof(StatusUpdateMessage).FullName
         };
-        var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), request?.Id, jobInstance.InitiatedUserId, JsonSerializer.SerializeToDocument(jobData));
+        var job = await jobService.CreateJobAsync(typeof(SendMessageJob), typeof(Request), request?.Id, jobInstance.InitiatedUserId, JsonSerializer.SerializeToDocument(jobData), request?.EducationOrganizationId);
     }
 
     private async Task<PayloadContent?> AddDocument(DocumentPayloadContent document, Request request, Job jobInstance, PayloadJob jobToExecute)
