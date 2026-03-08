@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Http.Features;
 using EdNexusData.Broker.Web.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using EdNexusData.Broker.Web.Middleware;
+using EdNexusData.Broker.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +55,8 @@ if (Directory.Exists(configFolder))
 builder.Services.AddHttpContextAccessor();
 //builder.Services.AddScoped<ScopedHttpContext>();
 builder.Services.AddMediatR(typeof(Program).Assembly);
+
+builder.Services.AddSignalR();
 
 switch (builder.Configuration["DatabaseProvider"])
 {
