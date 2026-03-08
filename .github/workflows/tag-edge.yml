@@ -1,4 +1,8 @@
 name: Broker Edge Release Checker
+permissions:
+  contents: write
+  packages: write
+  id-token: write
 
 on:
   schedule:

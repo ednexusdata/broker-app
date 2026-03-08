@@ -1,4 +1,8 @@
 name: Publish EdNexusData.Broker.Worker
+permissions:
+  contents: write
+  packages: write
+  id-token: write
 
 run-name: "Publish EdNexusData.Broker.Worker"
 
