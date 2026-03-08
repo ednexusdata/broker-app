@@ -13,6 +13,7 @@ using EdNexusData.Broker.Core.Interfaces;
 using System.IO.Compression;
 using System.Text;
 using System.Xml;
+using EdNexusData.Broker.Core.Reports;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -330,5 +331,12 @@ public class RequestsController : AuthenticatedController<RequestsController>
         }
 
         return Ok("No files found");
+    }
+
+    public IActionResult GenerateProofOfRequest(Guid id)
+    {
+        var proof = ProofOfRequestReport.Generate(id);
+
+        return File(proof, "application/pdf");
     }
 }

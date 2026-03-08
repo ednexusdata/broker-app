@@ -14,7 +14,6 @@ using EdNexusData.Broker.Web.Extensions.Routes;
 using EdNexusData.Broker.Web.Services.PayloadContents;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 using Microsoft.Extensions.Caching.Memory;
-using EdNexusData.Broker.Web.Exceptions;
 using Microsoft.AspNetCore.DataProtection;
 using EdNexusData.Broker.Core.Worker;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +26,6 @@ using Microsoft.AspNetCore.Http.Features;
 using EdNexusData.Broker.Web.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using EdNexusData.Broker.Web.Middleware;
-using EdNexusData.Broker.Web.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -255,6 +253,7 @@ else
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
 builder.Services.AddBrokerServices();
+builder.Services.AddReportingServices();
 builder.Services.AddConnectorServicesToDefaultProvider();
 
 // Add and configure the in-memory cache
