@@ -182,6 +182,7 @@ public class LoginController : AuthenticatedController<LoginController>
     }
 
     [HttpPost]
+    [IgnoreAntiforgeryToken]
     [Route("login/externallogin")]
     public IActionResult ExternalLogin(string provider, string? returnUrl)
     {
