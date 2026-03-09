@@ -13,6 +13,7 @@ using EdNexusData.Broker.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 using EdNexusData.Broker.Core.Emails;
 using QuestPDF.Infrastructure;
+using EdNexusData.Broker.Core.Reports;
 
 namespace EdNexusData.Broker.Core;
 
@@ -79,6 +80,9 @@ public static class BrokerServiceCollection
 
         // Wrappers
         services.AddSingleton<INowWrapper, NowWrapper>();
+
+        // Reports
+        services.AddScoped<ProofOfRequestReport>();
 
         return services;
     }
