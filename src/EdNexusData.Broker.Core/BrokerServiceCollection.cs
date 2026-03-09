@@ -12,17 +12,23 @@ using EdNexusData.Broker.Common.Connector;
 using EdNexusData.Broker.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 using EdNexusData.Broker.Core.Emails;
+using QuestPDF.Infrastructure;
+using EdNexusData.Broker.Core.Reports;
 
 namespace EdNexusData.Broker.Core;
 
 public static class BrokerServiceCollection
 {
-    /*
-    public static IServiceCollection AddConfig(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddReportingServices(this IServiceCollection services, LicenseType questPdfLicense = LicenseType.Community)
     {
+        // Set the license here using the value passed by the consumer
+        QuestPDF.Settings.License = questPdfLicense;
+
+        // Register your internal PDF services
+        // services.AddScoped<IPdfGenerator, MyInternalGenerator>();
+        
         return services;
     }
-    */
 
     public static IServiceCollection AddBrokerServices(this IServiceCollection services)
     {
@@ -74,6 +80,9 @@ public static class BrokerServiceCollection
 
         // Wrappers
         services.AddSingleton<INowWrapper, NowWrapper>();
+
+        // Reports
+        services.AddScoped<ProofOfRequestReport>();
 
         return services;
     }

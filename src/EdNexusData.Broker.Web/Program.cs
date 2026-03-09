@@ -253,6 +253,7 @@ else
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
 builder.Services.AddBrokerServices();
+builder.Services.AddReportingServices();
 builder.Services.AddConnectorServicesToDefaultProvider();
 
 // Add and configure the in-memory cache

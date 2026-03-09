@@ -13,6 +13,7 @@ using EdNexusData.Broker.Core.Interfaces;
 using System.IO.Compression;
 using System.Text;
 using System.Xml;
+using EdNexusData.Broker.Core.Reports;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -30,6 +31,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
     private readonly MessageService messageService;
     private readonly RequestService requestService;
     private readonly EducationOrganizationContactService educationOrganizationContactService;
+    private readonly ProofOfRequestReport proofOfRequestReport;
 
     // Constructor
     public RequestsController(IReadRepository<Request> requestRepository,
@@ -41,7 +43,8 @@ public class RequestsController : AuthenticatedController<RequestsController>
         INowWrapper nowWrapper,
         MessageService messageService,
         RequestService requestService,
-        EducationOrganizationContactService educationOrganizationContactService)
+        EducationOrganizationContactService educationOrganizationContactService,
+        ProofOfRequestReport proofOfRequestReport)
     {
         _requestRepository = requestRepository;
         _messageRepository = messageRepository;
@@ -53,6 +56,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
         this.messageService = messageService;
         this.requestService = requestService;
         this.educationOrganizationContactService = educationOrganizationContactService;
+        this.proofOfRequestReport = proofOfRequestReport;
     }
 
     public async Task<IActionResult> View(Guid id, Guid? jobId)
@@ -330,5 +334,15 @@ public class RequestsController : AuthenticatedController<RequestsController>
         }
 
         return Ok("No files found");
+    }
+
+    public async Task<IActionResult> GenerateProofOfRequest(Guid id)
+    {
+        var proof = await proofOfRequestReport.Generate(
+            id,
+            currentUserHelper.CurrentUser()!, 
+            currentUserHelper.ResolvedCurrentUserTimeZone());
+
+        return File(proof, "application/pdf");
     }
 }
