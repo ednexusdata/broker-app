@@ -299,7 +299,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
 
         await _payloadContentRepository.DeleteAsync(payloadContentToDelete);
 
-        return RedirectToAction(nameof(Update), new { requestId = requestId });
+        return RedirectToAction(nameof(Update), new { id = requestId });
     }
 
     [HttpDelete]
@@ -323,7 +323,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
             }
         }
         
-        return RedirectToAction(nameof(Update), new { requestId = requestId });
+        return RedirectToAction(nameof(Update), new { id = requestId });
     }
 
     [HttpPut]
