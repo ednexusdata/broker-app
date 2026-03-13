@@ -23,6 +23,7 @@ public class DirectoryLookupServiceTests
             var txtRecords = new List<string>()
             {
                 "v=edubroker1; a=broker.ednexusdata.org",
+                "v=edubroker1; a=broker.ednexusdata.org;",
                 "v=edubroker1; env=prod; a=broker.ednexusdata.org",
                 "v=edubroker1; env=production; a=broker.ednexusdata.org",
                 "v=edubroker1; env=train; a=brokertrain.ednexusdata.org"
