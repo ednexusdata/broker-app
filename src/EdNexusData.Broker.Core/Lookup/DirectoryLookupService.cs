@@ -92,9 +92,8 @@ public class DirectoryLookupService
                 var brokerTXTRecord = txtRecords
                     .SelectMany(x => x.Text)
                     .Select(name => name.ToLower())
-                    .Where(x => x.IndexOf("v=edubroker", StringComparison.OrdinalIgnoreCase) >= 0 
-                        && x.IndexOf($"env={environment.EnvironmentName.ToLower()}", StringComparison.OrdinalIgnoreCase) >= 0)
-                    .FirstOrDefault();
+                    .FirstOrDefault(x => x.IndexOf("v=edubroker", StringComparison.OrdinalIgnoreCase) >= 0 
+                        && x.IndexOf($"env={environment.EnvironmentName.ToLower()}", StringComparison.OrdinalIgnoreCase) >= 0);
 
                 if (brokerTXTRecord is not null)
                 {
@@ -114,9 +113,8 @@ public class DirectoryLookupService
                     .SelectMany(x => x.Text)
                     .Select(name => name.ToLower())
                     .Where(x => x.IndexOf("v=edubroker", StringComparison.OrdinalIgnoreCase) >= 0)
-                    .Where(x => x.IndexOf($"env={environment.EnvironmentName.ToLower()}", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                x.IndexOf($"env=", StringComparison.OrdinalIgnoreCase) <= 0)
-                    .FirstOrDefault();
+                    .FirstOrDefault(x => x.IndexOf($"env={environment.EnvironmentName.ToLower()}", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                x.IndexOf($"env=", StringComparison.OrdinalIgnoreCase) <= 0);
 
                 if (brokerTXTRecord is not null)
                 {
@@ -138,7 +136,10 @@ public class DirectoryLookupService
         foreach(var part in parts)
         {
             string[] val = part.Trim().Split("=");
-            values.Add(val[0].Trim(), val[1].Trim());
+            if (val.Length > 1) // Required for a TXT record with an ending ; that generates three parts
+            {
+                values.Add(val[0].Trim(), val[1].Trim());
+            }
         }
 
         return new BrokerDnsTxtRecord()
