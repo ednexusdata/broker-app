@@ -136,18 +136,18 @@ public class MappingViewModel
 
     public static object InputName(string mappingType, int counter, string propertyName)
     {
-        var mappingTyped = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => p.FullName == mappingType).FirstOrDefault()!;
+        // var mappingTyped = AppDomain.CurrentDomain.GetAssemblies()
+        //     .SelectMany(s => s.GetTypes())
+        //     .FirstOrDefault(p => p.FullName == mappingType)!;
 
         return $"mapping[{counter}].{propertyName}"; // .{mappingTyped!.Name}
     }
     
     public static object InputId(string mappingType, int counter, string propertyName)
     {
-        var mappingTyped = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => p.FullName == mappingType).FirstOrDefault()!;
+        // var mappingTyped = AppDomain.CurrentDomain.GetAssemblies()
+        //     .SelectMany(s => s.GetTypes())
+        //     .FirstOrDefault(p => p.FullName == mappingType)!;
         
         return $"mapping_{counter}_{propertyName}"; // .{mappingTyped!.Name}
     }

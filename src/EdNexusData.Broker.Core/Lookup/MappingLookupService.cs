@@ -80,7 +80,7 @@ public class MappingLookupService
         }
         
         // Set the selected value
-        var selected = selectList.Where(x => x.Value == value).FirstOrDefault();
+        var selected = selectList.FirstOrDefault(x => x.Value == value);
 
         return selected?.Text ?? null;
     }

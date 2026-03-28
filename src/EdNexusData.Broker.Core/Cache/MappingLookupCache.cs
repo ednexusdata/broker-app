@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Frozen;
 
 namespace EdNexusData.Broker.Core.Cache;
 
@@ -9,6 +10,8 @@ public class MappingLookupCache
 
     private Dictionary<string, List<SelectListItem>> _cachedLookups = new Dictionary<string, List<SelectListItem>>();
 
+    private FrozenDictionary<string, List<SelectListItem>>? frozenCachedLookups;
+
     public MappingLookupCache(ILogger<MappingLookupCache> logger)
     {
         _logger = logger;
@@ -17,9 +20,10 @@ public class MappingLookupCache
     public List<SelectListItem>? Get(string cacheKey)
     {
         _logger.LogInformation($"Checking for key in mapping lookup cache: {cacheKey}");
-        if (_cachedLookups.ContainsKey(cacheKey))  
+        if (frozenCachedLookups is not null && frozenCachedLookups.TryGetValue(cacheKey, out var value))  
         {  
-            return Clone(_cachedLookups[cacheKey]);
+            _logger.LogInformation($"Cache key found for: {cacheKey}");
+            return Clone(value);
         }  
         return null;
     }
@@ -28,6 +32,7 @@ public class MappingLookupCache
     {
         _logger.LogInformation($"Added key in mapping lookup cache: {cacheKey}");
         _cachedLookups.Add(cacheKey, Clone(selectList));
+        frozenCachedLookups = _cachedLookups.ToFrozenDictionary();
     }
 
     private List<SelectListItem> Clone(List<SelectListItem> original)
