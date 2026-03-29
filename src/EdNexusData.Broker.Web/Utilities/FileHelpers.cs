@@ -210,7 +210,7 @@ public static class FileHelpers
             {
                 if (file.Length > 0)
                 {
-                    var fileBlob = await ProcessFormFile<BufferedSingleFileUploadDb>(file, modelState, [".png", ".txt", ".pdf", ".json"], 2097152);
+                    var fileBlob = await ProcessFormFile<BufferedSingleFileUploadDb>(file, modelState, [".jpg", ".jpeg", ".png", ".txt", ".pdf", ".json"], 2097152);
 
                     if (fileBlob.Length > 0)
                     {
