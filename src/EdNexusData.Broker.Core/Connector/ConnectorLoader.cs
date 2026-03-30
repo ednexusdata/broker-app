@@ -7,6 +7,7 @@ using EdNexusData.Broker.Common.Connector;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.Mappings;
 using EdNexusData.Broker.Common.PayloadContentActions;
+using EdNexusData.Broker.Common.PayloadContents;
 using EdNexusData.Broker.Common.Payloads;
 using Microsoft.Extensions.Logging;
 
@@ -267,14 +268,21 @@ public class ConnectorLoader
                     if (processTransformerTypes is not null)
                     {
                         foreach(var processTypeTransformer in processTransformerTypes.ProcessesTransformerTypes)
-                        {
-                            var mapsFroms = processTypeTransformer.GetCustomAttributes(false).Where(x => x.GetType() == typeof(MapsFromAttribute)).ToList();
-                            foreach(var mapsFrom in mapsFroms)
+                        {   
+                            if (processTypeTransformer == typeof(DocumentPayloadContent))
                             {
-                                var convMapsFrom = (MapsFromAttribute)mapsFrom;
-                                PayloadContentActionByTransformer.Add($"{processTypeTransformer.Assembly.GetName().Name}::{convMapsFrom.Schema}::{convMapsFrom.SchemaVersion}", payloadContentAction);
-
-                                _logger.LogInformation($"Transformer mapped: {processTypeTransformer.Assembly.GetName().Name}::{convMapsFrom.Schema}::{convMapsFrom.SchemaVersion} can be processed by {payloadContentAction.AssemblyQualifiedName}");
+                                PayloadContentActionByTransformer.Add($"{payloadContentAction.Assembly.GetName().Name}::{processTypeTransformer.Assembly.GetName().Name}.{processTypeTransformer.Name}", payloadContentAction);
+                                _logger.LogInformation($"Transformer mapped: {payloadContentAction.Assembly.GetName().Name}::{processTypeTransformer.Assembly.GetName().Name}.{processTypeTransformer.Name} can be processed by {payloadContentAction.AssemblyQualifiedName}");
+                            }
+                            else
+                            {
+                                var mapsFroms = processTypeTransformer.GetCustomAttributes(false).Where(x => x.GetType() == typeof(MapsFromAttribute)).ToList();
+                                foreach(var mapsFrom in mapsFroms)
+                                {
+                                    var convMapsFrom = (MapsFromAttribute)mapsFrom;
+                                    PayloadContentActionByTransformer.Add($"{processTypeTransformer.Assembly.GetName().Name}::{convMapsFrom.Schema}::{convMapsFrom.SchemaVersion}", payloadContentAction);
+                                    _logger.LogInformation($"Transformer mapped: {processTypeTransformer.Assembly.GetName().Name}::{convMapsFrom.Schema}::{convMapsFrom.SchemaVersion} can be processed by {payloadContentAction.AssemblyQualifiedName}");
+                            }
                             }
                         }
                     }

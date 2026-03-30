@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Text.Json;
 using DnsClient.Internal;
 using EdNexusData.Broker.Common.Connector;
+using EdNexusData.Broker.Common.PayloadContents;
 using EdNexusData.Broker.Core.Serializers;
 using EdNexusData.Broker.Core.Specifications;
 using Microsoft.Extensions.Logging;
@@ -74,7 +75,7 @@ public class PayloadContentActionJobService
             return null;
         }
 
-        if (payloadContent.ContentType == "application/json" && payloadContent.JsonContent is not null)
+        if (payloadContent.ContentType == "application/json" && payloadContent.JsonContent is not null)   
         {
             var payloadContentObject = DataPayloadContentSerializer.Deseralize(payloadContent.JsonContent.ToJsonString()!);
             var payloadContentSchema = payloadContentObject.Schema;
@@ -98,7 +99,24 @@ public class PayloadContentActionJobService
                 }
             }
         }
-        
+        // TODO: Respond to XML
+        else
+        {
+            foreach (var enabledConnector in enabledConnectors!)
+            {
+                // Find transformer that responds
+                var transformerTypes = connectorLoader.PayloadContentActionByTransformer.Where(x => 
+                    x.Key == $"{enabledConnector.Connector}::{typeof(DocumentPayloadContent).Assembly.GetName().Name}.{typeof(DocumentPayloadContent).Name}").Select(x => x.Value).ToList();
+
+                if (transformerTypes.Count > 0)
+                {
+                    foreach(var transfomer in transformerTypes)
+                    {
+                        resolvedPayloadContentActions.AddRange(transfomer);
+                    }
+                }
+            }
+        }
         return resolvedPayloadContentActions;
     }
 }
