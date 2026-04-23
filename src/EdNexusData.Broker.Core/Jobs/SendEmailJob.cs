@@ -14,19 +14,19 @@ namespace EdNexusData.Broker.Core.Jobs;
 [Description("Send Email")]
 public class SendEmailJob : IJob
 {
-    private readonly ILogger<SendEmailJob> logger;
+    private readonly JobStatusService<SendEmailJob> jobStatusService;
     private IFluentEmail fluentEmail;
     private readonly ITemplateRenderer templateRenderer;
     private readonly Environment environment;
 
   public SendEmailJob(
-        ILogger<SendEmailJob> logger,
+        JobStatusService<SendEmailJob> jobStatusService,
         IFluentEmail fluentEmail,
         ITemplateRenderer templateRenderer,
         Environment environment
     )
     {
-        this.logger = logger;
+        this.jobStatusService = jobStatusService;
         this.fluentEmail = fluentEmail;
         this.templateRenderer = templateRenderer;
         this.environment = environment;
@@ -60,12 +60,12 @@ public class SendEmailJob : IJob
         {
             foreach (var error in email.ErrorMessages)
             {
-                logger.LogWarning(error);
+                await jobStatusService.UpdateJobStatus(jobRecord, Common.Jobs.JobStatus.Failed, error);
             }
         }
         else
         {
-            logger.LogInformation($"Email sent successfully with message ID: {email.MessageId}");
+            await jobStatusService.UpdateJobStatus(jobRecord, Common.Jobs.JobStatus.Running, $"Email sent successfully with message ID: {email.MessageId}");
         }
     }
 }
