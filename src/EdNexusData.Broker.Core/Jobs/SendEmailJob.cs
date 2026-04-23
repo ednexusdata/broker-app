@@ -63,5 +63,9 @@ public class SendEmailJob : IJob
                 logger.LogWarning(error);
             }
         }
+        else
+        {
+            logger.LogInformation($"Email sent successfully with message ID: {email.MessageId}");
+        }
     }
 }
