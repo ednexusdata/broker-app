@@ -1,27 +1,32 @@
 using System.ComponentModel;
 using System.Text.Json;
+using DnsClient.Internal;
 using EdNexusData.Broker.Core.Emails;
 using EdNexusData.Broker.Core.Emails.ViewModels;
 using EdNexusData.Broker.Core.Models;
 using EdNexusData.Broker.Core.Worker;
 using FluentEmail.Core;
 using FluentEmail.Core.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
 [Description("Send Email")]
 public class SendEmailJob : IJob
 {
+    private readonly ILogger<SendEmailJob> logger;
     private IFluentEmail fluentEmail;
     private readonly ITemplateRenderer templateRenderer;
     private readonly Environment environment;
 
   public SendEmailJob(
+        ILogger<SendEmailJob> logger,
         IFluentEmail fluentEmail,
         ITemplateRenderer templateRenderer,
         Environment environment
     )
     {
+        this.logger = logger;
         this.fluentEmail = fluentEmail;
         this.templateRenderer = templateRenderer;
         this.environment = environment;
@@ -43,12 +48,20 @@ public class SendEmailJob : IJob
 
         var logoPath = Path.Combine(AppContext.BaseDirectory, "Resources", "Final-Education-Nexus-ICON-png.png");
 
-        await fluentEmail
+        var email = await fluentEmail
             .To(jobDetail.To)
             .ReplyTo(jobDetail.ReplyTo)
             .Subject(jobDetail.Subject)
             .Attach(new FluentEmail.Core.Models.Attachment() { Data = System.IO.File.OpenRead(logoPath), Filename = "brokerlogo.png", ContentId = "brokerlogo", ContentType = "image/png", IsInline = true })
             .UsingTemplateFromEmbedded($"EdNexusData.Broker.Core.Emails.{jobDetail.TemplateName}.cshtml", model, typeof(EmailRoot).Assembly)
             .SendAsync();
+
+        if (!email.Successful)
+        {
+            foreach (var error in email.ErrorMessages)
+            {
+                logger.LogWarning(error);
+            }
+        }
     }
 }

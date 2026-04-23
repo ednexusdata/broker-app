@@ -28,6 +28,7 @@
     <PackageReference Include="DnsClient" Version="1.7.0" />
     <PackageReference Include="jcamp.FluentEmail.MailKit" Version="3.8.0" />
     <PackageReference Include="jcamp.FluentEmail.Razor" Version="3.8.0" />
+    <PackageReference Include="MailKit" Version="4.16.0" />
     <PackageReference Include="MimeKit" Version="4.*" />
     <PackageReference Include="Ardalis.Specification" Version="6.1.0" />
     <PackageReference Include="Ardalis.GuardClauses" Version="4.0.1" />
