@@ -229,6 +229,65 @@
         });
       }
     }));
+
+    Alpine.data('dependentLookup', () => ({
+      tomSelectInstance: null,
+      _config: null,
+
+      init($refs) {
+        const el = this.$el;
+        this._config = {
+          lookupTypeName: el.dataset.lookupType,
+          mappingId: el.dataset.mappingId,
+          currentValue: el.dataset.currentValue,
+          dependsOn: JSON.parse(el.dataset.dependsOn),
+          propertyCounter: parseInt(el.dataset.propertyCounter, 10),
+          selectRefId: el.dataset.selectRef
+        };
+
+        const selectEl = $refs[this._config.selectRefId];
+        this.tomSelectInstance = new TomSelect(selectEl);
+
+        // Attach change listeners to every parent select in the same detail row
+        const detailRow = el.closest('[data-detailRow]');
+        if (detailRow) {
+          this._config.dependsOn.forEach(dep => {
+            const parentName = `mapping[${this._config.propertyCounter}].${dep}`;
+            const parentEl = detailRow.querySelector(`select[name="${parentName}"]`);
+            if (parentEl) {
+              parentEl.addEventListener('change', () => this._reloadOptions(detailRow));
+            }
+          });
+        }
+      },
+
+      async _reloadOptions(detailRow) {
+        const deps = {};
+        this._config.dependsOn.forEach(dep => {
+          const parentName = `mapping[${this._config.propertyCounter}].${dep}`;
+          const parentEl = detailRow.querySelector(`select[name="${parentName}"]`);
+          if (parentEl) deps[dep] = parentEl.value;
+        });
+
+        try {
+          const url = `/Mapping/LookupOptions?mappingId=${this._config.mappingId}`
+            + `&lookupTypeName=${encodeURIComponent(this._config.lookupTypeName)}`
+            + `&currentValue=`
+            + `&dependentValues=${encodeURIComponent(JSON.stringify(deps))}`;
+
+          const resp = await fetch(url);
+          const options = await resp.json();
+
+          if (this.tomSelectInstance) {
+            this.tomSelectInstance.clearOptions();
+            this.tomSelectInstance.addOptions([{ value: '', text: '' }, ...options]);
+            this.tomSelectInstance.clear();
+          }
+        } catch (error) {
+          console.error('Error reloading dependent lookup options:', error);
+        }
+      }
+    }));
   });
 </script>
 }

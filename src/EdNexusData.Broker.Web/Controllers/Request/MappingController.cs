@@ -1,11 +1,14 @@
 using System.Reflection;
+using System.Text.Json;
 using Ardalis.GuardClauses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.ViewModels.Mappings;
 using EdNexusData.Broker.Core.Lookup;
+using EdNexusData.Broker.Common.Lookup;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
 using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Web.Helpers;
@@ -257,5 +260,36 @@ public class MappingController : AuthenticatedController<MappingController>
         detailViewModel.SetProperties(mapping.MappingType!);
 
         return View(detailViewModel);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> LookupOptions(Guid mappingId, string lookupTypeName, string? currentValue, string? dependentValues)
+    {
+        var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(mappingId));
+        if (mapping is null) return NotFound();
+
+        configurationResolver.CurrentRecordEducationOrganizationId = mapping.PayloadContentAction!.PayloadContent?.Request?.EducationOrganization?.ParentOrganizationId;
+
+        var mappingType = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(s => s.GetTypes())
+            .FirstOrDefault(p => p.FullName == mapping.MappingType);
+
+        if (mappingType is null) return NotFound();
+
+        var property = mappingType.GetProperties()
+            .FirstOrDefault(p => p.GetCustomAttribute<LookupAttribute>()?.LookupType.Name == lookupTypeName);
+
+        if (property is null) return NotFound();
+
+        var lookupAttr = property.GetCustomAttribute<LookupAttribute>()!;
+
+        var deps = string.IsNullOrEmpty(dependentValues)
+            ? new Dictionary<string, string?>()
+            : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string?>>(dependentValues) ?? new Dictionary<string, string?>();
+
+        var mappingLookupService = _serviceProvider.GetRequiredService<MappingLookupService>();
+        var options = await mappingLookupService.SelectAsync(lookupAttr, currentValue, deps);
+
+        return Json(options.Select(x => new { value = x.Value, text = x.Text }));
     }
 }
