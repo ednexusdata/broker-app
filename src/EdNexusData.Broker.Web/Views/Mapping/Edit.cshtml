@@ -234,7 +234,7 @@
       tomSelectInstance: null,
       _config: null,
 
-      init($refs) {
+      init() {
         const el = this.$el;
         this._config = {
           lookupTypeName: el.dataset.lookupType,
@@ -245,7 +245,7 @@
           selectRefId: el.dataset.selectRef
         };
 
-        const selectEl = $refs[this._config.selectRefId];
+        const selectEl = this.$refs[this._config.selectRefId];
         this.tomSelectInstance = new TomSelect(selectEl);
 
         // Attach change listeners to every parent select in the same detail row
