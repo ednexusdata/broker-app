@@ -34,7 +34,7 @@
             var deps = new Dictionary<string, string?>();
             foreach (var depName in mappedColLookupAttr.DependsOn)
             {
-              var depProp = Model.EditingProperties!.FirstOrDefault(p => p.Name == depName);
+              var depProp = Model.Properties!.FirstOrDefault(p => p.Name == depName);
               if (depProp != null)
                 deps[depName] = Model.InitialValueForProperty(depProp)?.ToString();
             }
@@ -69,7 +69,7 @@
             var initialDeps = new Dictionary<string, string?>();
             foreach (var depName in dependsOn)
             {
-              var depProp = Model.EditingProperties!.FirstOrDefault(p => p.Name == depName);
+              var depProp = Model.Properties!.FirstOrDefault(p => p.Name == depName);
               if (depProp != null)
                 initialDeps[depName] = Model.MappedValueForProperty(depProp)?.ToString();
             }

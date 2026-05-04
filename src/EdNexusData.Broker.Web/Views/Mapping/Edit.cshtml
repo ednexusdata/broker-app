@@ -118,7 +118,7 @@
                             var deps = new Dictionary<string, string?>();
                             foreach (var depName in tableRowLookupAttr.DependsOn)
                             {
-                              var depProp = Model.EditingProperties!.FirstOrDefault(p => p.Name == depName);
+                              var depProp = Model.Properties!.FirstOrDefault(p => p.Name == depName);
                               if (depProp != null)
                                 deps[depName] = MappingViewModel.ValueForProperty(record, depProp)?.ToString();
                             }
