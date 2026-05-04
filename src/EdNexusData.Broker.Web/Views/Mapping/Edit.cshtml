@@ -106,11 +106,30 @@
                       @foreach(var property in Model.EditingProperties!)
                       {
                       <div class="flex-1 px-4 py-2 text-sm text-center @textColor border-r border-b border-gray-200" x-on:click="loadDetail">
-                         @if(MappingDetailViewModel.GetPropertyLookupType(property) != null)
+                         @{
+                          var tableRowLookupAttr = MappingDetailViewModel.GetPropertyLookupType(property);
+                       }
+                       @if(tableRowLookupAttr != null)
                         {
-                          var result = await Model.MappingLookupService!.GetAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @MappingViewModel.ValueForProperty(record, property)?.ToString());
+                          var tableRowValue = MappingViewModel.ValueForProperty(record, property)?.ToString();
+                          string? result;
+                          if (tableRowLookupAttr.DependsOn != null && tableRowLookupAttr.DependsOn.Length > 0)
+                          {
+                            var deps = new Dictionary<string, string?>();
+                            foreach (var depName in tableRowLookupAttr.DependsOn)
+                            {
+                              var depProp = Model.Properties!.FirstOrDefault(p => p.Name == depName);
+                              if (depProp != null)
+                                deps[depName] = MappingViewModel.ValueForProperty(record, depProp)?.ToString();
+                            }
+                            result = await Model.MappingLookupService!.GetAsync(tableRowLookupAttr, tableRowValue, deps);
+                          }
+                          else
+                          {
+                            result = await Model.MappingLookupService!.GetAsync(tableRowLookupAttr, tableRowValue);
+                          }
                           <span>@result</span>
-                          @if(!string.IsNullOrEmpty(MappingViewModel.ValueForProperty(record, property)?.ToString()) && MappingViewModel.ValueForProperty(record, property)?.ToString() != result) { <span>(@MappingViewModel.ValueForProperty(record, property))</span> }
+                          @if(!string.IsNullOrEmpty(tableRowValue) && tableRowValue != result) { <span>(@tableRowValue)</span> }
                         }
                         else
                         {
@@ -227,6 +246,65 @@
         radios.forEach(radio => {
           radio.checked = true;
         });
+      }
+    }));
+
+    Alpine.data('dependentLookup', () => ({
+      tomSelectInstance: null,
+      _config: null,
+
+      init() {
+        const el = this.$el;
+        this._config = {
+          lookupTypeName: el.dataset.lookupType,
+          mappingId: el.dataset.mappingId,
+          currentValue: el.dataset.currentValue,
+          dependsOn: JSON.parse(el.dataset.dependsOn),
+          propertyCounter: parseInt(el.dataset.propertyCounter, 10),
+          selectRefId: el.dataset.selectRef
+        };
+
+        const selectEl = this.$refs[this._config.selectRefId];
+        this.tomSelectInstance = new TomSelect(selectEl);
+
+        // Attach change listeners to every parent select in the same detail row
+        const detailRow = el.closest('[data-detailRow]');
+        if (detailRow) {
+          this._config.dependsOn.forEach(dep => {
+            const parentName = `mapping[${this._config.propertyCounter}].${dep}`;
+            const parentEl = detailRow.querySelector(`select[name="${parentName}"]`);
+            if (parentEl) {
+              parentEl.addEventListener('change', () => this._reloadOptions(detailRow));
+            }
+          });
+        }
+      },
+
+      async _reloadOptions(detailRow) {
+        const deps = {};
+        this._config.dependsOn.forEach(dep => {
+          const parentName = `mapping[${this._config.propertyCounter}].${dep}`;
+          const parentEl = detailRow.querySelector(`select[name="${parentName}"]`);
+          if (parentEl) deps[dep] = parentEl.value;
+        });
+
+        try {
+          const url = `/Mapping/LookupOptions?mappingId=${this._config.mappingId}`
+            + `&lookupTypeName=${encodeURIComponent(this._config.lookupTypeName)}`
+            + `&currentValue=`
+            + `&dependentValues=${encodeURIComponent(JSON.stringify(deps))}`;
+
+          const resp = await fetch(url);
+          const options = await resp.json();
+
+          if (this.tomSelectInstance) {
+            this.tomSelectInstance.clearOptions();
+            this.tomSelectInstance.addOptions([{ value: '', text: '' }, ...options]);
+            this.tomSelectInstance.clear();
+          }
+        } catch (error) {
+          console.error('Error reloading dependent lookup options:', error);
+        }
       }
     }));
   });

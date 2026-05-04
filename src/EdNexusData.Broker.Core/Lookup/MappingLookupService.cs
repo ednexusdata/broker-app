@@ -58,6 +58,62 @@ public class MappingLookupService
         return selectList;
     }
 
+    public async Task<List<SelectListItem>> SelectAsync(LookupAttribute lookupAttribute, string? value, Dictionary<string, string?> parameters, string? keyprefix = null)
+    {
+        if (keyprefix is null)
+        {
+            keyprefix = (await focusEducationOrganizationResolver.Resolve()).Id.ToString();
+        }
+
+        var paramSuffix = string.Join("::", parameters.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}={kv.Value}"));
+        var cacheKey = $"{keyprefix}::{lookupAttribute.LookupType.Name}::{paramSuffix}";
+
+        var selectList = _mappingLookupCache.Get(cacheKey);
+
+        if (selectList is null)
+        {
+            _logger.LogInformation($"{cacheKey} not found in cache. Fetching...");
+            var mappingLookupObj = _mappingLookupResolver.Resolve(lookupAttribute.LookupType);
+            selectList = await mappingLookupObj.SelectListAsync(parameters);
+            _mappingLookupCache.Add(cacheKey, selectList);
+        }
+
+        if (value is not null)
+        {
+            var selected = selectList.FindIndex(x => x.Value == value);
+            if (selected > -1)
+            {
+                selectList[selected].Selected = true;
+            }
+        }
+
+        return selectList;
+    }
+
+    public async Task<string?> GetAsync(LookupAttribute lookupAttribute, string? value, Dictionary<string, string?> parameters, string? keyprefix = null)
+    {
+        if (keyprefix is null)
+        {
+            keyprefix = (await focusEducationOrganizationResolver.Resolve()).Id.ToString();
+        }
+
+        var paramSuffix = string.Join("::", parameters.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}={kv.Value}"));
+        var cacheKey = $"{keyprefix}::{lookupAttribute.LookupType.Name}::{paramSuffix}";
+
+        var selectList = _mappingLookupCache.Get(cacheKey);
+
+        if (selectList is null)
+        {
+            _logger.LogInformation($"{cacheKey} not found in cache. Fetching...");
+            var mappingLookupObj = _mappingLookupResolver.Resolve(lookupAttribute.LookupType);
+            selectList = await mappingLookupObj.SelectListAsync(parameters);
+            _mappingLookupCache.Add(cacheKey, selectList);
+        }
+
+        var selected = selectList.FirstOrDefault(x => x.Value == value);
+        return selected?.Text ?? null;
+    }
+
     public async Task<string?> GetAsync(LookupAttribute lookupAttribute, string? value, string? keyprefix = null)
     {
         if (keyprefix is null)

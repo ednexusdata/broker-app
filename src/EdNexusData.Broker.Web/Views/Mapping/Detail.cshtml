@@ -22,11 +22,30 @@
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.GetPropertyDisplayName(property)?.DisplayName @if(Model.PropertyRequired(property)) { <span>*</span> }</div>
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.OriginalValueForProperty(property)</div>
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">
-        @if(MappingDetailViewModel.GetPropertyLookupType(property) != null)
+        @{
+          var mappedColLookupAttr = MappingDetailViewModel.GetPropertyLookupType(property);
+        }
+        @if(mappedColLookupAttr != null)
         {
-          var result = await Model.MappingLookupService!.GetAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @Model.InitialValueForProperty(property)?.ToString());
+          var initialValue = Model.InitialValueForProperty(property)?.ToString();
+          string? result;
+          if (mappedColLookupAttr.DependsOn != null && mappedColLookupAttr.DependsOn.Length > 0)
+          {
+            var deps = new Dictionary<string, string?>();
+            foreach (var depName in mappedColLookupAttr.DependsOn)
+            {
+              var depProp = Model.Properties!.FirstOrDefault(p => p.Name == depName);
+              if (depProp != null)
+                deps[depName] = Model.InitialValueForProperty(depProp)?.ToString();
+            }
+            result = await Model.MappingLookupService!.GetAsync(mappedColLookupAttr, initialValue, deps);
+          }
+          else
+          {
+            result = await Model.MappingLookupService!.GetAsync(mappedColLookupAttr, initialValue);
+          }
           <span>@result</span>
-          @if(!string.IsNullOrEmpty(Model.InitialValueForProperty(property)?.ToString()) && Model.InitialValueForProperty(property)?.ToString() != result) { <span>(@Model.InitialValueForProperty(property))</span> }
+          @if(!string.IsNullOrEmpty(initialValue) && initialValue != result) { <span>(@initialValue)</span> }
         }
         else
         {
@@ -34,14 +53,49 @@
         }
         </div>
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">
-        @if(MappingDetailViewModel.GetPropertyLookupType(property) != null)
+        @{
+          var lookupAttr = MappingDetailViewModel.GetPropertyLookupType(property);
+        }
+        @if(lookupAttr != null)
         {
-          var optionValues = await Model.MappingLookupService!.SelectAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @Model.MappedValueForProperty(property)?.ToString());
-          optionValues.Insert(0, new SelectListItem() { Text = "", Value = "" });
-          <div x-init="tomSelectInstance = new TomSelect($refs.@MappingViewModel.InputId(Model.Mapping!.MappingType!, Model.PropertyCounter, property));">
-          <select x-ref="@MappingViewModel.InputId(Model.Mapping!.MappingType!, Model.PropertyCounter, property)" asp-items="optionValues" name="@MappingViewModel.InputName(Model.Mapping!.MappingType!, Model.PropertyCounter, property)" class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm">
-          </select>
-          </div>
+          var dependsOn = lookupAttr.DependsOn;
+          var selectRefId = MappingViewModel.InputId(Model.Mapping!.MappingType!, Model.PropertyCounter, property).ToString()!;
+          var inputName = MappingViewModel.InputName(Model.Mapping!.MappingType!, Model.PropertyCounter, property).ToString()!;
+          var currentMappedValue = Model.MappedValueForProperty(property)?.ToString() ?? "";
+
+          if (dependsOn != null && dependsOn.Length > 0)
+          {
+            // Build initial options using current destination values for the parent properties
+            var initialDeps = new Dictionary<string, string?>();
+            foreach (var depName in dependsOn)
+            {
+              var depProp = Model.Properties!.FirstOrDefault(p => p.Name == depName);
+              if (depProp != null)
+                initialDeps[depName] = Model.MappedValueForProperty(depProp)?.ToString();
+            }
+            var optionValues = await Model.MappingLookupService!.SelectAsync(lookupAttr, currentMappedValue, initialDeps);
+            optionValues.Insert(0, new SelectListItem() { Text = "", Value = "" });
+            var depsJson = System.Text.Json.JsonSerializer.Serialize(dependsOn);
+            <div x-data="dependentLookup"
+                 data-lookup-type="@lookupAttr.LookupType.Name"
+                 data-mapping-id="@Model.Mapping!.Id"
+                 data-current-value="@currentMappedValue"
+                 data-depends-on='@depsJson'
+                 data-property-counter="@Model.PropertyCounter"
+                 data-select-ref="@selectRefId">
+            <select x-ref="@selectRefId" asp-items="optionValues" name="@inputName" class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm">
+            </select>
+            </div>
+          }
+          else
+          {
+            var optionValues = await Model.MappingLookupService!.SelectAsync(lookupAttr, currentMappedValue);
+            optionValues.Insert(0, new SelectListItem() { Text = "", Value = "" });
+            <div x-init="tomSelectInstance = new TomSelect($refs.@selectRefId);">
+            <select x-ref="@selectRefId" asp-items="optionValues" name="@inputName" class="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 text-sm">
+            </select>
+            </div>
+          }
         }
         else
         {
