@@ -22,11 +22,30 @@
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.GetPropertyDisplayName(property)?.DisplayName @if(Model.PropertyRequired(property)) { <span>*</span> }</div>
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">@Model.OriginalValueForProperty(property)</div>
       <div class="flex-1 px-2 py-2 text-sm text-center align-middle text-gray-600 border-r border-gray-200">
-        @if(MappingDetailViewModel.GetPropertyLookupType(property) != null)
+        @{
+          var mappedColLookupAttr = MappingDetailViewModel.GetPropertyLookupType(property);
+        }
+        @if(mappedColLookupAttr != null)
         {
-          var result = await Model.MappingLookupService!.GetAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @Model.InitialValueForProperty(property)?.ToString());
+          var initialValue = Model.InitialValueForProperty(property)?.ToString();
+          string? result;
+          if (mappedColLookupAttr.DependsOn != null && mappedColLookupAttr.DependsOn.Length > 0)
+          {
+            var deps = new Dictionary<string, string?>();
+            foreach (var depName in mappedColLookupAttr.DependsOn)
+            {
+              var depProp = Model.EditingProperties!.FirstOrDefault(p => p.Name == depName);
+              if (depProp != null)
+                deps[depName] = Model.InitialValueForProperty(depProp)?.ToString();
+            }
+            result = await Model.MappingLookupService!.GetAsync(mappedColLookupAttr, initialValue, deps);
+          }
+          else
+          {
+            result = await Model.MappingLookupService!.GetAsync(mappedColLookupAttr, initialValue);
+          }
           <span>@result</span>
-          @if(!string.IsNullOrEmpty(Model.InitialValueForProperty(property)?.ToString()) && Model.InitialValueForProperty(property)?.ToString() != result) { <span>(@Model.InitialValueForProperty(property))</span> }
+          @if(!string.IsNullOrEmpty(initialValue) && initialValue != result) { <span>(@initialValue)</span> }
         }
         else
         {

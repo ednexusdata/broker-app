@@ -106,11 +106,30 @@
                       @foreach(var property in Model.EditingProperties!)
                       {
                       <div class="flex-1 px-4 py-2 text-sm text-center @textColor border-r border-b border-gray-200" x-on:click="loadDetail">
-                         @if(MappingDetailViewModel.GetPropertyLookupType(property) != null)
+                         @{
+                          var tableRowLookupAttr = MappingDetailViewModel.GetPropertyLookupType(property);
+                       }
+                       @if(tableRowLookupAttr != null)
                         {
-                          var result = await Model.MappingLookupService!.GetAsync(MappingDetailViewModel.GetPropertyLookupType(property)!, @MappingViewModel.ValueForProperty(record, property)?.ToString());
+                          var tableRowValue = MappingViewModel.ValueForProperty(record, property)?.ToString();
+                          string? result;
+                          if (tableRowLookupAttr.DependsOn != null && tableRowLookupAttr.DependsOn.Length > 0)
+                          {
+                            var deps = new Dictionary<string, string?>();
+                            foreach (var depName in tableRowLookupAttr.DependsOn)
+                            {
+                              var depProp = Model.EditingProperties!.FirstOrDefault(p => p.Name == depName);
+                              if (depProp != null)
+                                deps[depName] = MappingViewModel.ValueForProperty(record, depProp)?.ToString();
+                            }
+                            result = await Model.MappingLookupService!.GetAsync(tableRowLookupAttr, tableRowValue, deps);
+                          }
+                          else
+                          {
+                            result = await Model.MappingLookupService!.GetAsync(tableRowLookupAttr, tableRowValue);
+                          }
                           <span>@result</span>
-                          @if(!string.IsNullOrEmpty(MappingViewModel.ValueForProperty(record, property)?.ToString()) && MappingViewModel.ValueForProperty(record, property)?.ToString() != result) { <span>(@MappingViewModel.ValueForProperty(record, property))</span> }
+                          @if(!string.IsNullOrEmpty(tableRowValue) && tableRowValue != result) { <span>(@tableRowValue)</span> }
                         }
                         else
                         {
