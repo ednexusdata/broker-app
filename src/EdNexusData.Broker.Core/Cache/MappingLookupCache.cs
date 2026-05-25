@@ -19,10 +19,10 @@ public class MappingLookupCache
 
     public List<SelectListItem>? Get(string cacheKey)
     {
-        _logger.LogInformation($"Checking for key in mapping lookup cache: {cacheKey}");
+        _logger.LogDebug($"Checking for key in mapping lookup cache: {cacheKey}");
         if (frozenCachedLookups is not null && frozenCachedLookups.TryGetValue(cacheKey, out var value))  
         {  
-            _logger.LogInformation($"Cache key found for: {cacheKey}");
+            _logger.LogDebug($"Cache key found for: {cacheKey}");
             return Clone(value);
         }  
         return null;
@@ -30,7 +30,7 @@ public class MappingLookupCache
 
     public void Add(string cacheKey, List<SelectListItem> selectList)
     {
-        _logger.LogInformation($"Added key in mapping lookup cache: {cacheKey}");
+        _logger.LogDebug($"Added key in mapping lookup cache: {cacheKey}");
         _cachedLookups.Add(cacheKey, Clone(selectList));
         frozenCachedLookups = _cachedLookups.ToFrozenDictionary();
     }
