@@ -65,12 +65,12 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         if (specification.CacheEnabled && _cache is not null)
         {
             string key = $"{specification.CacheKey}-FirstOrDefaultAsync";
-            _logger.LogInformation($"Checking cache for {key}");
+            _logger.LogDebug($"Checking cache for {key}");
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
                 UpdateLatestCachedValue();
-                _logger.LogInformation($"Fetching source data for {key}");
+                _logger.LogDebug($"Fetching source data for {key}");
                 return _sourceRepository.FirstOrDefaultAsync(specification, cancellationToken);
             })!;
         }
@@ -82,12 +82,12 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         if (specification.CacheEnabled)
         {
             string key = $"{specification.CacheKey}-FirstOrDefaultAsync";
-            _logger.LogInformation($"Checking cache for {key}");
+            _logger.LogDebug($"Checking cache for {key}");
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
                 UpdateLatestCachedValue();
-                _logger.LogInformation($"Fetching source data for {key}");
+                _logger.LogDebug($"Fetching source data for {key}");
                 return _sourceRepository.FirstOrDefaultAsync(specification, cancellationToken);
             })!;
         }
@@ -97,12 +97,12 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
     public Task<T?> GetByIdAsync<TId>(TId id, CancellationToken cancellationToken = default) where TId : notnull
     {
         string key = $"{typeof(T).Name}-{id}";
-        _logger.LogInformation("Checking cache for " + key);
+        _logger.LogDebug("Checking cache for " + key);
         return _cache.GetOrCreate(key, entry =>
         {
             entry.SetOptions(_cacheOptions);
             UpdateLatestCachedValue();
-            _logger.LogInformation("Fetching source data for " + key);
+            _logger.LogDebug("Fetching source data for " + key);
             return _sourceRepository.GetByIdAsync(id, cancellationToken);
         })!;
     }
@@ -129,13 +129,13 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
     public async Task<List<T>> ListAsync(CancellationToken cancellationToken = default)
     {
         string key = $"{typeof(T).Name}-List";
-        _logger.LogInformation($"Checking cache for {key}");
+        _logger.LogDebug($"Checking cache for {key}");
 
         return await _cache.GetOrCreate(key, async entry =>
         {
             entry.SetOptions(_cacheOptions);
             UpdateLatestCachedValue();
-            _logger.LogInformation($"Fetching source data for {key}");
+            _logger.LogDebug($"Fetching source data for {key}");
             return await _sourceRepository.ListAsync(cancellationToken);
         })!;
     }
@@ -146,12 +146,12 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         if (specification.CacheEnabled)
         {
         string key = $"{specification.CacheKey}-ListAsync";
-        _logger.LogInformation($"Checking cache for {key}");
+        _logger.LogDebug($"Checking cache for {key}");
         return _cache.GetOrCreate(key, entry =>
         {
             entry.SetOptions(_cacheOptions);
             UpdateLatestCachedValue();
-            _logger.LogInformation($"Fetching source data for {key}");
+            _logger.LogDebug($"Fetching source data for {key}");
             return _sourceRepository.ListAsync(specification, cancellationToken);
         })!;
         }
@@ -164,12 +164,12 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         if (specification.CacheEnabled)
         {
         string key = $"{specification.CacheKey}-ListAsync";
-        _logger.LogInformation($"Checking cache for {key}");
+        _logger.LogDebug($"Checking cache for {key}");
         return _cache.GetOrCreate(key, entry =>
         {
             entry.SetOptions(_cacheOptions);
             UpdateLatestCachedValue();
-            _logger.LogInformation($"Fetching source data for {key}");
+            _logger.LogDebug($"Fetching source data for {key}");
             return _sourceRepository.ListAsync(specification, cancellationToken);
         })!;
         }
@@ -186,12 +186,12 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         if (specification.CacheEnabled && _cache is not null)
         {
             string key = $"{specification.CacheKey}-SingleOrDefaultAsync";
-            _logger.LogInformation($"Checking cache for {key}");
+            _logger.LogDebug($"Checking cache for {key}");
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
                 UpdateLatestCachedValue();
-                _logger.LogInformation($"Fetching source data for {key}");
+                _logger.LogDebug($"Fetching source data for {key}");
                 return _sourceRepository.SingleOrDefaultAsync(specification, cancellationToken);
             })!;
         }
@@ -203,12 +203,12 @@ public class CachedRepository<T> : IReadRepository<T> where T : BaseEntity, IAgg
         if (specification.CacheEnabled)
         {
             string key = $"{specification.CacheKey}-SingleOrDefaultAsync";
-            _logger.LogInformation($"Checking cache for {key}");
+            _logger.LogDebug($"Checking cache for {key}");
             return _cache.GetOrCreate(key, entry =>
             {
                 entry.SetOptions(_cacheOptions);
                 UpdateLatestCachedValue();
-                _logger.LogInformation($"Fetching source data for {key}");
+                _logger.LogDebug($"Fetching source data for {key}");
                 return _sourceRepository.SingleOrDefaultAsync(specification, cancellationToken);
             })!;
         }
