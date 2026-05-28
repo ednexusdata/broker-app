@@ -39,7 +39,7 @@ public class MappingLookupService
             _logger.LogInformation($"{keyprefix}::{lookupAttribute.LookupType.Name} not found in cache. Fetching...");
             // Resolve lookup to call
             var mappingLookupObj = _mappingLookupResolver.Resolve(lookupAttribute.LookupType);
-            selectList = await mappingLookupObj.SelectListAsync();
+            selectList = await mappingLookupObj.SelectListAsync(null);
 
             // Cache the value
             _mappingLookupCache.Add($"{keyprefix}::{lookupAttribute.LookupType.Name}", selectList);
@@ -74,7 +74,7 @@ public class MappingLookupService
         {
             _logger.LogInformation($"{cacheKey} not found in cache. Fetching...");
             var mappingLookupObj = _mappingLookupResolver.Resolve(lookupAttribute.LookupType);
-            selectList = await mappingLookupObj.SelectListAsync(parameters);
+            selectList = await mappingLookupObj.SelectListAsync(parameters, null);
             _mappingLookupCache.Add(cacheKey, selectList);
         }
 
@@ -106,7 +106,7 @@ public class MappingLookupService
         {
             _logger.LogInformation($"{cacheKey} not found in cache. Fetching...");
             var mappingLookupObj = _mappingLookupResolver.Resolve(lookupAttribute.LookupType);
-            selectList = await mappingLookupObj.SelectListAsync(parameters);
+            selectList = await mappingLookupObj.SelectListAsync(parameters, null);
             _mappingLookupCache.Add(cacheKey, selectList);
         }
 
@@ -129,7 +129,7 @@ public class MappingLookupService
             _logger.LogInformation($"{keyprefix}::{lookupAttribute.LookupType.Name} not found in cache. Fetching...");
             // Resolve lookup to call
             var mappingLookupObj = _mappingLookupResolver.Resolve(lookupAttribute.LookupType);
-            selectList = await mappingLookupObj.SelectListAsync();
+            selectList = await mappingLookupObj.SelectListAsync(null);
 
             // Cache the value
             _mappingLookupCache.Add($"{keyprefix}::{lookupAttribute.LookupType.Name}", selectList);
