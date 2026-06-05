@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EdNexusData.Broker.Core.Worker;
+using EdNexusData.Broker.Web.Helpers;
 
 namespace EdNexusData.Broker.Controllers.Api;
 
@@ -11,10 +12,12 @@ namespace EdNexusData.Broker.Controllers.Api;
 public class ApiJobsController : Controller
 {
     private readonly JobStatusService<ApiJobsController> _jobStatusService;
+    private readonly FocusHelper focusHelper;
 
-    public ApiJobsController(JobStatusService<ApiJobsController> jobStatusService)
+    public ApiJobsController(JobStatusService<ApiJobsController> jobStatusService, FocusHelper focusHelper)
     {
         _jobStatusService = jobStatusService;
+        this.focusHelper = focusHelper;
     }
 
     [HttpGet]
@@ -27,7 +30,13 @@ public class ApiJobsController : Controller
 
         try
         {
-            var results = await _jobStatusService.Get(jobId.Value);
+            List<EducationOrganization>? focusedEdOrgs = null;
+
+            if (!focusHelper.IsEdOrgAllFocus()) {
+                focusedEdOrgs = await focusHelper.GetFocusedEdOrgs();
+            }
+            
+            var results = await _jobStatusService.Get(jobId.Value, focusedEdOrgs);
 
             return Ok(results);
         }

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Core.Specifications;
 
 namespace EdNexusData.Broker.Core.Worker;
 
@@ -28,9 +29,16 @@ public class JobStatusService<T>
         this.jobStatusStore = jobStatusStore;
     }
 
-    public async Task<Job?> Get(Guid jobId)
+    public async Task<Job?> Get(Guid jobId, List<EducationOrganization>? educationOrganizations = null)
     {
-        return await _jobRepo.GetByIdAsync(jobId);
+        if (educationOrganizations != null)
+        {
+            return await _jobRepo.FirstOrDefaultAsync(new JobsLimitEdOrgs(jobId, educationOrganizations));
+        }
+        else
+        {
+            return await _jobRepo.GetByIdAsync(jobId);
+        }
     }
 
     public async Task UpdateJobStatus(Job? jobRecord, JobStatus? newJobStatus, string? message, params object?[] messagePlaceholders)
