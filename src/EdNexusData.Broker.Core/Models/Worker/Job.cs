@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using EdNexusData.Broker.Common.Jobs;
 
 namespace EdNexusData.Broker.Core.Worker;
@@ -18,6 +19,8 @@ public class Job : BaseEntity, IAggregateRoot
     public string? WorkerLog { get; set; }
 
     public Guid? EducationOrganizationId { get; set; }
+
+    [JsonIgnore]
     public EducationOrganization? EducationOrganization { get; set; }
 
     public Guid? InitiatedUserId { get; set; }
