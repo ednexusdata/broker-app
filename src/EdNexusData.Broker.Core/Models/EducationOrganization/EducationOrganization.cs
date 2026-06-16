@@ -35,6 +35,28 @@ public class EducationOrganization : BaseEntity, IAggregateRoot
         } 
     }
 
+    [NotMapped]
+    public string FullShortName { 
+        get { 
+            Func<EducationOrganization, string, string> nameRecursion = null!;
+            var collectedName = "";
+
+            nameRecursion = (org, collectedName) => 
+            {
+                if (org.ParentOrganization != null)
+                {
+                    collectedName = " / " + (string.IsNullOrEmpty(org.ShortName) ? org.Name : org.ShortName) + collectedName;
+                    return nameRecursion(org.ParentOrganization, collectedName);
+                }
+                else
+                {
+                    return (string.IsNullOrEmpty(org.ShortName) ? org.Name : org.ShortName) + collectedName;
+                }
+            };
+            return nameRecursion(this, collectedName);
+        } 
+    }
+
     public string? Number { get; set; }
     public string? StateCode { get; set; }
     public string? NcesCode { get; set; }

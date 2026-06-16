@@ -78,7 +78,7 @@ public class FocusHelper
         foreach(var edOrg in await GetFocusableEdOrgs(currentUser!))
         {
             selectListItems.Add(new SelectListItem() {
-                Text = edOrg?.FullName,
+                Text = string.IsNullOrWhiteSpace(edOrg?.FullShortName) ? edOrg?.FullName : edOrg?.FullShortName,
                 Value = edOrg?.Id.ToString(),
                 Selected = _session.GetString(FocusOrganizationKey) == edOrg?.Id.ToString()
             });
