@@ -1,6 +1,7 @@
 using EdNexusData.Broker.Core.Worker;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Common.Jobs;
 using Microsoft.Extensions.Caching.Memory;
@@ -54,6 +55,24 @@ public class Worker : BackgroundService
                             memCache.Compact(1.0);
                             _logger.LogInformation("Cache cleared.");
                         }
+                    }
+                }
+
+                // Queue retention cleanup job if due
+                var lastRetentionRun = await settingsService.GetValueAsync("LastRetentionRunAt");
+                var shouldQueueRetention = lastRetentionRun == null ||
+                    (DateTimeOffset.TryParse(lastRetentionRun, out var lastRun) && DateTimeOffset.UtcNow - lastRun > TimeSpan.FromHours(24));
+
+                if (shouldQueueRetention)
+                {
+                    var jobsRepository = (IRepository<Job>)scoped.ServiceProvider.GetService(typeof(IRepository<Job>))!;
+                    var existingRetentionJob = await jobsRepository.FirstOrDefaultAsync(new JobsByTypeAndStatus(typeof(RetentionJob).FullName!));
+
+                    if (existingRetentionJob == null)
+                    {
+                        var jobService = (JobService)scoped.ServiceProvider.GetService(typeof(JobService))!;
+                        await jobService.CreateJobAsync(typeof(RetentionJob));
+                        await settingsService.SetValueAsync("LastRetentionRunAt", DateTimeOffset.UtcNow.ToString("O"));
                     }
                 }
 
