@@ -6,8 +6,6 @@ using EdNexusData.Broker.Core.Specifications;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using EdNexusData.Broker.Common.Jobs;
-using Newtonsoft.Json;
-using System.Text.Json.Nodes;
 using EdNexusData.Broker.Core.Serializers;
 using EdNexusData.Broker.Common;
 
@@ -246,7 +244,23 @@ public class PrepareMappingJob : IJob
             PayloadContentActionId = action.Id,
             OriginalSchema = PayloadContentSchema.ToCore(payloadContentSchema!),
             MappingType = recordType?.FullName,
-            StudentAttributes = null,
+            StudentAttributes = new MappingStudentAttributes()
+            {
+                IncomingStudentAttributes = new StudentAttributes()
+                {
+                    Grade = payloadContent.Request.RequestManifest?.Student?.Grade,
+                    Gender = payloadContent.Request.RequestManifest?.Student?.Gender,
+                    District = payloadContent.Request.RequestManifest?.From?.District,
+                    School = payloadContent.Request.RequestManifest?.From?.School
+                },
+                OutgoingStudentAttributes = new StudentAttributes()
+                {
+                    Grade = payloadContent.Request.ResponseManifest?.Student?.Grade,
+                    Gender = payloadContent.Request.ResponseManifest?.Student?.Gender,
+                    District = payloadContent.Request.ResponseManifest?.To?.District,
+                    School = payloadContent.Request.ResponseManifest?.To?.School
+                }
+            },
             JsonSourceMapping = recordsSerialized,
             JsonInitialMapping = transformedRecordsSerialized,
             JsonDestinationMapping = transformedRecordsSerialized
