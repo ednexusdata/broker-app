@@ -123,7 +123,7 @@ public static class BrokerServiceCollection
         services.AddScoped<PayloadLoaderJob>();
         services.AddScoped<PrepareMappingJob>();
         services.AddScoped<ImportMappingJob>();
-        services.AddScoped<RetentionJob>();
+        services.AddScoped<RequestCleanupJob>();
 
         // Worker
         services.AddScoped(typeof(JobStatusService<>));

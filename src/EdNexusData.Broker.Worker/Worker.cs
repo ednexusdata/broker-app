@@ -58,21 +58,20 @@ public class Worker : BackgroundService
                     }
                 }
 
-                // Queue retention cleanup job if due
-                var lastRetentionRun = await settingsService.GetValueAsync("LastRetentionRunAt");
-                var shouldQueueRetention = lastRetentionRun == null ||
-                    (DateTimeOffset.TryParse(lastRetentionRun, out var lastRun) && DateTimeOffset.UtcNow - lastRun > TimeSpan.FromHours(24));
+                // Queue request cleanup job if due
+                var lastCleanupRun = await settingsService.GetValueAsync("LastRequestCleanupRunAt");
+                var shouldQueueCleanup = lastCleanupRun == null ||
+                    (DateTimeOffset.TryParse(lastCleanupRun, out var lastRun) && DateTimeOffset.UtcNow - lastRun > TimeSpan.FromHours(24));
 
-                if (shouldQueueRetention)
+                if (shouldQueueCleanup)
                 {
                     var jobsRepository = (IRepository<Job>)scoped.ServiceProvider.GetService(typeof(IRepository<Job>))!;
-                    var existingRetentionJob = await jobsRepository.FirstOrDefaultAsync(new JobsByTypeAndStatus(typeof(RetentionJob).FullName!));
+                    var existingCleanupJob = await jobsRepository.FirstOrDefaultAsync(new JobsByTypeAndStatus(typeof(RequestCleanupJob).FullName!));
 
-                    if (existingRetentionJob == null)
+                    if (existingCleanupJob == null)
                     {
                         var jobService = (JobService)scoped.ServiceProvider.GetService(typeof(JobService))!;
-                        await jobService.CreateJobAsync(typeof(RetentionJob));
-                        await settingsService.SetValueAsync("LastRetentionRunAt", DateTimeOffset.UtcNow.ToString("O"));
+                        await jobService.CreateJobAsync(typeof(RequestCleanupJob));
                     }
                 }
 
