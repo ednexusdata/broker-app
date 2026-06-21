@@ -193,7 +193,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
                     // Create Action
                     var newAction = new PayloadContentAction()
                     {
-                        PayloadContentId = item.PayloadContentId,
+                        PayloadContentId = item.PayloadContentId.Value,
                         PayloadContentActionType = item.Action,
                         Process = true
                     };
