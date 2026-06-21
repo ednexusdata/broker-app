@@ -17,7 +17,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.3")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -375,7 +375,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Property<string>("PayloadContentActionType")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("PayloadContentId")
+                    b.Property<Guid>("PayloadContentId")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("Process")
@@ -1070,7 +1070,9 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
                     b.HasOne("EdNexusData.Broker.Core.PayloadContent", "PayloadContent")
                         .WithMany("PayloadContentActions")
-                        .HasForeignKey("PayloadContentId");
+                        .HasForeignKey("PayloadContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ActiveMapping");
 

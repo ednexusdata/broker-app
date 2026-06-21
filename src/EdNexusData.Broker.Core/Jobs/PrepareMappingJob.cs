@@ -61,7 +61,7 @@ public class PrepareMappingJob : IJob
         Guard.Against.Null(action, "action", "Unable to find action.");
         Guard.Against.Null(action.PayloadContentId, "action.PayloadContentId", "Action missing payload content ID.");
 
-        var payloadContent = await _payloadContentRepository.FirstOrDefaultAsync(new PayloadContentsWithRequest(action.PayloadContentId.Value));
+        var payloadContent = await _payloadContentRepository.FirstOrDefaultAsync(new PayloadContentsWithRequest(action.PayloadContentId));
         
         Guard.Against.Null(payloadContent, "payloadContent", $"Unable to find payload content id {jobInstance.ReferenceGuid}");
         Guard.Against.Null(payloadContent.Request, "payloadContent.Request", $"Payload content missing request {jobInstance.ReferenceGuid}");
