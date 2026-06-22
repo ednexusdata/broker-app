@@ -1,6 +1,7 @@
 using EdNexusData.Broker.Core.Worker;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Common.Jobs;
 using Microsoft.Extensions.Caching.Memory;
@@ -54,6 +55,24 @@ public class Worker : BackgroundService
                             memCache.Compact(1.0);
                             _logger.LogInformation("Cache cleared.");
                         }
+                    }
+                }
+
+                // Queue request cleanup job if due
+                var lastCleanupRun = await settingsService.GetValueAsync("LastRequestCleanupRunAt");
+                var shouldQueueCleanup = lastCleanupRun == null ||
+                    (DateTimeOffset.TryParse(lastCleanupRun, out var lastRun) && DateTimeOffset.UtcNow - lastRun > TimeSpan.FromHours(24));
+
+                if (shouldQueueCleanup)
+                {
+                    var jobsRepository = (IRepository<Job>)scoped.ServiceProvider.GetService(typeof(IRepository<Job>))!;
+                    var existingCleanupJob = await jobsRepository.FirstOrDefaultAsync(new JobsByTypeAndStatus(typeof(RequestCleanupJob).FullName!));
+
+                    if (existingCleanupJob == null)
+                    {
+                        var jobService = (JobService)scoped.ServiceProvider.GetService(typeof(JobService))!;
+                        await jobService.CreateJobAsync(typeof(RequestCleanupJob));
+                        continue;
                     }
                 }
 
