@@ -28,12 +28,7 @@ public class PayloadJobResolver
     {
         Guard.Against.Null(payloadContentType);
 
-        var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetExportedTypes())
-                .Where(p => p.FullName == payloadContentType);
-
-        // Locate the payload content service in connector
-        var resolvedPayloadContentType = types.FirstOrDefault();
+        var resolvedPayloadContentType = ConnectorLoader.Instance?.ResolveType(payloadContentType);
 
         Guard.Against.Null(resolvedPayloadContentType, "", "Could not get payload content type");
 

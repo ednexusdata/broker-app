@@ -9,13 +9,10 @@ public class Description
     {
         Guard.Against.Null(typeFullName, "typeFullName", "Missing type to get.");
 
-        var resolvedType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetExportedTypes())
-            .Where(p => p.FullName == typeFullName)
-            .FirstOrDefault();
-        
+        var resolvedType = ConnectorLoader.Instance?.ResolveType(typeFullName);
+
         Guard.Against.Null(resolvedType, "resolvedType", "Unable to get type");
-        
+
         var descriptionObject = resolvedType.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DescriptionAttribute)).FirstOrDefault();
 
         Guard.Against.Null(descriptionObject, "descriptionObject", "Missing description attribute.");
@@ -32,10 +29,7 @@ public class Description
     {
         if (typeFullName is null) return null;
 
-        var resolvedType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetExportedTypes())
-            .Where(p => p.FullName == typeFullName)
-            .FirstOrDefault();
+        var resolvedType = ConnectorLoader.Instance?.ResolveType(typeFullName);
         
         if (resolvedType is null) return null;
         

@@ -152,9 +152,7 @@ public class Worker : BackgroundService
             _logger.LogInformation("Resolving job type for {jobRecordId}.", jobRecord.Id);
 
             // Get job type
-            var jobType = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetExportedTypes())
-                .FirstOrDefault(p => p.FullName == jobRecord.JobType!);
+            var jobType = ConnectorLoader.Instance?.ResolveType(jobRecord.JobType!);
 
             Guard.Against.Null(jobType, "jobType", $"Unable to find job type: {jobRecord.JobType!}");
 

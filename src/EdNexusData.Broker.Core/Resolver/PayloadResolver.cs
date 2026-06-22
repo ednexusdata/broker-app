@@ -29,24 +29,20 @@ public class PayloadResolver : IPayloadResolver
 
     public async Task<Common.PayloadSettings.IncomingPayloadSettings> FetchIncomingPayloadSettingsAsync(string payloadType, Guid educationOrganizationId)
     {
-        var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetExportedTypes())
-                .Where(p => p.FullName == payloadType);
-
-        var foundPayloadType = types.FirstOrDefault();
+        var foundPayloadType = ConnectorLoader.Instance?.ResolveType(payloadType);
 
         Guard.Against.Null(foundPayloadType, "Unable to resolve payloadType");
-        
+
         return await FetchIncomingPayloadSettingsAsync(foundPayloadType, educationOrganizationId);
     }
 
     public async Task<Common.PayloadSettings.IncomingPayloadSettings> FetchIncomingPayloadSettingsAsync(Type t, Guid educationOrganizationId)
     {
         Guard.Against.Null(t);
-        
+
         var connectorSpec = new PayloadSettingsByNameAndEdOrgIdSpec(t.FullName!, await _districtEdOrg.Resolve(educationOrganizationId));
         var repoConnectorSettings = await _edOrgPayloadSettings.FirstOrDefaultAsync(connectorSpec);
-        
+
         Guard.Against.Null(repoConnectorSettings);
         Guard.Against.Null(repoConnectorSettings.IncomingPayloadSettings);
 
@@ -60,11 +56,7 @@ public class PayloadResolver : IPayloadResolver
 
     public async Task<Common.PayloadSettings.OutgoingPayloadSettings> FetchOutgoingPayloadSettingsAsync(string payloadType, Guid educationOrganizationId)
     {
-        var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetExportedTypes())
-                .Where(p => p.FullName == payloadType);
-
-        var foundPayloadType = types.FirstOrDefault();
+        var foundPayloadType = ConnectorLoader.Instance?.ResolveType(payloadType);
 
         Guard.Against.Null(foundPayloadType, "Unable to resolve payloadType");
         

@@ -132,10 +132,7 @@ public class TypeResolver
 
     public static DisplayNameAttribute? ResolveDisplayName(string typeName)
     {
-        var type = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetExportedTypes())
-                .Where(p => p.FullName == typeName)
-                .FirstOrDefault();
+        var type = ConnectorLoader.Instance?.ResolveType(typeName);
 
         if (type is null)
         {

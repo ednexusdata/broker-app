@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Core.Worker;
 using System.Linq.Expressions;
@@ -177,16 +178,12 @@ public class JobsController : AuthenticatedController<JobsController>
 
         Guard.Against.Null(job, "job", "Unable to find job for Id");
 
-        var jobType = AppDomain.CurrentDomain.GetAssemblies()
-                            .SelectMany(s => s.GetExportedTypes())
-                            .FirstOrDefault(p => p.FullName == job.JobType!);
+        var jobType = ConnectorLoader.Instance?.ResolveType(job.JobType!);
 
-        Type? referenceType = null; 
+        Type? referenceType = null;
         if (job.ReferenceType is not null)
         {
-            referenceType = AppDomain.CurrentDomain.GetAssemblies()
-                            .SelectMany(s => s.GetExportedTypes())
-                            .FirstOrDefault(p => p.FullName == job.ReferenceType!);
+            referenceType = ConnectorLoader.Instance?.ResolveType(job.ReferenceType!);
         }
         
         // Create job

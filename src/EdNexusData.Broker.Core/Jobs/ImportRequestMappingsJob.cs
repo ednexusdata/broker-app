@@ -82,9 +82,7 @@ public class ImportRequestMappingsJob : IJob
 
             // Deseralize object to the type
             await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Core.PayloadContentActionStatus.Importing, "Will deseralize object of type: {0}.", mapping.MappingType);
-            var mappingType = AppDomain.CurrentDomain.GetAssemblies()
-                        .SelectMany(s => s.GetExportedTypes())
-                        .Where(p => p.FullName == mapping.MappingType).FirstOrDefault();
+            var mappingType = _connectorLoader.ResolveType(mapping.MappingType!);
             Guard.Against.Null(mappingType, null, $"Unable to find concrete type {mapping.MappingType}");
 
             Type mappingCollectionType = typeof(List<>).MakeGenericType([mappingType]);

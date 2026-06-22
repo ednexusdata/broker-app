@@ -35,6 +35,8 @@ public class ConnectorLoader
     public Dictionary<string, string> AuthenticationIndex { get; private set; } = new Dictionary<string, string>();
     
 
+    public static ConnectorLoader? Instance { get; private set; }
+
     public bool IsLoaded { get; set; } = false;
 
     private ILogger<ConnectorLoader> _logger;
@@ -45,7 +47,7 @@ public class ConnectorLoader
         {
             config.AddConsole();
         }).CreateLogger<ConnectorLoader>();
-        
+
         if (IsLoaded == false)
         {
             LoadConnectorAssemblies();
@@ -57,6 +59,151 @@ public class ConnectorLoader
             LoadImporters();
             LoadAuthenticators();
         }
+
+        Instance = this;
+    }
+
+    public Type? ResolveType(string fullName)
+    {
+        // Search default context first
+        var type = AppDomain.CurrentDomain.GetAssemblies()
+            .Where(a => !ConnectorLoadContexts.Values.Any(c => c.Assemblies.Contains(a)))
+            .SelectMany(s => { try { return s.GetExportedTypes(); } catch { return []; } })
+            .FirstOrDefault(p => p.FullName == fullName);
+
+        if (type is not null) return type;
+
+        // Search connector ALCs
+        return ConnectorLoadContexts
+            .SelectMany(c => c.Value.Assemblies
+                .SelectMany(a => { try { return a.GetExportedTypes(); } catch { return []; } }))
+            .FirstOrDefault(p => p.FullName == fullName);
+    }
+
+    public void UnloadConnector(string connectorName)
+    {
+        var contextKey = ConnectorLoadContexts.Keys
+            .FirstOrDefault(k => k.Contains(connectorName));
+
+        if (contextKey is null) return;
+
+        var context = ConnectorLoadContexts[contextKey];
+
+        // Remove indexed types from this connector's assemblies
+        var connectorAssemblies = context.Assemblies.ToList();
+        foreach (var assembly in connectorAssemblies)
+        {
+            var assemblyName = assembly.GetName().Name;
+
+            Connectors.RemoveAll(t => t.Assembly == assembly);
+            Authenticators.RemoveAll(t => t.Assembly == assembly);
+            Payloads.RemoveAll(t => t.Assembly == assembly);
+            PayloadJobs.RemoveAll(t => t.Assembly == assembly);
+            PayloadContentActions.RemoveAll(t => t.Assembly == assembly);
+
+            var transformerKeysToRemove = Transformers.Where(kv => kv.Value.Assembly == assembly).Select(kv => kv.Key).ToList();
+            foreach (var key in transformerKeysToRemove) Transformers.Remove(key);
+
+            var importerKeysToRemove = Importers.Where(kv => kv.Value.Assembly == assembly).Select(kv => kv.Key).ToList();
+            foreach (var key in importerKeysToRemove) Importers.Remove(key);
+
+            var actionByTransformerKeysToRemove = PayloadContentActionByTransformer.Where(kv => kv.Value.Assembly == assembly).Select(kv => kv.Key).ToList();
+            foreach (var key in actionByTransformerKeysToRemove) PayloadContentActionByTransformer.Remove(key);
+
+            if (assemblyName != null)
+            {
+                Assemblies.Remove(assemblyName);
+                ConnectorServiceProviders.Remove(assemblyName);
+            }
+
+            var connectorIndexKeysToRemove = ConnectorIndex.Where(kv => kv.Value.Contains(assembly.FullName ?? "")).Select(kv => kv.Key).ToList();
+            foreach (var key in connectorIndexKeysToRemove) ConnectorIndex.Remove(key);
+
+            var configKeysToRemove = ConfigurationIndex.Where(kv => kv.Value.Contains(assembly.FullName ?? "")).Select(kv => kv.Key).ToList();
+            foreach (var key in configKeysToRemove) ConfigurationIndex.Remove(key);
+        }
+
+        ConnectorLoadContexts.Remove(contextKey);
+        context.Unload();
+
+        _logger.LogInformation("Connector unloaded: {ConnectorName}", connectorName);
+    }
+
+    public void LoadConnector(string connectorDirectoryPath)
+    {
+        var context = new ConnectorLoadContext(connectorDirectoryPath);
+        ConnectorLoadContexts.Add(context.Name!, context);
+
+        var connectorAssemblyFiles = Directory.GetFiles(connectorDirectoryPath, "*.dll");
+        foreach (var assemblyFilePath in connectorAssemblyFiles)
+        {
+            try
+            {
+                context.LoadFromAssemblyPath(assemblyFilePath);
+            }
+            catch (FileLoadException)
+            {
+            }
+        }
+
+        // Index connector types from this context
+        foreach (var assembly in context.Assemblies)
+        {
+            var iconnectorTypes = assembly.GetExportedTypes().Where(x => x.GetInterface(nameof(IConnector)) is not null);
+            var iconnectorType = iconnectorTypes.FirstOrDefault();
+            if (iconnectorType is not null)
+            {
+                Connectors.Add(iconnectorType);
+                Assemblies.Add(iconnectorType.Assembly.GetName().Name!, iconnectorType.Assembly);
+                ConnectorIndex.Add(assembly.FullName!, iconnectorType.AssemblyQualifiedName!);
+
+                _logger.LogInformation("Connector loaded: {AssemblyName} from {TypeName}", assembly.FullName, iconnectorType.AssemblyQualifiedName);
+            }
+        }
+
+        // Re-index configurations, authenticators, jobs, transformers, importers for the new connector
+        foreach (var connector in Connectors.Where(c => context.Assemblies.Contains(c.Assembly)))
+        {
+            foreach (var config in connector.Assembly.GetExportedTypes().Where(p => p.GetInterface(nameof(IConfiguration)) is not null))
+                ConfigurationIndex.TryAdd(config.FullName!, connector.AssemblyQualifiedName!);
+
+            foreach (var auth in connector.Assembly.GetExportedTypes().Where(p => p.GetInterface(nameof(IAuthenticationProvider)) is not null))
+                Authenticators.Add(auth);
+
+            foreach (var pj in connector.Assembly.GetExportedTypes().Where(p => p.IsAssignableTo(typeof(PayloadJob)) && !p.IsAbstract))
+                PayloadJobs.Add(pj);
+
+            foreach (var pca in connector.Assembly.GetExportedTypes().Where(p => p.IsAssignableTo(typeof(PayloadContentActionJob)) && !p.IsAbstract))
+                PayloadContentActions.Add(pca);
+
+            foreach (var transformer in connector.Assembly.GetExportedTypes().Where(p => p.GetInterface("ITransformer`2") is not null && !p.IsAbstract))
+            {
+                var mapsFroms = transformer.GetCustomAttributes(false).Where(x => x.GetType() == typeof(MapsFromAttribute));
+                foreach (var mapsFrom in mapsFroms)
+                {
+                    var convMapsFrom = (MapsFromAttribute)mapsFrom;
+                    Transformers.TryAdd($"{transformer.Assembly.GetName().Name}::{convMapsFrom.Schema}::{convMapsFrom.SchemaVersion}", transformer);
+                }
+            }
+
+            foreach (var importer in connector.Assembly.GetExportedTypes().Where(p => p.GetInterface("IImporter") is not null && !p.IsAbstract))
+            {
+                var imports = importer.GetCustomAttributes(false).Where(x => x.GetType() == typeof(ImportsAttribute));
+                foreach (var import in imports)
+                {
+                    var convImport = (ImportsAttribute)import;
+                    foreach (var convImportType in convImport.Types)
+                        Importers.TryAdd(convImportType, importer);
+                }
+            }
+        }
+    }
+
+    public void ReloadConnector(string connectorName)
+    {
+        var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "connectors", connectorName);
+        UnloadConnector(connectorName);
+        LoadConnector(path);
     }
 
     public Type? GetConnector(string connectorType)
@@ -92,18 +239,19 @@ public class ConnectorLoader
 
     private void LoadPayloads()
     {
-        var types = AppDomain.CurrentDomain.GetAssemblies()
-                        .SelectMany(s => s.GetExportedTypes())
-                        .Where(p => p.IsSubclassOf(typeof(Payload)));
+        // Payloads come from Broker.Common (default context), not connector ALCs
+        var commonAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "EdNexusData.Broker.Common");
 
-        foreach(var type in types)
+        if (commonAssembly is null) return;
+
+        var types = commonAssembly.GetExportedTypes()
+            .Where(p => p.IsSubclassOf(typeof(Payload)) && !p.IsAbstract);
+
+        foreach (var type in types)
         {
-            if (type.IsAbstract == false && type.Assembly.GetName().Name == "EdNexusData.Broker.Common") 
-            {
-                Payloads.Add(type);
-                
-                _logger.LogInformation($"Payload loaded: {type.FullName} from {type.AssemblyQualifiedName}");
-            }
+            Payloads.Add(type);
+            _logger.LogInformation($"Payload loaded: {type.FullName} from {type.AssemblyQualifiedName}");
         }
     }
 
