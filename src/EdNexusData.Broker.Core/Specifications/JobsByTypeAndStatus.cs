@@ -9,6 +9,7 @@ public class JobsByTypeAndStatus : Specification<Job>, ISingleResultSpecificatio
     public JobsByTypeAndStatus(string jobType)
     {
         Query
+            .AsNoTracking()
             .Where(j => j.JobType == jobType && (j.JobStatus == JobStatus.Waiting || j.JobStatus == JobStatus.Running));
     }
 }

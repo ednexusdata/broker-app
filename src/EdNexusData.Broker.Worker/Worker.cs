@@ -72,6 +72,7 @@ public class Worker : BackgroundService
                     {
                         var jobService = (JobService)scoped.ServiceProvider.GetService(typeof(JobService))!;
                         await jobService.CreateJobAsync(typeof(RequestCleanupJob));
+                        continue;
                     }
                 }
 
