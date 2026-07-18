@@ -134,7 +134,7 @@ public class MappingController : AuthenticatedController<MappingController>
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(Guid mappingId, IFormCollection form)
     {
-        var mapping = await _mappingRepository.GetByIdAsync(mappingId);
+        var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(mappingId));
         if (mapping is null) return NotFound();
         
         // Create a generic type of what was sent through
@@ -194,7 +194,14 @@ public class MappingController : AuthenticatedController<MappingController>
         mapping.JsonDestinationMapping = validatedRecords.ToJsonDocument();
 
         await _mappingRepository.UpdateAsync(mapping);
-        
+
+        // Editing a mapping is activity on the request; reset its retention clock.
+        var mappingRequest = mapping.PayloadContentAction?.PayloadContent?.Request;
+        if (mappingRequest is not null)
+        {
+            await _incomingRequestRepository.UpdateAsync(mappingRequest);
+        }
+
         TempData[VoiceTone.Positive] = $"Updated mapping ({mapping.Id}).";
         return RedirectToAction(nameof(Edit), new { id = mappingId });
     }

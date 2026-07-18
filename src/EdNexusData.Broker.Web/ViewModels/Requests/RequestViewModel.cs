@@ -1,5 +1,6 @@
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Web.Helpers;
+using EdNexusData.Broker.Web.ViewModels;
 
 namespace EdNexusData.Broker.Web.ViewModels.Requests;
 
@@ -11,10 +12,17 @@ public class RequestViewModel
     public Dictionary<RequestStatus, StatusGridViewModel> StatusGrid { get; set; } = new();
     public DisplayMessageType DisplayMessagesType { get; set; } = DisplayMessageType.TransmissionMessages;
 
+    public RetentionCountdownViewModel? Retention { get; set; }
+
     public enum DisplayMessageType
     {
         ChatMessages,
         TransmissionMessages
+    }
+
+    public void SetRetention(int cleanupDays)
+    {
+        Retention = RetentionCountdownViewModel.FromRequest(Request, cleanupDays);
     }
 
     public void SetStatusGrid(CurrentUserHelper currentUserHelper)

@@ -82,6 +82,7 @@
             <div class="m-3">
                 <a asp-controller="Requests" asp-action="GenerateProofOfRequest" asp-route-id="@Model.Request?.Id" target="_blank">Proof of Request Report</a>
             </div>
+            <partial name="_RetentionCountdown" model="@Model.Retention" />
             <div class="m-5 flex flex-row justify-center items-center">
                 <div class="isolate flex divide-x divide-gray-200 rounded-lg shadow" aria-label="Tabs">
                     @{

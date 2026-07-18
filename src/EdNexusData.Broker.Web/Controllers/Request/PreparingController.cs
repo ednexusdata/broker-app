@@ -10,6 +10,7 @@ using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Core.Worker;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
+using EdNexusData.Broker.Web.ViewModels;
 using EdNexusData.Broker.Web.ViewModels.Preparing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,10 +34,11 @@ public class PreparingController : AuthenticatedController<RequestsController>
     private readonly INowWrapper nowWrapper;
     private readonly JobStatusService<PreparingController> jobStatusService;
     private readonly PayloadContentActionJobService payloadContentActionJobService;
+    private readonly SettingsService settingsService;
 
     public PreparingController(
-        IRepository<Request> requestRepository, 
-        IRepository<PayloadContent> payloadContentRepository, 
+        IRepository<Request> requestRepository,
+        IRepository<PayloadContent> payloadContentRepository,
         IRepository<PayloadContentAction> actionRepository,
         IRepository<Mapping> mappingRepository,
         JobService jobService,
@@ -45,7 +47,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
         ICurrentUser currentUser,
         INowWrapper nowWrapper,
         JobStatusService<PreparingController> jobStatusService,
-        PayloadContentActionJobService payloadContentActionJobService)
+        PayloadContentActionJobService payloadContentActionJobService,
+        SettingsService settingsService)
     {
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -59,6 +62,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
         this.nowWrapper = nowWrapper;
         this.jobStatusService = jobStatusService;
         this.payloadContentActionJobService = payloadContentActionJobService;
+        this.settingsService = settingsService;
     }
 
     [Route("/Preparing/{id:guid}")]
@@ -81,7 +85,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
             RequestId = id,
             RequestStatus = request.RequestStatus,
             Open = request.Open,
-            Request = request
+            Request = request,
+            Retention = RetentionCountdownViewModel.FromRequest(request, await settingsService.GetRequestCleanupDaysAsync())
         };
 
         if (request.PayloadContents is not null)

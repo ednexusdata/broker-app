@@ -1,4 +1,5 @@
 using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace EdNexusData.Broker.Web.ViewModels.Preparing;
@@ -9,10 +10,12 @@ public class RequestManifestListViewModel
     public RequestStatus RequestStatus { get; set; }
     public bool Open { get; set; }
     public Request? Request { get; set; } = default!;
-    
+
     public List<RequestManifestViewModel> PayloadContents { get; set; } = new List<RequestManifestViewModel>();
 
     public List<SelectListItem> PayloadContentActions { get; set; } = new List<SelectListItem>();
+
+    public RetentionCountdownViewModel? Retention { get; set; }
 }
 
 public class RequestManifestViewModel

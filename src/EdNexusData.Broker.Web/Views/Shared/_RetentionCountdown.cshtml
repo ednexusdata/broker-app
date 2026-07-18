@@ -1,0 +1,19 @@
+@model EdNexusData.Broker.Web.ViewModels.RetentionCountdownViewModel?
+@inject EdNexusData.Broker.Web.Helpers.TimezoneHelper TimezoneHelper
+
+@if (Model is not null)
+{
+    <div
+        class="m-3 p-3 rounded-md border"
+        x-data="retentionCountdown('@Model.DestructionAtIso')"
+        x-init="init()"
+        x-bind:class="expired ? 'border-red-400 bg-red-50' : 'border-amber-300 bg-amber-50'"
+    >
+        <div class="text-sm font-semibold text-red-700" x-show="expired">
+            This request has had no activity since @TimezoneHelper.DisplayTimeFromUtc(Model.LastActivityAt) and is past its retention period. It is pending automatic, permanent deletion.
+        </div>
+        <div class="text-sm font-semibold text-amber-800" x-show="!expired">
+            Auto-deletion in <span x-text="display"></span> &mdash; on @TimezoneHelper.DisplayTimeFromUtc(Model.DestructionAt), unless there is further activity on this request (a message, status change, or mapping update).
+        </div>
+    </div>
+}

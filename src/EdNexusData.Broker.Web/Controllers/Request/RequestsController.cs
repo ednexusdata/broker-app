@@ -32,6 +32,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
     private readonly RequestService requestService;
     private readonly EducationOrganizationContactService educationOrganizationContactService;
     private readonly ProofOfRequestReport proofOfRequestReport;
+    private readonly SettingsService settingsService;
 
     // Constructor
     public RequestsController(IReadRepository<Request> requestRepository,
@@ -44,7 +45,8 @@ public class RequestsController : AuthenticatedController<RequestsController>
         MessageService messageService,
         RequestService requestService,
         EducationOrganizationContactService educationOrganizationContactService,
-        ProofOfRequestReport proofOfRequestReport)
+        ProofOfRequestReport proofOfRequestReport,
+        SettingsService settingsService)
     {
         _requestRepository = requestRepository;
         _messageRepository = messageRepository;
@@ -57,6 +59,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
         this.requestService = requestService;
         this.educationOrganizationContactService = educationOrganizationContactService;
         this.proofOfRequestReport = proofOfRequestReport;
+        this.settingsService = settingsService;
     }
 
     public async Task<IActionResult> View(Guid id, Guid? jobId)
@@ -86,6 +89,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
         };
 
         requestViewModel.SetStatusGrid(currentUserHelper);
+        requestViewModel.SetRetention(await settingsService.GetRequestCleanupDaysAsync());
 
         return View(requestViewModel);
     }
@@ -117,6 +121,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
         };
 
         requestViewModel.SetStatusGrid(currentUserHelper);
+        requestViewModel.SetRetention(await settingsService.GetRequestCleanupDaysAsync());
 
         return View("View", requestViewModel);
     }

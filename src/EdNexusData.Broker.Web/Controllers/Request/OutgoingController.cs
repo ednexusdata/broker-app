@@ -20,6 +20,8 @@ using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Common.Payloads;
 using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Core.Services;
+using EdNexusData.Broker.Web.ViewModels;
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = TransferOutgoingRecords)]
@@ -35,6 +37,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     private readonly ManifestService _manifestService;
     private readonly JobService _jobService;
     private readonly CurrentUserHelper currentUserHelper;
+    private readonly SettingsService settingsService;
 
     public OutgoingController(
         IHttpContextAccessor httpContextAccessor,
@@ -46,7 +49,8 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         ICurrentUser currentUser,
         ManifestService manifestService,
         JobService jobService,
-        CurrentUserHelper currentUserHelper)
+        CurrentUserHelper currentUserHelper,
+        SettingsService settingsService)
     {
         _outgoingRequestRepository = outgoingRequestRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -57,6 +61,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
         _manifestService = manifestService;
         _jobService = jobService;
         this.currentUserHelper = currentUserHelper;
+        this.settingsService = settingsService;
     }
 
     public async Task<IActionResult> Index(
@@ -151,7 +156,8 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
             Genders = Genders.GetSelectList(),
             ReceivingAttachments = outgoingRequest.PayloadContents?.Where(x => outgoingRequest.RequestManifest!.Contents!.Select(y => y.FileName).Contains(x.FileName)).ToList(),
             ReleasingAttachments = (outgoingRequest.ResponseManifest is not null) ? outgoingRequest.PayloadContents?.Where(x => outgoingRequest.ResponseManifest!.Contents!.Select(y => y.FileName).Contains(x.FileName)).ToList() : null,
-            DraftAttachments = outgoingRequest.PayloadContents?.Where(x => x.MessageId == null).ToList()
+            DraftAttachments = outgoingRequest.PayloadContents?.Where(x => x.MessageId == null).ToList(),
+            Retention = RetentionCountdownViewModel.FromRequest(outgoingRequest, await settingsService.GetRequestCleanupDaysAsync())
         };
 
         return View(viewModel);

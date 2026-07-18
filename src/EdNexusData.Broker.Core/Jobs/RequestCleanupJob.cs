@@ -9,6 +9,8 @@ namespace EdNexusData.Broker.Core.Jobs;
 [Description("Request Cleanup")]
 public class RequestCleanupJob : IJob
 {
+    public const int DefaultCleanupDays = 30;
+
     private readonly JobStatusService<RequestCleanupJob> _jobStatusService;
     private readonly IRepository<Request> _requestRepository;
     private readonly IRepository<PayloadContent> _payloadContentRepository;
@@ -36,8 +38,7 @@ public class RequestCleanupJob : IJob
     {
         await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Begin request cleanup.");
 
-        var cleanupDaysSetting = await _settingsService.GetValueAsync("RequestCleanupDays");
-        var cleanupDays = int.TryParse(cleanupDaysSetting, out var days) ? days : 30;
+        var cleanupDays = await _settingsService.GetRequestCleanupDaysAsync();
 
         var cutoffDate = DateTimeOffset.UtcNow.AddDays(-cleanupDays);
 

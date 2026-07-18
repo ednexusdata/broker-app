@@ -1,4 +1,5 @@
 ﻿using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 namespace EdNexusData.Broker.Web.ViewModels.OutgoingRequests;
@@ -70,4 +71,6 @@ public class CreateOutgoingRequestViewModel
     public List<PayloadContent>? DraftAttachments { get; set; }
 
     public List<PayloadContent>? ReleasingAttachments { get; set; }
+
+    public RetentionCountdownViewModel? Retention { get; set; }
 }

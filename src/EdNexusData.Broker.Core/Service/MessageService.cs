@@ -179,6 +179,13 @@ public class MessageService
         };
         await _messageRepo.AddAsync(message);
 
+        // An inbound message from the other side is activity on the request; reset its retention clock.
+        var receivingRequest = await _requestRepo.GetByIdAsync(requestId.Value);
+        if (receivingRequest is not null)
+        {
+            await _requestRepo.UpdateAsync(receivingRequest);
+        }
+
         return message;
     }
 
@@ -301,6 +308,9 @@ public class MessageService
         };
 
         await _messageRepo.AddAsync(message);
+
+        // A chat message is activity on the request; reset its retention clock.
+        await _requestRepo.UpdateAsync(request);
 
         return (message, request);
     }
