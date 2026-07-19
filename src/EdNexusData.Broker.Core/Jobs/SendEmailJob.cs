@@ -48,13 +48,27 @@ public class SendEmailJob : IJob
 
         var logoPath = Path.Combine(AppContext.BaseDirectory, "Resources", "Final-Education-Nexus-ICON-png.png");
 
-        var email = await fluentEmail
+        var emailToSend = fluentEmail
             .To(jobDetail.To)
             .ReplyTo(jobDetail.ReplyTo)
             .Subject(jobDetail.Subject)
             .Attach(new FluentEmail.Core.Models.Attachment() { Data = System.IO.File.OpenRead(logoPath), Filename = "brokerlogo.png", ContentId = "brokerlogo", ContentType = "image/png", IsInline = true })
-            .UsingTemplateFromEmbedded($"EdNexusData.Broker.Core.Emails.{jobDetail.TemplateName}.cshtml", model, typeof(EmailRoot).Assembly)
-            .SendAsync();
+            .UsingTemplateFromEmbedded($"EdNexusData.Broker.Core.Emails.{jobDetail.TemplateName}.cshtml", model, typeof(EmailRoot).Assembly);
+
+        if (jobDetail.Attachments is not null)
+        {
+            foreach (var attachment in jobDetail.Attachments)
+            {
+                emailToSend = emailToSend.Attach(new FluentEmail.Core.Models.Attachment()
+                {
+                    Data = new MemoryStream(attachment.Content),
+                    Filename = attachment.FileName,
+                    ContentType = attachment.ContentType
+                });
+            }
+        }
+
+        var email = await emailToSend.SendAsync();
 
         if (!email.Successful)
         {

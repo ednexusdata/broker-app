@@ -16,8 +16,16 @@ public class ProofOfRequestReport
     }
 
     public async Task<byte[]> Generate(
-        Guid id, 
+        Guid id,
         User user,
+        TimeZoneInfo timeZoneInfo)
+    {
+        return await Generate(id, $"{user.Name} ({user.Id})", timeZoneInfo);
+    }
+
+    public async Task<byte[]> Generate(
+        Guid id,
+        string generatedBy,
         TimeZoneInfo timeZoneInfo)
     {
         // Get request
@@ -38,7 +46,7 @@ public class ProofOfRequestReport
                     row.RelativeItem().Column(col =>
                     {
                         col.Item().AlignCenter().Text("PROOF OF RECORDS REQUEST").FontSize(20).SemiBold().FontColor(Colors.Blue.Medium);
-                        col.Item().AlignCenter().Text($"Generated on {ResolveTime(DateTime.UtcNow, timeZoneInfo)} \n by {user.Name} ({user.Id}).");
+                        col.Item().AlignCenter().Text($"Generated on {ResolveTime(DateTime.UtcNow, timeZoneInfo)} \n by {generatedBy}.");
                     });
                 });
 

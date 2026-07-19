@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Core.Reports;
 using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Core.Worker;
@@ -10,6 +11,7 @@ namespace EdNexusData.Broker.Core.Jobs;
 public class RequestCleanupJob : IJob
 {
     public const int DefaultCleanupDays = 30;
+    private const string GeneratedByLabel = "System (Automated Retention Cleanup)";
 
     private readonly JobStatusService<RequestCleanupJob> _jobStatusService;
     private readonly IRepository<Request> _requestRepository;
@@ -17,6 +19,8 @@ public class RequestCleanupJob : IJob
     private readonly IRepository<PayloadContentAction> _actionRepository;
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly SettingsService _settingsService;
+    private readonly RetentionReminderService _retentionReminderService;
+    private readonly ProofOfRequestReport _proofOfRequestReport;
 
     public RequestCleanupJob(
         JobStatusService<RequestCleanupJob> jobStatusService,
@@ -24,7 +28,9 @@ public class RequestCleanupJob : IJob
         IRepository<PayloadContent> payloadContentRepository,
         IRepository<PayloadContentAction> actionRepository,
         IRepository<Mapping> mappingRepository,
-        SettingsService settingsService)
+        SettingsService settingsService,
+        RetentionReminderService retentionReminderService,
+        ProofOfRequestReport proofOfRequestReport)
     {
         _jobStatusService = jobStatusService;
         _requestRepository = requestRepository;
@@ -32,6 +38,8 @@ public class RequestCleanupJob : IJob
         _actionRepository = actionRepository;
         _mappingRepository = mappingRepository;
         _settingsService = settingsService;
+        _retentionReminderService = retentionReminderService;
+        _proofOfRequestReport = proofOfRequestReport;
     }
 
     public async Task ProcessAsync(Job jobInstance)
@@ -70,6 +78,11 @@ public class RequestCleanupJob : IJob
                     await _actionRepository.UpdateAsync(action);
                 }
             }
+
+            // Generate the Proof of Request report and email it out before the row disappears for good;
+            // it becomes the only surviving record of this request.
+            var proofOfRequestPdf = await _proofOfRequestReport.Generate(request.Id, GeneratedByLabel, TimeZoneInfo.Utc);
+            await _retentionReminderService.SendDestructionNotificationAsync(request, proofOfRequestPdf);
 
             await _requestRepository.DeleteAsync(request);
 

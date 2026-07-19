@@ -104,7 +104,9 @@ public static class BrokerServiceCollection
         services.AddScoped<DbConnectionService>();
         services.AddScoped<SettingsService>();
         services.AddScoped<PayloadContentActionJobService>();
-        
+        services.AddScoped<RetentionReminderService>();
+        services.AddScoped<ProofOfRequestReport>();
+
         // Resolvers
         services.AddScoped<IConfigurationResolver, ConfigurationResolver>();
         services.AddScoped<IPayloadResolver, PayloadResolver>();
@@ -116,7 +118,7 @@ public static class BrokerServiceCollection
         services.AddScoped<PayloadContentActionJobResolver>();
         services.AddScoped<BrokerResolver>();
         services.AddSingleton<TypeResolver>();
-        
+
         // Jobs
         services.AddScoped<RequestingJob>();
         services.AddScoped<TransmittingJob>();
@@ -124,6 +126,8 @@ public static class BrokerServiceCollection
         services.AddScoped<PrepareMappingJob>();
         services.AddScoped<ImportMappingJob>();
         services.AddScoped<RequestCleanupJob>();
+        services.AddScoped<RequestRetentionReminderJob>();
+        services.AddScoped<RequestRetentionReminderEmailJob>();
 
         // Worker
         services.AddScoped(typeof(JobStatusService<>));
