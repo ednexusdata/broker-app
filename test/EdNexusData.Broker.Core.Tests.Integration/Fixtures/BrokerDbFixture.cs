@@ -62,6 +62,7 @@ public static class BrokerDbFixture
         {
             Id = districtGuid,
             Name = "Oregon School District",
+            ShortName = "OSD",
             Number = "1000",
             EducationOrganizationType = EducationOrganizationType.District
         };
@@ -74,6 +75,7 @@ public static class BrokerDbFixture
             Id = Guid.NewGuid(),
             ParentOrganizationId = districtGuid,
             Name = "Yamhill High School",
+            ShortName = "YHS",
             Number = "1001",
             EducationOrganizationType = EducationOrganizationType.School
         };
@@ -96,6 +98,7 @@ public static class BrokerDbFixture
             Id = requestGuid,
             EducationOrganizationId = school.Id,
             InitialRequestSentDate = DateTime.UtcNow.AddDays(-1),
+            Payload = "EdFi.OdsApi.Sdk.Models.All.EdFiCourseTranscript",
             // Student = new StudentRequest()
             // {
 
@@ -293,6 +296,7 @@ public static class BrokerDbFixture
         var stuCrsHisPayloadContent = new PayloadContent()
         {
             Id = Guid.NewGuid(),
+            RequestId = requestGuid,
             MessageId = messageGuid,
             ContentType = "EdFi.OdsApi.Sdk.Models.All.EdFiCourseTranscript",
             JsonContent = JsonDocument.Parse(studentCourseHistoryJsonString)

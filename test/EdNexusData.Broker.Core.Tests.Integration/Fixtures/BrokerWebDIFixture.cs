@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using EdNexusData.Broker.Core.Tests.Integration.Services;
 using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdNexusData.Broker.Core.Tests.Integration.Fixtures;
@@ -35,23 +37,40 @@ public class BrokerWebDIServicesFixture : IDisposable
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables()
             .Build();
 
         var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
 
+        services.AddSingleton<IConfiguration>(configuration);
         services.AddLogging();
+        services.AddSingleton<IMemoryCache, MemoryCache>();
+
+        services.AddDbContext<BrokerDbContext, PostgresDbContext>();
+        services.AddScoped<DbContext, PostgresDbContext>();
+
+        services.AddScoped(typeof(EfRepository<>));
+        services.AddScoped(typeof(CachedRepository<>));
+        services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+        services.AddScoped(typeof(IReadRepository<>), typeof(CachedRepository<>));
+
+        services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
+        {
+            options.User.RequireUniqueEmail = false;
+        })
+        .AddEntityFrameworkStores<BrokerDbContext>();
 
         services.AddScoped<ICurrentUser, CurrentUserService>();
-        
+
         _serviceProvider = services.BuildServiceProvider();
     }
 
     private void PrepareDbContext()
-    {   
+    {
         if (Services is null) { return; }
-        
+
         var dbContext = Services.GetService<DbContext>();
-        
+
         if (dbContext is null) { return; }
 
         dbContext.Database.EnsureDeleted();
