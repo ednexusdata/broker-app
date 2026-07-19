@@ -14,6 +14,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Xml;
 using EdNexusData.Broker.Core.Reports;
+using EdNexusData.Broker.Web.Filters;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -62,6 +63,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
         this.settingsService = settingsService;
     }
 
+    [LogUserActivity(ActivityType.RequestOpened, "Requests.View")]
     public async Task<IActionResult> View(Guid id, Guid? jobId)
     {
         var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdWithMessagesPayloadContents(id));
@@ -94,6 +96,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
         return View(requestViewModel);
     }
 
+    [LogUserActivity(ActivityType.RequestOpened, "Requests.View")]
     public async Task<IActionResult> ViewWithTransmissions(Guid id, Guid? jobId)
     {
         var request = await _requestRepository.FirstOrDefaultAsync(new RequestByIdWithMessagesPayloadContents(id));
@@ -188,6 +191,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Requests.SendMessage", Description = "Sent a message")]
     public async Task<IActionResult> SendMessage(Guid id, string messageText)
     {
         var (message, request) = await messageService.CreateChatMessage(id, messageText, currentUser.AuthenticatedUserId()!.Value);
@@ -200,6 +204,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
 
     [HttpPut]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Requests.Open", Description = "Reopened request")]
     public async Task<IActionResult> Open(Guid id)
     {
         var request = await requestService.Open(id);
@@ -231,6 +236,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
 
     [HttpPut]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Requests.Finish", Description = "Finished request")]
     public async Task<IActionResult> Finish(Guid id)
     {
         var request = await requestService.Close(id, RequestStatus.Finished);
@@ -261,6 +267,7 @@ public class RequestsController : AuthenticatedController<RequestsController>
 
     [HttpPut]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Requests.Close", Description = "Closed request")]
     public async Task<IActionResult> Close(Guid id)
     {
         var request = await requestService.Close(id, RequestStatus.Closed);

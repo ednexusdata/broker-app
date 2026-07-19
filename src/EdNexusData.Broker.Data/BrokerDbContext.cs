@@ -30,6 +30,7 @@ public class BrokerDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRol
     public DbSet<DistributedCacheEntry> DistributedCache { get; set; } = null!;
     public DbSet<Setting>? Settings { get; set; }
     public DbSet<Seed>? Seeds { get; set; }
+    public DbSet<ActivityLog>? ActivityLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

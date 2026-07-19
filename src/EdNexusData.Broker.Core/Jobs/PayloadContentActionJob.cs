@@ -7,6 +7,7 @@ using EdNexusData.Broker.Common.Students;
 using System.ComponentModel;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.Mappings;
+using EdNexusData.Broker.Core.Services;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -22,6 +23,7 @@ public class PayloadContentActionJob : IJob
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
+    private readonly ActivityLogService _activityLogService;
 
     public PayloadContentActionJob(
             ConnectorLoader connectorLoader,
@@ -32,7 +34,8 @@ public class PayloadContentActionJob : IJob
             IRepository<PayloadContentAction> payloadContentActionRepository,
             IServiceProvider serviceProvider,
             IRepository<Mapping> mappingRepository,
-            FocusEducationOrganizationResolver focusEducationOrganizationResolver)
+            FocusEducationOrganizationResolver focusEducationOrganizationResolver,
+            ActivityLogService activityLogService)
     {
         _connectorLoader = connectorLoader;
         _connectorResolver = connectorResolver;
@@ -43,6 +46,7 @@ public class PayloadContentActionJob : IJob
         _serviceProvider = serviceProvider;
         _mappingRepository = mappingRepository;
         _focusEducationOrganizationResolver = focusEducationOrganizationResolver;
+        _activityLogService = activityLogService;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -180,6 +184,13 @@ public class PayloadContentActionJob : IJob
             }
 
             await jobStatusService.UpdatePayloadContentActionStatus(jobInstance, payloadContentAction, PayloadContentActionStatus.Imported, result?.ToString());
+
+            await _activityLogService.LogAsync(
+                ActivityType.RequestWork,
+                jobInstance.InitiatedUserId,
+                "Jobs.PayloadContentActionJob",
+                "Imported payload content action",
+                payloadContentAction.PayloadContent.RequestId);
         }
         catch (Exception e)
         {

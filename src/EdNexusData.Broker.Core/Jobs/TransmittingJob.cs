@@ -15,20 +15,23 @@ public class TransmittingJob : IJob
     private readonly JobStatusService<TransmittingJob> jobStatusService;
     private readonly BrokerResolver brokerResolver;
     private readonly MessageService messageService;
+    private readonly ActivityLogService activityLogService;
     private readonly HttpClient httpClient;
 
     public TransmittingJob(
-        RequestService requestService, 
+        RequestService requestService,
         JobStatusService<TransmittingJob> jobStatusService,
         BrokerResolver brokerResolver,
         IHttpClientFactory httpClientFactory,
-        MessageService messageService
+        MessageService messageService,
+        ActivityLogService activityLogService
     )
     {
         this.requestService = requestService;
         this.jobStatusService = jobStatusService;
         this.brokerResolver = brokerResolver;
         this.messageService = messageService;
+        this.activityLogService = activityLogService;
         httpClient = httpClientFactory.CreateClient("default");
     }
     
@@ -78,6 +81,13 @@ public class TransmittingJob : IJob
             // Step 8: Update request to sent
             await requestService.MarkRequested(request, jobInstance);
             await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Transmitted, "Set request to transmitted");
+
+            await activityLogService.LogAsync(
+                ActivityType.RequestWork,
+                jobInstance.InitiatedUserId,
+                "Jobs.TransmittingJob",
+                "Response transmitted to requesting district",
+                request.Id);
         }
         else
         {

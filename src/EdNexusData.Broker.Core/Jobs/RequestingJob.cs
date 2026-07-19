@@ -15,18 +15,21 @@ public class RequestingJob : IJob
     private readonly BrokerResolver brokerResolver;
     private readonly MessageService messageService;
     private readonly RequestService requestService;
+    private readonly ActivityLogService activityLogService;
     private readonly HttpClient httpClient;
 
     public RequestingJob(JobStatusService<RequestingJob> jobStatusService,
-                        BrokerResolver brokerResolver, 
+                        BrokerResolver brokerResolver,
                         IHttpClientFactory httpClientFactory,
                         MessageService messageService,
-                        RequestService requestService)
+                        RequestService requestService,
+                        ActivityLogService activityLogService)
     {
         this.jobStatusService = jobStatusService;
         this.brokerResolver = brokerResolver;
         this.messageService = messageService;
         this.requestService = requestService;
+        this.activityLogService = activityLogService;
         httpClient = httpClientFactory.CreateClient("default");
     }
     
@@ -78,6 +81,13 @@ public class RequestingJob : IJob
 
                 // Step 8: Update request to sent
                 await requestService.MarkRequested(request, jobInstance);
+
+                await activityLogService.LogAsync(
+                    ActivityType.RequestWork,
+                    jobInstance.InitiatedUserId,
+                    "Jobs.RequestingJob",
+                    "Request sent to receiving district",
+                    request.Id);
             }
             catch (JsonException ex)
             {

@@ -14,6 +14,7 @@ using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Web.Helpers;
 using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Common.Configuration;
+using EdNexusData.Broker.Web.Filters;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -71,6 +72,7 @@ public class MappingController : AuthenticatedController<MappingController>
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Mapping.Prepare", Description = "Prepared mapping", IdKind = ActivityRequestIdKind.PayloadContentAction)]
     public async Task<IActionResult> Prepare(Guid id)
     {
         var action = await _actionRepository.FirstOrDefaultAsync(new PayloadContentActionWithPayloadContent(id));
@@ -132,6 +134,7 @@ public class MappingController : AuthenticatedController<MappingController>
 
     [HttpPut]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Mapping.Update", Description = "Edited mapping", IdKind = ActivityRequestIdKind.Mapping, RouteParamName = "mappingId")]
     public async Task<IActionResult> Update(Guid mappingId, IFormCollection form)
     {
         var mapping = await _mappingRepository.FirstOrDefaultAsync(new MappingWithPayloadContent(mappingId));
@@ -209,6 +212,7 @@ public class MappingController : AuthenticatedController<MappingController>
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Mapping.Import", Description = "Imported mapping", IdKind = ActivityRequestIdKind.PayloadContentAction)]
     public async Task<IActionResult> Import(Guid id, Guid MappingId)
     {
         var payloadContentAction = await _actionRepository.FirstOrDefaultAsync(new PayloadContentActionWithPayloadContent(id));

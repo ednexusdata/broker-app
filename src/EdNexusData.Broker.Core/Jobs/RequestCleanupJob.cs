@@ -21,6 +21,7 @@ public class RequestCleanupJob : IJob
     private readonly SettingsService _settingsService;
     private readonly RetentionReminderService _retentionReminderService;
     private readonly ProofOfRequestReport _proofOfRequestReport;
+    private readonly ActivityLogService _activityLogService;
 
     public RequestCleanupJob(
         JobStatusService<RequestCleanupJob> jobStatusService,
@@ -30,7 +31,8 @@ public class RequestCleanupJob : IJob
         IRepository<Mapping> mappingRepository,
         SettingsService settingsService,
         RetentionReminderService retentionReminderService,
-        ProofOfRequestReport proofOfRequestReport)
+        ProofOfRequestReport proofOfRequestReport,
+        ActivityLogService activityLogService)
     {
         _jobStatusService = jobStatusService;
         _requestRepository = requestRepository;
@@ -40,6 +42,7 @@ public class RequestCleanupJob : IJob
         _settingsService = settingsService;
         _retentionReminderService = retentionReminderService;
         _proofOfRequestReport = proofOfRequestReport;
+        _activityLogService = activityLogService;
     }
 
     public async Task ProcessAsync(Job jobInstance)
@@ -83,6 +86,16 @@ public class RequestCleanupJob : IJob
             // it becomes the only surviving record of this request.
             var proofOfRequestPdf = await _proofOfRequestReport.Generate(request.Id, GeneratedByLabel, TimeZoneInfo.Utc);
             await _retentionReminderService.SendDestructionNotificationAsync(request, proofOfRequestPdf);
+
+            // No interactive user is involved in an automated cleanup, so this is logged with a null
+            // UserId. RequestId is set now and will be nulled by the FK's OnDelete(SetNull) once the
+            // delete below commits, so the log row survives as the last record of this request existing.
+            await _activityLogService.LogAsync(
+                ActivityType.RequestWork,
+                userId: null,
+                "Jobs.RequestCleanup",
+                "Request permanently deleted (retention period expired with no further activity)",
+                request.Id);
 
             await _requestRepository.DeleteAsync(request);
 

@@ -22,6 +22,7 @@ public class PayloadLoaderJob : IJob
     private readonly JobService jobService;
     private readonly EducationOrganizationContactService educationOrganizationContactService;
     private readonly INowWrapper nowWrapper;
+    private readonly ActivityLogService activityLogService;
 
     public PayloadLoaderJob(
         PayloadResolver payloadResolver,
@@ -32,7 +33,8 @@ public class PayloadLoaderJob : IJob
         RequestService requestService,
         JobService jobService,
         EducationOrganizationContactService educationOrganizationContactService,
-        INowWrapper nowWrapper
+        INowWrapper nowWrapper,
+        ActivityLogService activityLogService
     )
     {
         _payloadResolver = payloadResolver;
@@ -44,6 +46,7 @@ public class PayloadLoaderJob : IJob
         this.jobService = jobService;
         this.educationOrganizationContactService = educationOrganizationContactService;
         this.nowWrapper = nowWrapper;
+        this.activityLogService = activityLogService;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -208,6 +211,13 @@ public class PayloadLoaderJob : IJob
         }
 
         await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Extracted, "Finished updating request.");
+
+        await activityLogService.LogAsync(
+            ActivityType.RequestWork,
+            jobInstance.InitiatedUserId,
+            "Jobs.PayloadLoaderJob",
+            "Extracted outgoing payload",
+            request.Id);
 
         // Queue job to send update
         var jobData = new MessageContents { 
