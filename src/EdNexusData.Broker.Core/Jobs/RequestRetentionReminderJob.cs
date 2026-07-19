@@ -41,16 +41,31 @@ public class RequestRetentionReminderJob : IJob
         var deletionCutoffDate = DateTimeOffset.UtcNow.AddDays(-cleanupDays);
         var reminderJobType = typeof(RequestRetentionReminderEmailJob).FullName!;
 
+        // Applicable milestones, largest (furthest out) first, that actually fit inside the retention
+        // window (e.g. a 7-day reminder is meaningless when everything is deleted after 3 days).
+        var applicableMilestones = MilestoneDays
+            .Where(days => days < cleanupDays)
+            .OrderByDescending(days => days)
+            .ToArray();
+
         var queuedCount = 0;
 
-        foreach (var daysRemaining in MilestoneDays)
+        for (var i = 0; i < applicableMilestones.Length; i++)
         {
-            // If the retention window is shorter than this milestone, it can never apply (e.g. a 7-day
-            // reminder is meaningless when everything is deleted after 3 days).
-            if (daysRemaining >= cleanupDays) continue;
+            var daysRemaining = applicableMilestones[i];
+
+            // A request stays inside a larger milestone's window until it also qualifies for the next
+            // smaller one. Bounding each window below by the next milestone's cutoff (instead of the
+            // constant deletion cutoff) keeps the windows disjoint, so a request that goes stale fast -
+            // or is picked up by a delayed scan - gets only the single most urgent reminder that's
+            // still accurate, not every milestone label it happened to blow past in one run.
+            var nextMilestoneDays = i + 1 < applicableMilestones.Length ? applicableMilestones[i + 1] : (int?)null;
+            var windowLowerBound = nextMilestoneDays is not null
+                ? DateTimeOffset.UtcNow.AddDays(-(cleanupDays - nextMilestoneDays.Value))
+                : deletionCutoffDate;
 
             var reminderCutoffDate = DateTimeOffset.UtcNow.AddDays(-(cleanupDays - daysRemaining));
-            var dueRequests = await _requestRepository.ListAsync(new RequestsDueForRetentionReminder(reminderCutoffDate, deletionCutoffDate));
+            var dueRequests = await _requestRepository.ListAsync(new RequestsDueForRetentionReminder(reminderCutoffDate, windowLowerBound));
 
             foreach (var request in dueRequests)
             {
