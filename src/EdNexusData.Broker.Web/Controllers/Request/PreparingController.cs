@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+using EdNexusData.Broker.Web.Filters;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -66,6 +67,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
     }
 
     [Route("/Preparing/{id:guid}")]
+    [LogUserActivity(ActivityType.RequestOpened, "Preparing.Index")]
     public async Task<IActionResult> Index(Guid id, Guid? jobId)
     {
         // Get all payload content files for request
@@ -174,6 +176,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
 
     [Route("/Preparing/{id:guid}")]
     [HttpPost]
+    [LogUserActivity(ActivityType.RequestWork, "Preparing.Update", Description = "Updated payload content actions")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(Guid id, CreateRequestManifestViewModel PayloadContent)
     {

@@ -26,6 +26,7 @@ using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Common.Payloads;
 using EdNexusData.Broker.Core.Lookup;
 using System.Net;
+using EdNexusData.Broker.Web.Filters;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -236,6 +237,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
     }
 
     [Route("/incoming-requests/edit/{id:guid}")]
+    [LogUserActivity(ActivityType.RequestOpened, "Incoming.Edit")]
     public async Task<IActionResult> Update(Guid id, Guid? jobId)
     {
         var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdWithPayloadContents(id));
@@ -280,6 +282,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
     [Authorize]
     [ValidateAntiForgeryToken]
     [Route("/incoming-requests/edit/{id:guid}")]
+    [LogUserActivity(ActivityType.RequestWork, "Incoming.Update", Description = "Updated incoming request")]
     public async Task<IActionResult> Update(Guid id, CreateIncomingRequestViewModel viewModel)
     {
         var district = JsonSerializer.Deserialize<District>(Request.Form["ToDistrict"]!, new JsonSerializerOptions(JsonSerializerDefaults.Web));
@@ -378,6 +381,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Incoming.UploadAttachment", Description = "Uploaded an attachment", RouteParamName = "requestId")]
     public async Task<IActionResult> UploadAttachment(List<IFormFile> files, Guid requestId)
     {
         var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(requestId));
@@ -430,6 +434,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
     [HttpDelete]
     [Authorize]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Incoming.DeleteAttachment", Description = "Deleted an attachment", RouteParamName = "requestId")]
     public async Task<IActionResult> DeleteAttachment(Guid requestId, Guid payloadContentId)
     {
         var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(requestId));
@@ -448,6 +453,7 @@ public class IncomingController : AuthenticatedController<IncomingController>
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Incoming.Send", Description = "Sent request")]
     public async Task<IActionResult> Send(Guid id)
     {
         var incomingRequest = await _incomingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));

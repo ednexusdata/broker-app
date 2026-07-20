@@ -77,6 +77,7 @@ public static class BrokerServiceCollection
         services.AddScoped<MappingRecordValidatorService>();
         services.AddScoped<SettingsService>();
         services.AddScoped<PayloadContentActionJobService>();
+        services.AddScoped<ActivityLogService>();
 
         // Wrappers
         services.AddSingleton<INowWrapper, NowWrapper>();
@@ -106,6 +107,7 @@ public static class BrokerServiceCollection
         services.AddScoped<PayloadContentActionJobService>();
         services.AddScoped<RetentionReminderService>();
         services.AddScoped<ProofOfRequestReport>();
+        services.AddScoped<ActivityLogService>();
 
         // Resolvers
         services.AddScoped<IConfigurationResolver, ConfigurationResolver>();

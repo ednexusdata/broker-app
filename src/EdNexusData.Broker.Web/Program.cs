@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Http.Features;
 using EdNexusData.Broker.Web.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using EdNexusData.Broker.Web.Middleware;
+using EdNexusData.Broker.Web.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -229,7 +230,11 @@ builder.Services.AddTransient<IAuthorizationHandler, RecordAuthorizationHandler>
 
 //builder.Services.AddExceptionHandler<ForceLogoutExceptionHandler>();
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<UserActivityLogActionFilter>();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.AddService<UserActivityLogActionFilter>();
+});
 
 if (builder.Environment.EnvironmentName is not null 
     && EdNexusData.Broker.Core.Environment.IsNonProductionToLocalEnvironment(builder.Environment.EnvironmentName))
@@ -399,6 +404,7 @@ app.MapControllerRoutes("outgoing-requests", "Outgoing");
 app.MapControllerRoutes("requests", "Requests");
 app.MapControllerRoutes("system/users", "Users");
 app.MapControllerRoute("systemjobs", "system/jobs", new { controller = "Jobs", action = "SystemIndex" });
+app.MapControllerRoute("systemactivitylogs", "system/activity", new { controller = "ActivityLogs", action = "SystemIndex" });
 app.MapControllerRoute("store-connectors", "store/connectors", new { controller = "Connectors", action = "Index" });
 app.MapControllerRoute("userjobs", "jobs", new { controller = "Jobs", action = "Index"});
 app.MapControllerRoutes("roles", "UserRoles");

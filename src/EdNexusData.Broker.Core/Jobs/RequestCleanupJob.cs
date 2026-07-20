@@ -21,6 +21,7 @@ public class RequestCleanupJob : IJob
     private readonly SettingsService _settingsService;
     private readonly RetentionReminderService _retentionReminderService;
     private readonly ProofOfRequestReport _proofOfRequestReport;
+    private readonly ActivityLogService _activityLogService;
 
     public RequestCleanupJob(
         JobStatusService<RequestCleanupJob> jobStatusService,
@@ -30,7 +31,8 @@ public class RequestCleanupJob : IJob
         IRepository<Mapping> mappingRepository,
         SettingsService settingsService,
         RetentionReminderService retentionReminderService,
-        ProofOfRequestReport proofOfRequestReport)
+        ProofOfRequestReport proofOfRequestReport,
+        ActivityLogService activityLogService)
     {
         _jobStatusService = jobStatusService;
         _requestRepository = requestRepository;
@@ -40,6 +42,7 @@ public class RequestCleanupJob : IJob
         _settingsService = settingsService;
         _retentionReminderService = retentionReminderService;
         _proofOfRequestReport = proofOfRequestReport;
+        _activityLogService = activityLogService;
     }
 
     public async Task ProcessAsync(Job jobInstance)
@@ -79,11 +82,23 @@ public class RequestCleanupJob : IJob
                 }
             }
 
+            // Log the deletion itself before generating the report, so the report's Activity Log
+            // section — the last surviving record of this request once the row and its ActivityLog
+            // rows are gone — includes this final entry. No interactive user is involved in an
+            // automated cleanup, so this is logged with a null UserId.
+            await _activityLogService.LogAsync(
+                ActivityType.RequestWork,
+                userId: null,
+                "Jobs.RequestCleanup",
+                "Request permanently deleted (retention period expired with no further activity)",
+                request.Id);
+
             // Generate the Proof of Request report and email it out before the row disappears for good;
-            // it becomes the only surviving record of this request.
+            // it becomes the only surviving record of this request, including its full activity history.
             var proofOfRequestPdf = await _proofOfRequestReport.Generate(request.Id, GeneratedByLabel, TimeZoneInfo.Utc);
             await _retentionReminderService.SendDestructionNotificationAsync(request, proofOfRequestPdf);
 
+            // Cascade-deletes this request's ActivityLog rows too, now that they're captured in the PDF.
             await _requestRepository.DeleteAsync(request);
 
             await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Deleted request {0}.", request.Id);

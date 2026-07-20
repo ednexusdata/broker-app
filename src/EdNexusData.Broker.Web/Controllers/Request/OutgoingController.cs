@@ -22,6 +22,7 @@ using EdNexusData.Broker.Common.Payloads;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Web.ViewModels;
+using EdNexusData.Broker.Web.Filters;
 namespace EdNexusData.Broker.Web.Controllers;
 
 [Authorize(Policy = TransferOutgoingRecords)]
@@ -123,6 +124,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     }
 
     [Route("/outgoing-requests/edit/{id:guid}")]
+    [LogUserActivity(ActivityType.RequestOpened, "Outgoing.Edit")]
     public async Task<IActionResult> Update(Guid id, Guid? jobId)
     {
         var outgoingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdWithPayloadContents(id));
@@ -167,6 +169,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     [Authorize]
     [ValidateAntiForgeryToken]
     [Route("/outgoing-requests/edit/{id:guid}")]
+    [LogUserActivity(ActivityType.RequestWork, "Outgoing.Update", Description = "Updated outgoing request")]
     public async Task<IActionResult> Update(CreateOutgoingRequestViewModel viewModel)
     {
         if (ModelState.IsValid)
@@ -254,6 +257,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Outgoing.UploadAttachment", Description = "Uploaded an attachment", RouteParamName = "requestId")]
     public async Task<IActionResult> UploadAttachment(List<IFormFile> files, Guid requestId)
     {
         var incomingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(requestId));
@@ -293,6 +297,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     [HttpDelete]
     [Authorize]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Outgoing.DeleteAttachment", Description = "Deleted an attachment", RouteParamName = "requestId")]
     public async Task<IActionResult> DeleteAttachment(Guid requestId, Guid payloadContentId)
     {
         var incomingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(requestId));
@@ -311,6 +316,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     [HttpDelete]
     [Authorize]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Outgoing.DeleteAllAttachments", Description = "Deleted all draft attachments", RouteParamName = "requestId")]
     public async Task<IActionResult> DeleteAllAttachments(Guid requestId)
     {
         var incomingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdWithPayloadContents(requestId));
@@ -335,6 +341,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Outgoing.Load", Description = "Loaded outgoing payload")]
     public async Task<IActionResult> Load(Guid id)
     {
         var outgoingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));
@@ -354,6 +361,7 @@ public class OutgoingController : AuthenticatedController<OutgoingController>
     [HttpPut]
     [Authorize]
     [ValidateAntiForgeryToken]
+    [LogUserActivity(ActivityType.RequestWork, "Outgoing.Send", Description = "Sent outgoing response")]
     public async Task<IActionResult> Send(Guid id)
     {
         var outgoingRequest = await _outgoingRequestRepository.FirstOrDefaultAsync(new RequestByIdwithEdOrgs(id));

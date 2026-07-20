@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using EdNexusData.Broker.Common.Jobs;
+using EdNexusData.Broker.Core.Services;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -23,6 +24,7 @@ public class ImportRequestMappingsJob : IJob
     private readonly IServiceProvider _serviceProvider;
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
+    private readonly ActivityLogService _activityLogService;
 
     public ImportRequestMappingsJob(
             ConnectorLoader connectorLoader,
@@ -33,7 +35,8 @@ public class ImportRequestMappingsJob : IJob
             IRepository<Core.PayloadContent> payloadContentRepository,
             IServiceProvider serviceProvider,
             IRepository<Mapping> mappingRepository,
-            FocusEducationOrganizationResolver focusEducationOrganizationResolver)
+            FocusEducationOrganizationResolver focusEducationOrganizationResolver,
+            ActivityLogService activityLogService)
     {
         _connectorLoader = connectorLoader;
         _connectorResolver = connectorResolver;
@@ -44,6 +47,7 @@ public class ImportRequestMappingsJob : IJob
         _serviceProvider = serviceProvider;
         _mappingRepository = mappingRepository;
         _focusEducationOrganizationResolver = focusEducationOrganizationResolver;
+        _activityLogService = activityLogService;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -129,5 +133,12 @@ public class ImportRequestMappingsJob : IJob
         }
 
         await _jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.InProgress, "Finished importing all mappings for request.");
+
+        await _activityLogService.LogAsync(
+            ActivityType.RequestWork,
+            jobInstance.InitiatedUserId,
+            "Jobs.ImportRequestMappingsJob",
+            "Imported all mappings for request",
+            request.Id);
     }
 }
