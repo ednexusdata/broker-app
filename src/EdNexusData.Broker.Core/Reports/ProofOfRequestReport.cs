@@ -1,3 +1,4 @@
+using EdNexusData.Broker.Core.Specifications;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -7,12 +8,15 @@ namespace EdNexusData.Broker.Core.Reports;
 public class ProofOfRequestReport
 {
     private readonly IRepository<Request> requestRepository;
+    private readonly IReadRepository<ActivityLog> activityLogRepository;
 
     public ProofOfRequestReport(
-        IRepository<Request> requestRepository
+        IRepository<Request> requestRepository,
+        IReadRepository<ActivityLog> activityLogRepository
     )
     {
         this.requestRepository = requestRepository;
+        this.activityLogRepository = activityLogRepository;
     }
 
     public async Task<byte[]> Generate(
@@ -30,7 +34,11 @@ public class ProofOfRequestReport
     {
         // Get request
         var request = await requestRepository.GetByIdAsync(id) ?? throw new NullReferenceException($"Unable to find request {id}");
-        
+
+        // Captured now so it survives even if this request's ActivityLog rows are later cascade-deleted
+        // along with the request itself (e.g. by RequestCleanupJob).
+        var activityLogs = await activityLogRepository.ListAsync(new ActivityLogsByRequestId(id));
+
         // ... inside your generation method ...
         var document = Document.Create(container =>
         {
@@ -149,6 +157,37 @@ public class ProofOfRequestReport
                             t.Span(request.RequestManifest?.Note);
                         });
                     });
+
+                    // Activity Log — last content section, so it reads as the closing history of the
+                    // request before the footer disclaimer.
+                    if (activityLogs.Count > 0)
+                    {
+                        col.Item().PaddingTop(20).PaddingBottom(5).Text("Activity Log").SemiBold().FontSize(14);
+
+                        col.Item().Table(t =>
+                        {
+                            t.ColumnsDefinition(cd =>
+                            {
+                                cd.ConstantColumn(110);
+                                cd.ConstantColumn(120);
+                                cd.RelativeColumn();
+                            });
+
+                            t.Header(header =>
+                            {
+                                header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Date/Time").SemiBold();
+                                header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("User").SemiBold();
+                                header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Activity").SemiBold();
+                            });
+
+                            foreach (var activityLog in activityLogs)
+                            {
+                                t.Cell().Padding(5).Text(ResolveTime(activityLog.CreatedAt.DateTime, timeZoneInfo));
+                                t.Cell().Padding(5).Text(activityLog.User?.LastFirstName ?? "System");
+                                t.Cell().Padding(5).Text(activityLog.Description ?? activityLog.Action);
+                            }
+                        });
+                    }
 
                     // 3. Footer Note
                     col.Item().PaddingTop(30).Text("This document serves as an automated confirmation that the request was transmitted successfully to the destination server.").Italic().FontSize(9).FontColor(Colors.Grey.Medium);

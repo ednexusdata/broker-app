@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using EdNexusData.Broker.Core.Tests.Integration.Services;
 using EdNexusData.Broker.Core;
+using EdNexusData.Broker.Core.Reports;
 using EdNexusData.Broker.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -61,6 +62,9 @@ public class BrokerWebDIServicesFixture : IDisposable
         .AddEntityFrameworkStores<BrokerDbContext>();
 
         services.AddScoped<ICurrentUser, CurrentUserService>();
+
+        services.AddReportingServices();
+        services.AddScoped<ProofOfRequestReport>();
 
         _serviceProvider = services.BuildServiceProvider();
     }

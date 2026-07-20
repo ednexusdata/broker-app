@@ -82,14 +82,10 @@ public class RequestCleanupJob : IJob
                 }
             }
 
-            // Generate the Proof of Request report and email it out before the row disappears for good;
-            // it becomes the only surviving record of this request.
-            var proofOfRequestPdf = await _proofOfRequestReport.Generate(request.Id, GeneratedByLabel, TimeZoneInfo.Utc);
-            await _retentionReminderService.SendDestructionNotificationAsync(request, proofOfRequestPdf);
-
-            // No interactive user is involved in an automated cleanup, so this is logged with a null
-            // UserId. RequestId is set now and will be nulled by the FK's OnDelete(SetNull) once the
-            // delete below commits, so the log row survives as the last record of this request existing.
+            // Log the deletion itself before generating the report, so the report's Activity Log
+            // section — the last surviving record of this request once the row and its ActivityLog
+            // rows are gone — includes this final entry. No interactive user is involved in an
+            // automated cleanup, so this is logged with a null UserId.
             await _activityLogService.LogAsync(
                 ActivityType.RequestWork,
                 userId: null,
@@ -97,6 +93,12 @@ public class RequestCleanupJob : IJob
                 "Request permanently deleted (retention period expired with no further activity)",
                 request.Id);
 
+            // Generate the Proof of Request report and email it out before the row disappears for good;
+            // it becomes the only surviving record of this request, including its full activity history.
+            var proofOfRequestPdf = await _proofOfRequestReport.Generate(request.Id, GeneratedByLabel, TimeZoneInfo.Utc);
+            await _retentionReminderService.SendDestructionNotificationAsync(request, proofOfRequestPdf);
+
+            // Cascade-deletes this request's ActivityLog rows too, now that they're captured in the PDF.
             await _requestRepository.DeleteAsync(request);
 
             await _jobStatusService.UpdateJobStatus(jobInstance, JobStatus.Running, "Deleted request {0}.", request.Id);

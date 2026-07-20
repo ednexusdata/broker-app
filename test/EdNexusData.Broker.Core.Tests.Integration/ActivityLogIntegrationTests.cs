@@ -1,16 +1,18 @@
 using System.Text.Json;
 using EdNexusData.Broker.Common.EducationOrganizations;
+using EdNexusData.Broker.Core.Reports;
 using EdNexusData.Broker.Core.Tests.Integration.Fixtures;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EdNexusData.Broker.Core.Tests.Integration;
 
-// Proves the RequestId FK's OnDelete(DeleteBehavior.SetNull) config is actually correct against a real
-// Postgres database: RequestCleanupJob hard-deletes Request rows, and an ActivityLog pointing at a
-// purged request must survive that (with RequestId nulled), not throw an FK violation. Also proves a
-// null UserId (system/worker-initiated activity) round-trips correctly, since UserId has a real FK to
-// AspNetUsers that must tolerate being unset.
+// Proves the RequestId FK's OnDelete(DeleteBehavior.Cascade) config is actually correct against a real
+// Postgres database: RequestCleanupJob hard-deletes Request rows, and its ActivityLog rows must go with
+// it rather than surviving as orphaned, unlinkable rows (the request's history is captured in the Proof
+// of Request PDF before the delete, so nothing is lost — just not left behind in this table). Also
+// proves a null UserId (system/worker-initiated activity) round-trips correctly, since UserId has a
+// real FK to AspNetUsers that must tolerate being unset.
 [Collection("BrokerWebDICollection")]
 public class ActivityLogIntegrationTests
 {
@@ -53,7 +55,7 @@ public class ActivityLogIntegrationTests
     }
 
     [Fact]
-    public async Task ActivityLog_SurvivesRequestDeletion_WithRequestIdSetNull()
+    public async Task ActivityLog_IsCascadeDeleted_WhenRequestIsDeleted()
     {
         var requestRepository = _services.Services!.GetRequiredService<IRepository<Request>>();
         var activityLogRepository = _services.Services!.GetRequiredService<IRepository<ActivityLog>>();
@@ -81,11 +83,9 @@ public class ActivityLogIntegrationTests
         // Mirrors RequestCleanupJob's hard delete once retention expires.
         await requestRepository.DeleteAsync(request);
 
-        var survivingLog = await activityLogRepository.GetByIdAsync(log.Id);
+        var deletedLog = await activityLogRepository.GetByIdAsync(log.Id);
 
-        Assert.NotNull(survivingLog);
-        Assert.Null(survivingLog!.RequestId);
-        Assert.Equal("Opened request", survivingLog.Description);
+        Assert.Null(deletedLog);
     }
 
     [Fact]
@@ -143,5 +143,38 @@ public class ActivityLogIntegrationTests
         Assert.NotNull(reloaded);
         Assert.Null(reloaded!.UserId);
         Assert.Equal("Jobs.RequestCleanup", reloaded.Action);
+    }
+
+    [Fact]
+    public async Task ProofOfRequestReport_IncludesActivityLogSection_WhenRequestHasActivity()
+    {
+        var requestRepository = _services.Services!.GetRequiredService<IRepository<Request>>();
+        var activityLogRepository = _services.Services!.GetRequiredService<IRepository<ActivityLog>>();
+        var proofOfRequestReport = _services.Services!.GetRequiredService<ProofOfRequestReport>();
+
+        var org = await SeedOrgAsync();
+        var user = await SeedUserAsync();
+
+        var request = await requestRepository.AddAsync(new Request
+        {
+            Id = Guid.NewGuid(),
+            EducationOrganizationId = org.Id,
+            Payload = "ActivityLogIntegrationTest"
+        });
+
+        await activityLogRepository.AddAsync(new ActivityLog
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            ActivityType = ActivityType.RequestOpened,
+            Action = "Requests.View",
+            Description = "Opened request",
+            RequestId = request.Id
+        });
+
+        var pdfBytes = await proofOfRequestReport.Generate(request.Id, "Test Generator", TimeZoneInfo.Utc);
+
+        Assert.NotEmpty(pdfBytes);
+        Assert.Equal("%PDF", System.Text.Encoding.ASCII.GetString(pdfBytes, 0, 4));
     }
 }

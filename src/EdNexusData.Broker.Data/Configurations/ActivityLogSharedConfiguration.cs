@@ -25,11 +25,13 @@ internal class ActivityLogSharedConfiguration : IEntityTypeConfiguration<Activit
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // RequestCleanupJob hard-deletes Request rows once retention expires; the log row must survive
-        // that with RequestId nulled out rather than blocking the delete or being cascade-removed.
+        // RequestCleanupJob hard-deletes Request rows once retention expires. Its activity log entries
+        // (including the final "deleted" entry, logged before the delete) get baked into the Proof of
+        // Request PDF as the last section first, so cascading them away here doesn't lose that history —
+        // it just stops them from lingering as orphaned, unlinkable rows once the request is gone.
         builder.HasOne(x => x.Request)
             .WithMany()
             .HasForeignKey(x => x.RequestId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
