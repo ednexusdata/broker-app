@@ -72,20 +72,42 @@ builder.ConfigureServices((hostContext, services) =>
         services.AddSingleton<ICurrentUser, CurrentUserService>();
     }
 
-    X509Certificate2 certificate;
-    if (hostContext.Configuration["DataProtection:PfxCertPassword"] == "null")
+    static X509Certificate2 LoadDataProtectionCertificate(string? path, string? password)
     {
-        certificate = X509CertificateLoader.LoadPkcs12FromFile(hostContext.Configuration["DataProtection:PfxCertPath"]!, null);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new InvalidOperationException("DataProtection certificate path is not configured.");
+        }
+
+        // A blank/missing password and the literal string "null" both mean "this PFX has no password".
+        return string.IsNullOrEmpty(password) || password == "null"
+            ? X509CertificateLoader.LoadPkcs12FromFile(path, null)
+            : X509CertificateLoader.LoadPkcs12FromFile(path, password);
     }
-    else
-    {
-        certificate = X509CertificateLoader.LoadPkcs12FromFile(hostContext.Configuration["DataProtection:PfxCertPath"]!, hostContext.Configuration["DataProtection:PfxCertPassword"]!);
-    }
-    
-    services.AddDataProtection()
+
+    var certificate = LoadDataProtectionCertificate(
+        hostContext.Configuration["DataProtection:PfxCertPath"],
+        hostContext.Configuration["DataProtection:PfxCertPassword"]);
+
+    // Certificates used to encrypt keys that are still in the DataProtectionKeys table but that are
+    // no longer the active signing/encryption certificate (e.g. after rotating DataProtection:PfxCertPath
+    // to a new cert). Without these, rotating the certificate permanently strands every key - and every
+    // connector credential - protected under the old one.
+    var previousCertificates = hostContext.Configuration
+        .GetSection("DataProtection:PreviousPfxCertificates")
+        .GetChildren()
+        .Select(section => LoadDataProtectionCertificate(section["PfxCertPath"], section["PfxCertPassword"]))
+        .ToArray();
+
+    var dataProtectionBuilder = services.AddDataProtection()
         .PersistKeysToDbContext<BrokerDbContext>()
         .ProtectKeysWithCertificate(certificate)
         .SetApplicationName("EdNexusData.Broker");
+
+    if (previousCertificates.Length > 0)
+    {
+        dataProtectionBuilder.UnprotectKeysWithAnyCertificate(previousCertificates);
+    }
     
     services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
     {

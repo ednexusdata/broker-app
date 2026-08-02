@@ -70,19 +70,42 @@ switch (builder.Configuration["DatabaseProvider"])
         break;
 }
 
-X509Certificate2 certificate;
-if (builder.Configuration["DataProtection:PfxCertPassword"] == "null")
+static X509Certificate2 LoadDataProtectionCertificate(string? path, string? password)
 {
-    certificate = X509CertificateLoader.LoadPkcs12FromFile(builder.Configuration["DataProtection:PfxCertPath"]!, null);
+    if (string.IsNullOrWhiteSpace(path))
+    {
+        throw new InvalidOperationException("DataProtection certificate path is not configured.");
+    }
+
+    // A blank/missing password and the literal string "null" both mean "this PFX has no password".
+    return string.IsNullOrEmpty(password) || password == "null"
+        ? X509CertificateLoader.LoadPkcs12FromFile(path, null)
+        : X509CertificateLoader.LoadPkcs12FromFile(path, password);
 }
-else
-{
-    certificate = X509CertificateLoader.LoadPkcs12FromFile(builder.Configuration["DataProtection:PfxCertPath"]!, builder.Configuration["DataProtection:PfxCertPassword"]!);
-}
-builder.Services.AddDataProtection()
+
+var certificate = LoadDataProtectionCertificate(
+    builder.Configuration["DataProtection:PfxCertPath"],
+    builder.Configuration["DataProtection:PfxCertPassword"]);
+
+// Certificates used to encrypt keys that are still in the DataProtectionKeys table but that are no
+// longer the active signing/encryption certificate (e.g. after rotating DataProtection:PfxCertPath to
+// a new cert). Without these, rotating the certificate permanently strands every key - and every
+// connector credential - protected under the old one.
+var previousCertificates = builder.Configuration
+    .GetSection("DataProtection:PreviousPfxCertificates")
+    .GetChildren()
+    .Select(section => LoadDataProtectionCertificate(section["PfxCertPath"], section["PfxCertPassword"]))
+    .ToArray();
+
+var dataProtectionBuilder = builder.Services.AddDataProtection()
     .PersistKeysToDbContext<BrokerDbContext>()
     .ProtectKeysWithCertificate(certificate)
     .SetApplicationName("EdNexusData.Broker");
+
+if (previousCertificates.Length > 0)
+{
+    dataProtectionBuilder.UnprotectKeysWithAnyCertificate(previousCertificates);
+}
 
 builder.Services.AddScoped(typeof(EfRepository<>));
 builder.Services.AddScoped(typeof(CachedRepository<>));
@@ -324,7 +347,7 @@ var app = builder.Build();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-logger.LogInformation("PfxCertPath: " + builder.Configuration["DataProtection:PfxCertPath"]);
+logger.LogDebug("PfxCertPath: " + builder.Configuration["DataProtection:PfxCertPath"]);
 
 //app.UseHttpLogging();
 using (var service = app.Services.CreateAsyncScope())

@@ -3,6 +3,8 @@ using EdNexusData.Broker.Core.Specifications;
 using Ardalis.GuardClauses;
 using EdNexusData.Broker.Common.Configuration;
 using Microsoft.AspNetCore.DataProtection;
+using EdNexusData.Broker.Core.Security;
+using System.Security.Cryptography;
 
 namespace EdNexusData.Broker.Core.Resolvers;
 
@@ -79,8 +81,7 @@ public class ConfigurationResolver : IConfigurationResolver
 
         var encconfigSettingsObj = configSettings[objTypeName]!.ToString();
 
-        var dp = dataProtectionProvider.CreateProtector("SecureConnectionString");
-        var decryptedSerializedConfig = dp.Unprotect(encconfigSettingsObj);
+        var decryptedSerializedConfig = DecryptSettings(encconfigSettingsObj, repoConnectorSettings!.Connector, repoConnectorSettings.EducationOrganizationId);
 
         var configSettingsObj = Newtonsoft.Json.Linq.JObject.Parse(decryptedSerializedConfig);
 
@@ -95,5 +96,22 @@ public class ConfigurationResolver : IConfigurationResolver
         }
 
         return iconfigModel;
+    }
+
+    private string DecryptSettings(string encryptedSettings, string connectorName, Guid? educationOrganizationId)
+    {
+        try
+        {
+            return ConnectorSettingsProtector
+                .CreateBoundProtector(dataProtectionProvider, connectorName, educationOrganizationId)
+                .Unprotect(encryptedSettings);
+        }
+        catch (CryptographicException)
+        {
+            // Settings encrypted before per-record purpose binding was introduced. Fall back to the
+            // legacy purpose so existing data keeps working; the next save for this record will
+            // re-encrypt it under the bound purpose.
+            return ConnectorSettingsProtector.CreateLegacyProtector(dataProtectionProvider).Unprotect(encryptedSettings);
+        }
     }
 }
