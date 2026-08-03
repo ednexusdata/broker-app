@@ -51,7 +51,14 @@ public class RequestingJob : IJob
         await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, 
             "Resolving domain {0}", messageContent.To.District.Domain);
         var brokerAddress = await brokerResolver.ComposeBrokerUrl(messageContent.To.District.Domain, "api/v1/requests");
-        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, 
+
+        // Persist the resolved FQDN onto the manifest so it's retrievable later (e.g. Proof of Request report).
+        if (request.RequestManifest?.To is not null)
+        {
+            request.RequestManifest.To.BrokerAddress = brokerAddress?.Host;
+        }
+
+        await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting,
             "Resolved domain with path {0}: url {1} | path {2}", messageContent.To.District.Domain, brokerAddress?.Host, brokerAddress?.Path);
 
         // Step 4: Prepare POST request
