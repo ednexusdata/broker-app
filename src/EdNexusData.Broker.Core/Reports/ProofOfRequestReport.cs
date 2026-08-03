@@ -65,10 +65,13 @@ public class ProofOfRequestReport
 
                     col.Item().Background(Colors.Grey.Lighten4).Padding(10).Column(innerCol =>
                     {
-                        // 1. Name stays on its own line at the top
-                        innerCol.Item().Text(t => {
-                            t.Span("Name: ").SemiBold();
-                            t.Span($"{request.RequestManifest?.Student?.LastName}, {request.RequestManifest?.Student?.FirstName} {request.RequestManifest?.Student?.MiddleName}");
+                        // 1. Name stays on its own line at the top, using the same label width as
+                        // Birthdate/Gender below so the values line up in a single column.
+                        innerCol.Item().Table(t => {
+                            t.ColumnsDefinition(cd => { cd.ConstantColumn(70); cd.RelativeColumn(); });
+
+                            t.Cell().Text("Name:").SemiBold();
+                            t.Cell().Text($"{request.RequestManifest?.Student?.LastName}, {request.RequestManifest?.Student?.FirstName} {request.RequestManifest?.Student?.MiddleName}");
                         });
 
                         innerCol.Item().Row(row =>
@@ -108,24 +111,34 @@ public class ProofOfRequestReport
 
                     col.Item().PaddingTop(20).PaddingBottom(5).Text("Requested From").SemiBold().FontSize(14);
 
-                    col.Item().Background(Colors.Grey.Lighten4).Padding(10).Row(row =>
+                    col.Item().Background(Colors.Grey.Lighten4).Padding(10).Column(innerCol =>
                     {
-                        row.RelativeItem().Text(t => {
+                        // Request ID is a full GUID, so it gets its own line to avoid squeezing the columns below.
+                        innerCol.Item().Text(t => {
                             t.Span("Request ID: ").SemiBold();
                             t.Span(request.Id.ToString());
                         });
-                        row.RelativeItem().Text(t => {
-                            t.Span("District: ").SemiBold();
-                            t.Span(request.RequestManifest?.From?.District?.Name);
-                        });
-                        row.RelativeItem().Text(t => {
-                            t.Span("School: ").SemiBold();
-                            t.Span(request.RequestManifest?.From?.School?.Name);
-                        });
 
-                        row.RelativeItem().Text(t => {
-                            t.Span("Sender: ").SemiBold();
-                            t.Span(request.RequestManifest?.From?.Sender?.Name);
+                        innerCol.Item().PaddingTop(8).Row(row =>
+                        {
+                            row.RelativeItem().Column(c => {
+                                c.Item().Text("District:").SemiBold();
+                                c.Item().Text($"{request.RequestManifest?.From?.District?.Name}");
+                            });
+
+                            row.ConstantItem(20);
+
+                            row.RelativeItem().Column(c => {
+                                c.Item().Text("School:").SemiBold();
+                                c.Item().Text($"{request.RequestManifest?.From?.School?.Name}");
+                            });
+
+                            row.ConstantItem(20);
+
+                            row.RelativeItem().Column(c => {
+                                c.Item().Text("Sender:").SemiBold();
+                                c.Item().Text($"{request.RequestManifest?.From?.Sender?.Name}");
+                            });
                         });
                     });
 
@@ -133,19 +146,23 @@ public class ProofOfRequestReport
 
                     col.Item().Background(Colors.Grey.Lighten4).Padding(10).Row(row =>
                     {
-                        row.RelativeItem().Text(t => {
-                            t.Span("District: ").SemiBold();
-                            t.Span(request.RequestManifest?.To?.District?.Name);
+                        row.RelativeItem().Column(c => {
+                            c.Item().Text("District:").SemiBold();
+                            c.Item().Text($"{request.RequestManifest?.To?.District?.Name}");
                         });
 
-                        row.RelativeItem().Text(t => {
-                            t.Span("School: ").SemiBold();
-                            t.Span(request.RequestManifest?.To?.School?.Name);
+                        row.ConstantItem(20);
+
+                        row.RelativeItem().Column(c => {
+                            c.Item().Text("School:").SemiBold();
+                            c.Item().Text($"{request.RequestManifest?.To?.School?.Name}");
                         });
 
-                        row.RelativeItem().Text(t => {
-                            t.Span("Broker Address: ").SemiBold();
-                            t.Span(request.RequestManifest?.To?.BrokerAddress);
+                        row.ConstantItem(20);
+
+                        row.RelativeItem().Column(c => {
+                            c.Item().Text("Broker Address:").SemiBold();
+                            c.Item().Text($"{request.RequestManifest?.To?.BrokerAddress}");
                         });
                     });
 
@@ -168,7 +185,7 @@ public class ProofOfRequestReport
                         {
                             t.ColumnsDefinition(cd =>
                             {
-                                cd.ConstantColumn(110);
+                                cd.ConstantColumn(130);
                                 cd.ConstantColumn(120);
                                 cd.RelativeColumn();
                             });
