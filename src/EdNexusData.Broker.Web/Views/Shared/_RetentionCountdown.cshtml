@@ -4,7 +4,7 @@
 @if (Model is not null)
 {
     <div
-        class="m-3 p-3 rounded-md border"
+        class="mb-3 p-3 rounded-md border"
         x-data="retentionCountdown('@Model.DestructionAtIso')"
         x-init="init()"
         x-bind:class="expired ? 'border-red-400 bg-red-50' : 'border-amber-300 bg-amber-50'"
