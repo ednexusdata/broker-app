@@ -27,6 +27,7 @@ using EdNexusData.Broker.Web.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using EdNexusData.Broker.Web.Middleware;
 using EdNexusData.Broker.Web.Filters;
+using EdNexusData.Broker.Core.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,20 +71,7 @@ switch (builder.Configuration["DatabaseProvider"])
         break;
 }
 
-static X509Certificate2 LoadDataProtectionCertificate(string? path, string? password)
-{
-    if (string.IsNullOrWhiteSpace(path))
-    {
-        throw new InvalidOperationException("DataProtection certificate path is not configured.");
-    }
-
-    // A blank/missing password and the literal string "null" both mean "this PFX has no password".
-    return string.IsNullOrEmpty(password) || password == "null"
-        ? X509CertificateLoader.LoadPkcs12FromFile(path, null)
-        : X509CertificateLoader.LoadPkcs12FromFile(path, password);
-}
-
-var certificate = LoadDataProtectionCertificate(
+var certificate = PfxCertificateLoader.Load(
     builder.Configuration["DataProtection:PfxCertPath"],
     builder.Configuration["DataProtection:PfxCertPassword"]);
 
@@ -94,7 +82,7 @@ var certificate = LoadDataProtectionCertificate(
 var previousCertificates = builder.Configuration
     .GetSection("DataProtection:PreviousPfxCertificates")
     .GetChildren()
-    .Select(section => LoadDataProtectionCertificate(section["PfxCertPath"], section["PfxCertPassword"]))
+    .Select(section => PfxCertificateLoader.Load(section["PfxCertPath"], section["PfxCertPassword"]))
     .ToArray();
 
 var dataProtectionBuilder = builder.Services.AddDataProtection()
