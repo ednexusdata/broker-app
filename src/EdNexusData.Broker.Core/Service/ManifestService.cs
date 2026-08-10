@@ -43,7 +43,7 @@ public class ManifestService
                 Name = request.EducationOrganization!.ParentOrganization!.Name,
                 ShortName = request.EducationOrganization!.ParentOrganization!.ShortName,
                 Number = request.EducationOrganization.ParentOrganization?.Number,
-                Domain = request.EducationOrganization.ParentOrganization?.Domain,
+                Domains = request.EducationOrganization.ParentOrganization?.Domains?.Select(d => d.Domain).ToList() ?? new(),
                 Address = request.EducationOrganization.ParentOrganization?.Address
             },
             School = new School()

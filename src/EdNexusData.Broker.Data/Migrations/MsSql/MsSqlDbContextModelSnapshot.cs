@@ -99,9 +99,6 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Domain")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("EducationOrganizationType")
                         .HasColumnType("int");
 
@@ -135,10 +132,6 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Domain")
-                        .IsUnique()
-                        .HasFilter("[Domain] IS NOT NULL");
 
                     b.HasIndex("ParentOrganizationId");
 
@@ -184,6 +177,42 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                         .HasFilter("[EducationOrganizationId] IS NOT NULL");
 
                     b.ToTable("EducationOrganizationConnectorSettings");
+                });
+
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationDomain", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("EducationOrganizationDomainId");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Domain")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("EducationOrganizationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Domain")
+                        .IsUnique();
+
+                    b.HasIndex("EducationOrganizationId");
+
+                    b.ToTable("EducationOrganizationDomains", (string)null);
                 });
 
             modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationPayloadSettings", b =>
@@ -986,7 +1015,7 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.HasOne("EdNexusData.Broker.Core.Request", "Request")
                         .WithMany()
                         .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("EdNexusData.Broker.Core.User", "User")
                         .WithMany()
@@ -1012,6 +1041,17 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
                         .WithMany()
                         .HasForeignKey("EducationOrganizationId");
+
+                    b.Navigation("EducationOrganization");
+                });
+
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationDomain", b =>
+                {
+                    b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
+                        .WithMany("Domains")
+                        .HasForeignKey("EducationOrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("EducationOrganization");
                 });
@@ -1303,6 +1343,8 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
             modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganization", b =>
                 {
+                    b.Navigation("Domains");
+
                     b.Navigation("EducationOrganizations");
                 });
 

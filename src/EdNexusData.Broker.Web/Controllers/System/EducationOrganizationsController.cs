@@ -9,6 +9,7 @@ using EdNexusData.Broker.Web.ViewModels.EducationOrganizations;
 using System.Linq.Expressions;
 using EdNexusData.Broker.Web.Extensions.States;
 using EdNexusData.Broker.Web.Specifications;
+using EdNexusData.Broker.Core.Specifications;
 using EdNexusData.Broker.Common.EducationOrganizations;
 using EdNexusData.Broker.Web.Constants.Claims;
 
@@ -18,17 +19,71 @@ namespace EdNexusData.Broker.Web.Controllers;
 public class EducationOrganizationsController : AuthenticatedController<EducationOrganizationsController>
 {
     private readonly IRepository<Core.EducationOrganization> _educationOrganizationRepository;
+    private readonly IReadRepository<Core.EducationOrganizationDomain> _educationOrganizationDomainRepository;
     private readonly EducationOrganizationHelper _educationOrganizationHelper;
     private readonly FocusHelper focusHelper;
+    private readonly ICurrentUser _currentUser;
 
     public EducationOrganizationsController(
         IRepository<Core.EducationOrganization> educationOrganizationRepository,
+        IReadRepository<Core.EducationOrganizationDomain> educationOrganizationDomainRepository,
         EducationOrganizationHelper educationOrganizationHelper,
-        FocusHelper focusHelper)
+        FocusHelper focusHelper,
+        ICurrentUser currentUser)
     {
         _educationOrganizationRepository = educationOrganizationRepository;
+        _educationOrganizationDomainRepository = educationOrganizationDomainRepository;
         _educationOrganizationHelper = educationOrganizationHelper;
         this.focusHelper = focusHelper;
+        _currentUser = currentUser;
+    }
+
+    private static List<string> ParseDomains(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) { return new List<string>(); }
+
+        return input
+            .Split(new[] { '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(d => d.Trim())
+            .Where(d => d.Length > 0)
+            .Distinct()
+            .ToList();
+    }
+
+    // EfRepository only stamps CreatedAt/CreatedBy on the EducationOrganization passed to
+    // AddAsync/UpdateAsync, not on child Domains rows reachable through the navigation
+    // property, so those have to be set explicitly here.
+    private List<Core.EducationOrganizationDomain> BuildDomains(List<string> domains)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var userId = _currentUser.AuthenticatedUserId();
+
+        return domains.Select(d => new Core.EducationOrganizationDomain
+        {
+            Domain = d,
+            CreatedAt = now,
+            CreatedBy = userId
+        }).ToList();
+    }
+
+    // Diffs against the already-tracked Domains collection instead of replacing it wholesale,
+    // so domains that are unchanged keep their row (Id, CreatedAt, CreatedBy) rather than being
+    // deleted and re-inserted on every save.
+    private void ReconcileDomains(Core.EducationOrganization organization, List<string> domains)
+    {
+        var existingDomains = organization.Domains ??= new List<Core.EducationOrganizationDomain>();
+
+        var domainsToRemove = existingDomains.Where(d => !domains.Contains(d.Domain)).ToList();
+        foreach (var domain in domainsToRemove)
+        {
+            existingDomains.Remove(domain);
+        }
+
+        var domainsToAdd = domains.Where(d => !existingDomains.Any(existing => existing.Domain == d)).ToList();
+        foreach (var domain in BuildDomains(domainsToAdd))
+        {
+            existingDomains.Add(domain);
+        }
     }
 
     public async Task<IActionResult> Index(
@@ -138,7 +193,20 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
     public async Task<IActionResult> Create(CreateEducationOrganizationRequestViewModel data)
     {
         if (!ModelState.IsValid) { TempData[VoiceTone.Critical] = "Organization not created."; return RedirectToAction(nameof(Create)); }
-        
+
+        var domains = ParseDomains(data.DomainsInput);
+
+        if (domains.Count > 0)
+        {
+            var conflictingDomains = await _educationOrganizationDomainRepository.ListAsync(new EducationOrganizationDomainsByValuesSpec(domains));
+
+            if (conflictingDomains.Count > 0)
+            {
+                TempData[VoiceTone.Critical] = $"Organization not created. Domain(s) already in use: {string.Join(", ", conflictingDomains.Select(d => d.Domain))}.";
+                return RedirectToAction(nameof(Create));
+            }
+        }
+
         var organization = new Core.EducationOrganization()
         {
             Id = Guid.NewGuid(),
@@ -159,7 +227,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
                 PostalCode = data.PostalCode,
                 StateAbbreviation = data.StateAbbreviation
             },
-            Domain = data.Domain,
+            Domains = BuildDomains(domains),
             TimeZone = data.TimeZone!,
             Contacts = new List<Core.EducationOrganizationContact>()
             {
@@ -186,6 +254,8 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
         var specification = new SearchableWithPaginationSpecification<Core.EducationOrganization>.Builder(1, -1)
             .WithSearchExpression(focusOrganizationExpression)
+            .WithIncludeEntities(builder => builder
+                .Include(educationOrganization => educationOrganization.Domains))
             .Build();
 
         var organizations = await _educationOrganizationRepository.ListAsync(specification,CancellationToken.None);
@@ -213,7 +283,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
                 StateAbbreviation = organization.Address?.StateAbbreviation,
                 PostalCode = organization.Address?.PostalCode,
                 States = States.GetSelectList(),
-                Domain = organization.Domain,
+                DomainsInput = string.Join('\n', organization.Domains?.Select(d => d.Domain) ?? Enumerable.Empty<string>()),
                 TimeZone = organization.TimeZone ?? ((TimeZoneInfo.Local.Id == "Etc/UTC") ? TimeZoneInfo.Utc.Id : TimeZoneInfo.Local.Id),
                 ContactName = organization.Contacts?.First().Name,
                 ContactJobTitle = organization.Contacts?.First().JobTitle,
@@ -240,6 +310,8 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
 
         var specification = new SearchableWithPaginationSpecification<Core.EducationOrganization>.Builder(1, -1)
             .WithSearchExpression(focusOrganizationExpression)
+            .WithIncludeEntities(builder => builder
+                .Include(educationOrganization => educationOrganization.Domains))
             .Build();
 
         var organizations = await _educationOrganizationRepository.ListAsync(specification,CancellationToken.None);
@@ -249,6 +321,21 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
         if (organization is null) { throw new ArgumentException("Not a valid organization."); }
 
         if (!ModelState.IsValid) { TempData[VoiceTone.Critical] = "Organization not updated."; return View("Edit"); }
+
+        var domains = ParseDomains(data.DomainsInput);
+
+        if (domains.Count > 0)
+        {
+            var conflictingDomains = (await _educationOrganizationDomainRepository.ListAsync(new EducationOrganizationDomainsByValuesSpec(domains)))
+                .Where(d => d.EducationOrganizationId != organization.Id)
+                .ToList();
+
+            if (conflictingDomains.Count > 0)
+            {
+                TempData[VoiceTone.Critical] = $"Organization not updated. Domain(s) already in use: {string.Join(", ", conflictingDomains.Select(d => d.Domain))}.";
+                return View("Edit");
+            }
+        }
 
         // Prepare organization object
         organization.Name = data.Name;
@@ -268,7 +355,7 @@ public class EducationOrganizationsController : AuthenticatedController<Educatio
             PostalCode = data.PostalCode,
             StateAbbreviation = data.StateAbbreviation
         };
-        organization.Domain = data.Domain;
+        ReconcileDomains(organization, domains);
         organization.TimeZone = data.TimeZone!;
 
         organization.Contacts = new List<Core.EducationOrganizationContact>()

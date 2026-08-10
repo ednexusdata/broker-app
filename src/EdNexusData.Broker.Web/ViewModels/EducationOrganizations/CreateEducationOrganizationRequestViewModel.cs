@@ -51,8 +51,8 @@ public class CreateEducationOrganizationRequestViewModel
     [Display(Name = "Zip Code")]
     public string? PostalCode { get; set; }
 
-    [Display(Name = "Domain")]
-    public string? Domain { get; set; }
+    [Display(Name = "Domain(s)")]
+    public string? DomainsInput { get; set; }
     
     [Display(Name = "Time Zone")]
     public string? TimeZone { get; set; } = TimeZoneInfo.Local.Id;

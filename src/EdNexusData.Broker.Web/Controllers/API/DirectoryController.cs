@@ -42,7 +42,7 @@ public class DirectoryController : Controller
                 Name = districtEdOrg.Name,
                 ShortName = districtEdOrg.ShortName,
                 Number = districtEdOrg.Number,
-                Domain = districtEdOrg.Domain,
+                Domains = districtEdOrg.Domains?.Select(d => d.Domain).ToList() ?? new(),
                 Address = (districtEdOrg.Address != null) ? districtEdOrg.Address : new Address(),
                 Schools = new List<School>()
             };

@@ -122,7 +122,7 @@
             <div>
               <h2 class="text-base font-semibold leading-7 text-gray-900">Receiving District</h2>
               <p class="mt-1">@Model.ReceivingDistrict?.Name @Model.ReceivingDistrict?.Number</p>
-              <p class="mt-1">@Model.ReceivingDistrict?.Domain</p>
+              <p class="mt-1">@string.Join(", ", Model.ReceivingDistrict?.Domains ?? new())</p>
               <p class="mt-1">@Model.ReceivingDistrict?.Address?.StreetNumberName</p>
               <p class="mt-1">@Model.ReceivingDistrict?.Address?.City, @Model.ReceivingDistrict?.Address?.StateAbbreviation @Model.ReceivingDistrict?.Address?.PostalCode</p>
             </div>

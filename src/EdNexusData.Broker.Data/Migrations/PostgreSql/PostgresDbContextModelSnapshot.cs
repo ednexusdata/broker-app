@@ -99,9 +99,6 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Domain")
-                        .HasColumnType("text");
-
                     b.Property<int>("EducationOrganizationType")
                         .HasColumnType("integer");
 
@@ -135,9 +132,6 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Domain")
-                        .IsUnique();
 
                     b.HasIndex("ParentOrganizationId");
 
@@ -182,6 +176,42 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                         .IsUnique();
 
                     b.ToTable("EducationOrganizationConnectorSettings");
+                });
+
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationDomain", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("EducationOrganizationDomainId");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Domain")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EducationOrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Domain")
+                        .IsUnique();
+
+                    b.HasIndex("EducationOrganizationId");
+
+                    b.ToTable("EducationOrganizationDomains", (string)null);
                 });
 
             modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationPayloadSettings", b =>
@@ -970,7 +1000,7 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.HasOne("EdNexusData.Broker.Core.Request", "Request")
                         .WithMany()
                         .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("EdNexusData.Broker.Core.User", "User")
                         .WithMany()
@@ -996,6 +1026,17 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
                     b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
                         .WithMany()
                         .HasForeignKey("EducationOrganizationId");
+
+                    b.Navigation("EducationOrganization");
+                });
+
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationDomain", b =>
+                {
+                    b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
+                        .WithMany("Domains")
+                        .HasForeignKey("EducationOrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("EducationOrganization");
                 });
@@ -1287,6 +1328,8 @@ namespace EdNexusData.Broker.Data.Migrations.PostgreSql
 
             modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganization", b =>
                 {
+                    b.Navigation("Domains");
+
                     b.Navigation("EducationOrganizations");
                 });
 
