@@ -47,10 +47,10 @@ public class RequestingJob : IJob
         _ = messageContent ?? throw new InvalidCastException("Message contents did not deseralize to manifest succesfully.");
 
         // Step 3: Resolve broker address
-        _ = messageContent?.To?.District?.Domain ?? throw new NullReferenceException("Domain is missing");
+        var domain = messageContent?.To?.District?.Domains.FirstOrDefault() ?? throw new NullReferenceException("Domain is missing");
         await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting, 
-            "Resolving domain {0}", messageContent.To.District.Domain);
-        var brokerAddress = await brokerResolver.ComposeBrokerUrl(messageContent.To.District.Domain, "api/v1/requests");
+            "Resolving domain {0}", domain);
+        var brokerAddress = await brokerResolver.ComposeBrokerUrl(domain, "api/v1/requests");
 
         // Persist the resolved FQDN onto the manifest so it's retrievable later (e.g. Proof of Request report).
         if (request.RequestManifest?.To is not null)
@@ -59,7 +59,7 @@ public class RequestingJob : IJob
         }
 
         await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Requesting,
-            "Resolved domain with path {0}: url {1} | path {2}", messageContent.To.District.Domain, brokerAddress?.Host, brokerAddress?.Path);
+            "Resolved domain with path {0}: url {1} | path {2}", domain, brokerAddress?.Host, brokerAddress?.Path);
 
         // Step 4: Prepare POST request
         var multipartContent = await messageService.PrepareMultipartContent(message, request);
