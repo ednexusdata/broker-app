@@ -288,7 +288,7 @@ builder.Services.Configure<IISServerOptions>(options =>
     options.AutomaticAuthentication = false;
 });
 
-builder.Services.AddHostedService<BrokerDbContextInitializationService>();
+builder.Services.AddScoped<BrokerDbContextInitializationService>();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -340,10 +340,15 @@ logger.LogDebug("PfxCertPath: " + builder.Configuration["DataProtection:PfxCertP
 //app.UseHttpLogging();
 await using (var service = app.Services.CreateAsyncScope())
 {
-    // Migrations and seeding run under a database lock so only one instance does them at a time
+    // Migrations, seeding and first user creation run under a database lock so only one instance does them at a time
     var migrationService = service.ServiceProvider.GetRequiredService<DatabaseMigrationService>();
     var seederService = service.ServiceProvider.GetRequiredService<SeederService>();
-    await migrationService.InvokeAsync(seederService.Invoke);
+    var initializationService = service.ServiceProvider.GetRequiredService<BrokerDbContextInitializationService>();
+    await migrationService.InvokeAsync(async () =>
+    {
+        await seederService.Invoke();
+        await initializationService.InvokeAsync();
+    });
 }
 
 

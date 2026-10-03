@@ -21,7 +21,7 @@ dotnet-ef migrations remove --startup-project ../EdNexusData.Broker.Web/EdNexusD
 dotnet-ef migrations remove --startup-project ../EdNexusData.Broker.Web/EdNexusData.Broker.Web.csproj --context EdNexusData.Broker.Data.MsSqlDbContext
 ```
 ### Auto-apply migrations on startup
-Set `DatabaseMigration:AutoMigrate` to `true` and the web app applies pending migrations (then runs the seeder) before it starts serving.
+Set `DatabaseMigration:AutoMigrate` to `true` and the web app applies pending migrations, then runs the seeder and creates the first user, before it starts serving.
 Several instances can start at once: each one takes a database lock first (`pg_advisory_lock` on PostgreSQL, `sp_getapplock` on SQL Server), so only one runs migrations and the rest wait, then find nothing left to apply.
 The lock belongs to the database session, so it is released if the instance holding it crashes.
 ```json
