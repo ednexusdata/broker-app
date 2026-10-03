@@ -338,10 +338,12 @@ var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogDebug("PfxCertPath: " + builder.Configuration["DataProtection:PfxCertPath"]);
 
 //app.UseHttpLogging();
-using (var service = app.Services.CreateAsyncScope())
+await using (var service = app.Services.CreateAsyncScope())
 {
+    // Migrations and seeding run under a database lock so only one instance does them at a time
+    var migrationService = service.ServiceProvider.GetRequiredService<DatabaseMigrationService>();
     var seederService = service.ServiceProvider.GetRequiredService<SeederService>();
-    await seederService!.Invoke();
+    await migrationService.InvokeAsync(seederService.Invoke);
 }
 
 
