@@ -3,7 +3,7 @@
 
 using EdNexusData.Broker.Data;
 using MediatR;
-using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using EdNexusData.Broker.Web;
@@ -50,7 +50,7 @@ if (Directory.Exists(configFolder))
     builder.Configuration.AddEnvironmentVariables();
 }
 
-//builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
 //builder.Services.AddScoped<ScopedHttpContext>();

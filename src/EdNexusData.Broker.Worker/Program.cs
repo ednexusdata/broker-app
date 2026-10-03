@@ -9,8 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using System.Security.Cryptography.X509Certificates;
 using EdNexusData.Broker.Core.Security;
+using Autofac.Extensions.DependencyInjection;
 
 var builder = Host.CreateDefaultBuilder(args);
+
+builder.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
 builder.ConfigureAppConfiguration((hostingContext, config) =>
 {
