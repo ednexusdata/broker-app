@@ -32,6 +32,6 @@ public class AuthenticationProviderResolver
 
         Guard.Against.Null(authProviderType, "authProviderType", $"Unable to resole {connectorTypeName}");
 
-        return (IAuthenticationProvider)ActivatorUtilities.CreateInstance(_serviceProvider, authProviderType);  
+        return (IAuthenticationProvider)ConnectorActivator.CreateInstance(_serviceProvider, authProviderType);  
     }
 }

@@ -26,7 +26,7 @@ public class ConfigurationSerializer
 
     public async Task<IConfiguration> DeseralizeAsync(Type connectorConfigType, Guid focusEducationOrganization)
     {
-        var iconfigModel = ActivatorUtilities.CreateInstance(_serviceProvider, connectorConfigType) as IConfiguration;
+        var iconfigModel = ConnectorActivator.CreateInstance(_serviceProvider, connectorConfigType) as IConfiguration;
         var objTypeName = iconfigModel!.GetType().FullName;
         _ = objTypeName ?? throw new ArgumentNullException($"Type name for {objTypeName} is null");
         

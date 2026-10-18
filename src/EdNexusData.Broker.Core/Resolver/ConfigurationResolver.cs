@@ -70,7 +70,7 @@ public class ConfigurationResolver : IConfigurationResolver
 
     private T DeseralizeConnectorSettingsAsync<T>(EducationOrganizationConnectorSettings repoConnectorSettings)
     {
-        var iconfigModel = (T)ActivatorUtilities.CreateInstance(_serviceProvider, typeof(T));
+        var iconfigModel = (T)ConnectorActivator.CreateInstance(_serviceProvider, typeof(T));
         var objTypeName = iconfigModel.GetType().FullName;
         
         Guard.Against.Null(typeof(T).Assembly.GetName().Name);

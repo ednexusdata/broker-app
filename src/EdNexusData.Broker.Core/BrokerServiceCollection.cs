@@ -33,7 +33,6 @@ public static class BrokerServiceCollection
     public static IServiceCollection AddBrokerServices(this IServiceCollection services)
     {
         // Loaders
-        services.AddSingleton<ConnectorLoader>();
         
         // Caches
         services.AddSingleton<MappingLookupCache>();
@@ -92,7 +91,6 @@ public static class BrokerServiceCollection
         Microsoft.Extensions.Configuration.IConfiguration config)
     {
         // Loaders
-        services.AddSingleton<ConnectorLoader>();
 
         // Services
         services.AddSingleton<ILookupClient>(_ => new LookupClient());
@@ -144,27 +142,16 @@ public static class BrokerServiceCollection
         return services;
     }
 
-    public static IServiceCollection AddConnectorServicesToDefaultProvider(this IServiceCollection services)
+    /// <summary>
+    /// Loads the connectors and registers the loader. Connector services are not added to the app container:
+    /// each connector gets its own Autofac container (see <see cref="ConnectorActivator"/>) so it can be unloaded.
+    /// </summary>
+    public static IServiceCollection AddConnectorServices(this IServiceCollection services)
     {
-        var connectorLoader = Activator.CreateInstance<ConnectorLoader>();
-        _ = connectorLoader ?? throw new InvalidOperationException("Loader could not be instantiated.");
-
-        // var types = AppDomain.CurrentDomain.GetAssemblies()
-        //                 .SelectMany(s => s.GetExportedTypes())
-        //                 .Where(p => p.GetInterface(nameof(IConnectorServiceCollection)) is not null);
-
+        var connectorLoader = new ConnectorLoader();
+        connectorLoader.UseAppServices(services);
         services.AddSingleton(connectorLoader);
-
-        var types = TypeResolver.ResolveConnectorInterface(connectorLoader, nameof(IConnectorServiceCollection));
-        if (types is not null && types.Count > 0)
-        {
-            foreach (var type in types)
-            {
-                // Call AddDependencies on each service collection
-                var myMethod = type?.GetMethod("AddDependencies");
-                myMethod!.Invoke(null, [services]);
-            }
-        }
+        services.AddScoped<ConnectorActivator>();
 
         return services;
     }

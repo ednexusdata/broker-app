@@ -25,6 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac" Version="9.*" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.*" />
     <PackageReference Include="DnsClient" Version="1.7.0" />
     <PackageReference Include="jcamp.FluentEmail.MailKit" Version="3.8.0" />
     <PackageReference Include="jcamp.FluentEmail.Razor" Version="3.8.0" />

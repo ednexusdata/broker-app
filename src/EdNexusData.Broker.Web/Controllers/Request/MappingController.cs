@@ -144,7 +144,7 @@ public class MappingController : AuthenticatedController<MappingController>
 
         Type mappingCollectionType = typeof(List<>).MakeGenericType([mappingType]);
 
-        var mappedForm = ActivatorUtilities.CreateInstance(_serviceProvider, mappingCollectionType);
+        var mappedForm = ConnectorActivator.CreateInstance(_serviceProvider, mappingCollectionType);
 
         // Perform the model binding
         await TryUpdateModelAsync(mappedForm, mappingCollectionType, "mapping");

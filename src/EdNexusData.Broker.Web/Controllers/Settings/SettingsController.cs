@@ -60,8 +60,8 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     {
         if (await FocusedToDistrict() is not null) return View();
         
-        var connectors = _connectorLoader.Connectors;
-        var payloads = _connectorLoader.Payloads;
+        var connectors = _connectorLoader.Connectors.ToList();
+        var payloads = _connectorLoader.Payloads.ToList();
 
         var connectorSettings = await _repo.ListAsync(new ConnectorByEdOrgIdSpec(_focusedDistrictEdOrg!.Value));
 
@@ -80,7 +80,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
     {
         if (await FocusedToDistrict() is not null) return View();
 
-        var connectors = _connectorLoader.Connectors;
+        var connectors = _connectorLoader.Connectors.ToList();
 
         if (connectorsEnabled is not null && connectorsEnabled.Count() > 0)
         {

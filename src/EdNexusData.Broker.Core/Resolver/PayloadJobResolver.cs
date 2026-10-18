@@ -32,7 +32,7 @@ public class PayloadJobResolver
 
         Guard.Against.Null(resolvedPayloadContentType, "", "Could not get payload content type");
 
-        var payloadContentJob = ActivatorUtilities.CreateInstance(_serviceProvider, resolvedPayloadContentType);
+        var payloadContentJob = ConnectorActivator.CreateInstance(_serviceProvider, resolvedPayloadContentType);
         
         return (PayloadJob)payloadContentJob;
     }

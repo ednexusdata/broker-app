@@ -107,7 +107,7 @@ public class ImportRequestMappingsJob : IJob
             // See if not created
             if (!importers.TryGetValue(importerType, out importer!))
             {
-                importer = ActivatorUtilities.CreateInstance(_serviceProvider, importerType);
+                importer = ConnectorActivator.CreateInstance(_serviceProvider, importerType);
                 importers.Add(importerType, importer);
                 await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Core.PayloadContentActionStatus.Importing, "Created importer of type {0}.", importerType.FullName);
             }

@@ -28,7 +28,7 @@ public class PayloadContentActionJobResolver
         var resolvedPayloadContentType = ResolveType(payloadContentType);
         _ = resolvedPayloadContentType ?? throw new ArgumentNullException($"Unable to locate payload content type / {payloadContentType}");
 
-        var payloadContentJob = ActivatorUtilities.CreateInstance(_serviceProvider, resolvedPayloadContentType);
+        var payloadContentJob = ConnectorActivator.CreateInstance(_serviceProvider, resolvedPayloadContentType);
         
         return (PayloadContentActionJob)payloadContentJob;
     }

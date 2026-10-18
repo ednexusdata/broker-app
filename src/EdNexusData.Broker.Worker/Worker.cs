@@ -178,7 +178,7 @@ public class Worker : BackgroundService
             _logger.LogInformation("Resolved job type for {jobRecordId} to {jobType}.", jobRecord.Id, jobType.FullName);
 
             // Instantiate and cast as IJob
-            var job = (IJob)ActivatorUtilities.CreateInstance(scoped.ServiceProvider, jobType);
+            var job = (IJob)ConnectorActivator.CreateInstance(scoped.ServiceProvider, jobType);
             
             await _jobStatusService.UpdateJobStatus(jobRecord, JobStatus.Running, "Begin running.");
             _logger.LogInformation("Begin running {jobRecordId}.", jobRecord.Id);

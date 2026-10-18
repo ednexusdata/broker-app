@@ -270,7 +270,7 @@ builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
 builder.Services.AddBrokerServices();
 builder.Services.AddReportingServices();
-builder.Services.AddConnectorServicesToDefaultProvider();
+builder.Services.AddConnectorServices();
 
 // Add and configure the in-memory cache
 builder.Services.AddMemoryCache(options =>
@@ -442,9 +442,6 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Start();
-
-// var defaultServiceProvider = app.Services.GetRequiredService<IServiceProvider>();
-// BrokerServiceProvider.AddConnectorDependencies(defaultServiceProvider);
 
 // var server = app.Services.GetService<IServer>();
 // var addressFeature = server?.Features.Get<IServerAddressesFeature>();

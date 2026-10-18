@@ -149,7 +149,7 @@ public class PrepareMappingJob : IJob
         Type? recordType = null;
 
         // Create transformer object
-        dynamic transformer = ActivatorUtilities.CreateInstance(_serviceProvider, resolvedTransformerType);
+        dynamic transformer = ConnectorActivator.CreateInstance(_serviceProvider, resolvedTransformerType);
         
         // Attach job status info
         var jobStatusService = new JobStatusServiceProxy<PrepareMappingJob>(_jobStatusService, jobInstance, payloadContent.Request);

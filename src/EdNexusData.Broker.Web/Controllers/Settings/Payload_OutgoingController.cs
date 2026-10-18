@@ -58,7 +58,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
                 Settings = settings
             },
             ConnectorListItems = ConnectorSelectMenuHelper.ConnectorsListMenu(
-                _connectorLoader.Connectors, 
+                _connectorLoader.Connectors.ToList(), 
                 currentPayload?.OutgoingPayloadSettings?.StudentLookupConnector
             )
         });

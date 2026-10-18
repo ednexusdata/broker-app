@@ -30,7 +30,7 @@ public partial class SettingsController : AuthenticatedController<SettingsContro
                         .First(x => x.GetType() == typeof(DisplayNameAttribute))).DisplayName
                 },
                 ConnectorListItems = ConnectorSelectMenuHelper.ConnectorsListMenu(
-                    _connectorLoader.Connectors, 
+                    _connectorLoader.Connectors.ToList(), 
                     currentPayload?.IncomingPayloadSettings?.StudentInformationSystem
                 )
             }

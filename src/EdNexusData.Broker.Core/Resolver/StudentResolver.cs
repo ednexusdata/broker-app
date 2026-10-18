@@ -25,7 +25,7 @@ public class StudentResolver
         Guard.Against.Null(studentLookupServiceType, "", "Could not get student type");
         
         var connectorStudentLookupService = (IStudentService)
-            ActivatorUtilities.CreateInstance(_serviceProvider, studentLookupServiceType);
+            ConnectorActivator.CreateInstance(_serviceProvider, studentLookupServiceType);
         
         return connectorStudentLookupService;
     }
