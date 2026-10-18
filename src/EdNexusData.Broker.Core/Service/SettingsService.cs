@@ -1,3 +1,4 @@
+using EdNexusData.Broker.Core.Jobs;
 using EdNexusData.Broker.Core.Specifications;
 
 namespace EdNexusData.Broker.Core.Services;
@@ -37,5 +38,11 @@ public class SettingsService
         var setting = await GetAsync(key);
         setting.Value = value;
         await settingsRepository.UpdateAsync(setting);
+    }
+
+    public async Task<int> GetRequestCleanupDaysAsync()
+    {
+        var cleanupDaysSetting = await GetValueAsync("RequestCleanupDays");
+        return int.TryParse(cleanupDaysSetting, out var days) ? days : RequestCleanupJob.DefaultCleanupDays;
     }
 }

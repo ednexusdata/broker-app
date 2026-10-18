@@ -15,20 +15,23 @@ public class TransmittingJob : IJob
     private readonly JobStatusService<TransmittingJob> jobStatusService;
     private readonly BrokerResolver brokerResolver;
     private readonly MessageService messageService;
+    private readonly ActivityLogService activityLogService;
     private readonly HttpClient httpClient;
 
     public TransmittingJob(
-        RequestService requestService, 
+        RequestService requestService,
         JobStatusService<TransmittingJob> jobStatusService,
         BrokerResolver brokerResolver,
         IHttpClientFactory httpClientFactory,
-        MessageService messageService
+        MessageService messageService,
+        ActivityLogService activityLogService
     )
     {
         this.requestService = requestService;
         this.jobStatusService = jobStatusService;
         this.brokerResolver = brokerResolver;
         this.messageService = messageService;
+        this.activityLogService = activityLogService;
         httpClient = httpClientFactory.CreateClient("default");
     }
     
@@ -46,12 +49,12 @@ public class TransmittingJob : IJob
         _ = messageContent ?? throw new InvalidCastException("Message contents did not deseralize to manifest succesfully.");
 
         // Step 3: Resolve broker address
-        _ = messageContent?.To?.District?.Domain ?? throw new NullReferenceException("Domain is missing");
+        var domain = messageContent?.To?.District?.Domains.FirstOrDefault() ?? throw new NullReferenceException("Domain is missing");
         await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Transmitting, 
-            "Resolving domain {0}", messageContent.To.District.Domain);
-        var brokerAddress = await brokerResolver.ComposeBrokerUrl(messageContent.To.District.Domain, "api/v1/transmit");
+            "Resolving domain {0}", domain);
+        var brokerAddress = await brokerResolver.ComposeBrokerUrl(domain, "api/v1/transmit");
         await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Transmitting, 
-            "Resolved domain with path {0}: url {1} | path {2}", messageContent.To.District.Domain, brokerAddress?.Host, brokerAddress?.Path);
+            "Resolved domain with path {0}: url {1} | path {2}", domain, brokerAddress?.Host, brokerAddress?.Path);
 
         // Step 4: Prepare POST request
         var multipartContent = await messageService.PrepareMultipartContent(message, request);
@@ -78,6 +81,13 @@ public class TransmittingJob : IJob
             // Step 8: Update request to sent
             await requestService.MarkRequested(request, jobInstance);
             await jobStatusService.UpdateRequestStatus(jobInstance, request, RequestStatus.Transmitted, "Set request to transmitted");
+
+            await activityLogService.LogAsync(
+                ActivityType.RequestWork,
+                jobInstance.InitiatedUserId,
+                "Jobs.TransmittingJob",
+                "Response transmitted to requesting district",
+                request.Id);
         }
         else
         {

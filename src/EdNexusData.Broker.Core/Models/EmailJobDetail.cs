@@ -12,4 +12,6 @@ public class EmailJobDetail
     public string? ReplyTo { get; set; }
 
     public string? Subject { get; set; }
+
+    public List<EmailAttachment>? Attachments { get; set; }
 }

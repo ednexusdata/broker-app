@@ -9,9 +9,10 @@ public class District
 
     public Address? Address { get; set; }
 
-    public string? Domain { get; set; }
+    public List<string> Domains { get; set; } = new();
+    public string? Domain => Domains.FirstOrDefault();
     public string TimeZone { get; set; } = TimeZoneInfo.Local.Id;
-    
+
     public ICollection<School>? Schools { get; set; }
 
     public Common.EducationOrganizations.District ToCommon()
@@ -23,7 +24,7 @@ public class District
             ShortName = ShortName,
             Number = Number,
             Address = Address?.ToCommon(),
-            Domain = Domain,
+            Domains = Domains,
             TimeZone = TimeZone,
             Schools = Schools?.Select(s => s.ToCommon()).ToList()
         };

@@ -7,6 +7,7 @@ using EdNexusData.Broker.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.ComponentModel;
+using EdNexusData.Broker.Core.Services;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -23,6 +24,7 @@ public class ImportMappingJob : IJob
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly FocusEducationOrganizationResolver _focusEducationOrganizationResolver;
     private readonly TypeResolver typeResolver;
+    private readonly ActivityLogService _activityLogService;
 
     public ImportMappingJob(
             ConnectorLoader connectorLoader,
@@ -34,7 +36,8 @@ public class ImportMappingJob : IJob
             IServiceProvider serviceProvider,
             IRepository<Mapping> mappingRepository,
             FocusEducationOrganizationResolver focusEducationOrganizationResolver,
-            TypeResolver typeResolver)
+            TypeResolver typeResolver,
+            ActivityLogService activityLogService)
     {
         _connectorLoader = connectorLoader;
         _connectorResolver = connectorResolver;
@@ -46,6 +49,7 @@ public class ImportMappingJob : IJob
         _mappingRepository = mappingRepository;
         _focusEducationOrganizationResolver = focusEducationOrganizationResolver;
         this.typeResolver = typeResolver;
+        _activityLogService = activityLogService;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -129,5 +133,12 @@ public class ImportMappingJob : IJob
         await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Core.PayloadContentActionStatus.Importing, "Called import on {0} and it returned {1}.", importerType.FullName, result);
 
         await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, mapping.PayloadContentAction, Core.PayloadContentActionStatus.Imported, "Finished importing mapping.");
+
+        await _activityLogService.LogAsync(
+            ActivityType.RequestWork,
+            jobInstance.InitiatedUserId,
+            "Jobs.ImportMappingJob",
+            "Imported mapping",
+            mapping.PayloadContentAction.PayloadContent.RequestId);
     }
 }

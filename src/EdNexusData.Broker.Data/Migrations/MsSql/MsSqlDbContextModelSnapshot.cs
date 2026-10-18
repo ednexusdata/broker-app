@@ -17,10 +17,65 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("EdNexusData.Broker.Core.ActivityLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("ActivityLogId");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ActivityType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("RequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActivityType");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.ToTable("ActivityLog", (string)null);
+                });
 
             modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganization", b =>
                 {
@@ -43,9 +98,6 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Domain")
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("EducationOrganizationType")
                         .HasColumnType("int");
@@ -80,10 +132,6 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Domain")
-                        .IsUnique()
-                        .HasFilter("[Domain] IS NOT NULL");
 
                     b.HasIndex("ParentOrganizationId");
 
@@ -129,6 +177,42 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                         .HasFilter("[EducationOrganizationId] IS NOT NULL");
 
                     b.ToTable("EducationOrganizationConnectorSettings");
+                });
+
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationDomain", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("EducationOrganizationDomainId");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Domain")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("EducationOrganizationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Domain")
+                        .IsUnique();
+
+                    b.HasIndex("EducationOrganizationId");
+
+                    b.ToTable("EducationOrganizationDomains", (string)null);
                 });
 
             modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationPayloadSettings", b =>
@@ -926,6 +1010,23 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("EdNexusData.Broker.Core.ActivityLog", b =>
+                {
+                    b.HasOne("EdNexusData.Broker.Core.Request", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("EdNexusData.Broker.Core.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Request");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganization", b =>
                 {
                     b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "ParentOrganization")
@@ -940,6 +1041,17 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
                     b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
                         .WithMany()
                         .HasForeignKey("EducationOrganizationId");
+
+                    b.Navigation("EducationOrganization");
+                });
+
+            modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganizationDomain", b =>
+                {
+                    b.HasOne("EdNexusData.Broker.Core.EducationOrganization", "EducationOrganization")
+                        .WithMany("Domains")
+                        .HasForeignKey("EducationOrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("EducationOrganization");
                 });
@@ -1231,6 +1343,8 @@ namespace EdNexusData.Broker.Data.Migrations.MsSql
 
             modelBuilder.Entity("EdNexusData.Broker.Core.EducationOrganization", b =>
                 {
+                    b.Navigation("Domains");
+
                     b.Navigation("EducationOrganizations");
                 });
 

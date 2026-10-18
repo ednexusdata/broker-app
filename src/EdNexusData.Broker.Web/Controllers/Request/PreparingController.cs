@@ -10,11 +10,13 @@ using EdNexusData.Broker.Core.Services;
 using EdNexusData.Broker.Core.Worker;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.Helpers;
+using EdNexusData.Broker.Web.ViewModels;
 using EdNexusData.Broker.Web.ViewModels.Preparing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using static EdNexusData.Broker.Web.Constants.Claims.CustomClaimType;
+using EdNexusData.Broker.Web.Filters;
 
 namespace EdNexusData.Broker.Web.Controllers;
 
@@ -33,10 +35,11 @@ public class PreparingController : AuthenticatedController<RequestsController>
     private readonly INowWrapper nowWrapper;
     private readonly JobStatusService<PreparingController> jobStatusService;
     private readonly PayloadContentActionJobService payloadContentActionJobService;
+    private readonly SettingsService settingsService;
 
     public PreparingController(
-        IRepository<Request> requestRepository, 
-        IRepository<PayloadContent> payloadContentRepository, 
+        IRepository<Request> requestRepository,
+        IRepository<PayloadContent> payloadContentRepository,
         IRepository<PayloadContentAction> actionRepository,
         IRepository<Mapping> mappingRepository,
         JobService jobService,
@@ -45,7 +48,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
         ICurrentUser currentUser,
         INowWrapper nowWrapper,
         JobStatusService<PreparingController> jobStatusService,
-        PayloadContentActionJobService payloadContentActionJobService)
+        PayloadContentActionJobService payloadContentActionJobService,
+        SettingsService settingsService)
     {
         _requestRepository = requestRepository;
         _payloadContentRepository = payloadContentRepository;
@@ -59,9 +63,11 @@ public class PreparingController : AuthenticatedController<RequestsController>
         this.nowWrapper = nowWrapper;
         this.jobStatusService = jobStatusService;
         this.payloadContentActionJobService = payloadContentActionJobService;
+        this.settingsService = settingsService;
     }
 
     [Route("/Preparing/{id:guid}")]
+    [LogUserActivity(ActivityType.RequestOpened, "Preparing.Index")]
     public async Task<IActionResult> Index(Guid id, Guid? jobId)
     {
         // Get all payload content files for request
@@ -81,7 +87,8 @@ public class PreparingController : AuthenticatedController<RequestsController>
             RequestId = id,
             RequestStatus = request.RequestStatus,
             Open = request.Open,
-            Request = request
+            Request = request,
+            Retention = RetentionCountdownViewModel.FromRequest(request, await settingsService.GetRequestCleanupDaysAsync())
         };
 
         if (request.PayloadContents is not null)
@@ -169,6 +176,7 @@ public class PreparingController : AuthenticatedController<RequestsController>
 
     [Route("/Preparing/{id:guid}")]
     [HttpPost]
+    [LogUserActivity(ActivityType.RequestWork, "Preparing.Update", Description = "Updated payload content actions")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Update(Guid id, CreateRequestManifestViewModel PayloadContent)
     {

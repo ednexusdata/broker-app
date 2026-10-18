@@ -9,6 +9,7 @@ public class RequestByIdwithEdOrgs : Specification<Request>, ISingleResultSpecif
     Query
         .Include(x => x.EducationOrganization)
         .Include(x => x.EducationOrganization!.ParentOrganization)
+            .ThenInclude(eo => eo!.Domains)
         .Where(req => req.Id == requestId);
   }
 }

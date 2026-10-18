@@ -33,7 +33,10 @@ public class InitialSeed
             Number = "1000",
             Name = "Oregon School District",
             ShortName = "Oregon SD",
-            Domain = "or.makoa.dev",
+            Domains = new List<Core.EducationOrganizationDomain>()
+            {
+                new Core.EducationOrganizationDomain() { Domain = "or.makoa.dev" }
+            },
             EducationOrganizationType = EducationOrganizationType.District,
             Address = new Core.Address()
             {
@@ -136,7 +139,10 @@ public class InitialSeed
             Number = "2000",
             Name = "Washington School District",
             ShortName = "Washington SD",
-            Domain = "wa.makoa.dev",
+            Domains = new List<Core.EducationOrganizationDomain>()
+            {
+                new Core.EducationOrganizationDomain() { Domain = "wa.makoa.dev" }
+            },
             EducationOrganizationType = EducationOrganizationType.District,
             Address = new Core.Address()
             {

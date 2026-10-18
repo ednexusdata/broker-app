@@ -9,7 +9,8 @@ public class OrganizationByDomainSpec : Specification<EducationOrganization>, IS
   {
     Query
         .Include(edOrg => edOrg.EducationOrganizations!.OrderBy(x => x.Name))
-        .Where(edOrg => edOrg.Domain == domain)
+        .Include(edOrg => edOrg.Domains)
+        .Where(edOrg => edOrg.Domains!.Any(d => d.Domain == domain))
         .EnableCache(nameof(OrganizationByDomainSpec), domain);
   }
 }

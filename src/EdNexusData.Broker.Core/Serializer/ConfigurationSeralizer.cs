@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using EdNexusData.Broker.Common.Configuration;
 using Microsoft.AspNetCore.DataProtection;
+using EdNexusData.Broker.Core.Security;
+using System.Security.Cryptography;
 
 namespace EdNexusData.Broker.Core.Serializers;
 
@@ -41,8 +43,7 @@ public class ConfigurationSerializer
 
                 if (!encconfigSettingsObj.Contains("{"))
                 {
-                    var dp = dataProtectionProvider.CreateProtector("SecureConnectionString");
-                    var decryptedSerializedConfig = dp.Unprotect(encconfigSettingsObj);
+                    var decryptedSerializedConfig = DecryptSettings(encconfigSettingsObj, connectorConfigType.Assembly.GetName().Name!, focusEducationOrganization);
 
                     var configSettingsObj = Newtonsoft.Json.Linq.JObject.Parse(decryptedSerializedConfig);
 
@@ -96,9 +97,10 @@ public class ConfigurationSerializer
         // }
 
         // Encrypt object
-        var dp = dataProtectionProvider.CreateProtector("SecureConnectionString");
         var seralizedConfig = JsonSerializer.SerializeToDocument<dynamic>(obj);
-        var encryptedSerializedConfig = dp.Protect(seralizedConfig.ToJsonString()!);
+        var encryptedSerializedConfig = ConnectorSettingsProtector
+            .CreateBoundProtector(dataProtectionProvider, objAssemblyName, focusEducationOrganization)
+            .Protect(seralizedConfig.ToJsonString()!);
 
         // Serialize settings object
         //dynamic objWrapper = new ExpandoObject();
@@ -121,5 +123,22 @@ public class ConfigurationSerializer
         }
 
         return obj;
+    }
+
+    private string DecryptSettings(string encryptedSettings, string connectorName, Guid focusEducationOrganization)
+    {
+        try
+        {
+            return ConnectorSettingsProtector
+                .CreateBoundProtector(dataProtectionProvider, connectorName, focusEducationOrganization)
+                .Unprotect(encryptedSettings);
+        }
+        catch (CryptographicException)
+        {
+            // Settings encrypted before per-record purpose binding was introduced. Fall back to the
+            // legacy purpose so existing data keeps working; the next SerializeAndSaveAsync call for
+            // this record will re-encrypt it under the bound purpose.
+            return ConnectorSettingsProtector.CreateLegacyProtector(dataProtectionProvider).Unprotect(encryptedSettings);
+        }
     }
 }

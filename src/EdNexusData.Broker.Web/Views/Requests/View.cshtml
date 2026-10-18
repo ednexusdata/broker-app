@@ -22,6 +22,7 @@
 }
 <div class="space-y-10 divide-y divide-gray-900/10">
     <div class="px-4 sm:px-0">
+        <partial name="_RetentionCountdown" model="@Model.Retention" />
         <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl px-4 py-6">
             <h1 class="font-bold text-xl mb-3">@Model.Request?.Student?.Student?.FirstName @Model.Request?.Student?.Student?.MiddleName @Model.Request?.Student?.Student?.LastName</h1>
             <div class="font-semibold mb-3">Student ID: @Model.Request?.Student?.Student?.StudentNumber | DOB: @Model.Request?.Student?.Student?.Birthdate | Grade: @Model.Request?.Student?.Student?.Grade | Gender: @Model.Request?.Student?.Student?.Gender</div>

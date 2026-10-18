@@ -8,6 +8,7 @@ using System.ComponentModel;
 using EdNexusData.Broker.Common.Jobs;
 using EdNexusData.Broker.Core.Serializers;
 using EdNexusData.Broker.Common;
+using EdNexusData.Broker.Core.Services;
 
 namespace EdNexusData.Broker.Core.Jobs;
 
@@ -25,6 +26,7 @@ public class PrepareMappingJob : IJob
     private readonly IRepository<Mapping> _mappingRepository;
     private readonly FocusEducationOrganizationResolver focusEducationOrganizationResolver;
     private readonly TypeResolver typeResolver;
+    private readonly ActivityLogService activityLogService;
 
     public PrepareMappingJob(
             ConnectorLoader connectorLoader,
@@ -37,7 +39,8 @@ public class PrepareMappingJob : IJob
             IServiceProvider serviceProvider,
             IRepository<Mapping> mappingRepository,
             FocusEducationOrganizationResolver focusEducationOrganizationResolver,
-            TypeResolver typeResolver)
+            TypeResolver typeResolver,
+            ActivityLogService activityLogService)
     {
         _connectorLoader = connectorLoader;
         _connectorResolver = connectorResolver;
@@ -50,6 +53,7 @@ public class PrepareMappingJob : IJob
         _mappingRepository = mappingRepository;
         this.focusEducationOrganizationResolver = focusEducationOrganizationResolver;
         this.typeResolver = typeResolver;
+        this.activityLogService = activityLogService;
     }
     
     public async Task ProcessAsync(Job jobInstance)
@@ -272,5 +276,12 @@ public class PrepareMappingJob : IJob
         await _actionRepository.UpdateAsync(action);
 
         await _jobStatusService.UpdatePayloadContentActionStatus(jobInstance, action, Core.PayloadContentActionStatus.Prepared, "Prepared");
+
+        await activityLogService.LogAsync(
+            ActivityType.RequestWork,
+            jobInstance.InitiatedUserId,
+            "Jobs.PrepareMappingJob",
+            "Prepared mapping",
+            payloadContent.Request.Id);
     }
 }

@@ -1,0 +1,30 @@
+@model EdNexusData.Broker.Core.Emails.ViewModels.RetentionReminderViewModel;
+@{
+    Layout = "Shared._Layout";
+    var studentDisplay = $"{Model.Student?.FirstName} {Model.Student?.MiddleName} {Model.Student?.LastName}".Replace("  ", " ").Trim();
+}
+<div>
+    This records request@(string.IsNullOrEmpty(studentDisplay) ? "" : $" for {studentDisplay}") has had no activity and is scheduled for permanent deletion in <strong>@Model.DaysRemaining day@(Model.DaysRemaining == 1 ? "" : "s")</strong>, on @Model.DestructionAt.ToString("M/dd/yyyy h:mm tt") UTC.
+</div>
+
+@if (!string.IsNullOrEmpty(studentDisplay))
+{
+<p>
+    <div><strong>Student:</strong></div>
+    <div>@studentDisplay</div>
+    <div>@Model.Student?.StudentNumber</div>
+</p>
+}
+
+<p>
+    <div>If no further activity (a message, status change, or mapping update) occurs on this request before then, it and all associated records will be permanently and irreversibly deleted.</div>
+</p>
+
+<p>
+    <a href="@Model.EnvironmentService?.BrokerBaseUrlWithoutSlash/requests/view/@Model.RequestId">View Request</a>
+</p>
+
+@section PreHeader
+{
+    Records request scheduled for deletion in @Model.DaysRemaining day@(Model.DaysRemaining == 1 ? "" : "s") unless there is further activity.
+}

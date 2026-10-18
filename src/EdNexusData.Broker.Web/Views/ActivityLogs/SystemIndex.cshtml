@@ -1,0 +1,162 @@
+@model EdNexusData.Broker.Web.Models.Paginations.PaginatedViewModel<EdNexusData.Broker.Web.Models.ActivityLogs.ActivityLogViewModel>;
+@{
+    ViewData["Title"] = "Activity Log";
+    Layout = "_AuthenticatedLayout";
+    ViewData["FocusBar"] = false;
+}
+
+<div x-data="activityLogsIndex" class="grid gap-4">
+    <form
+        autocomplete="off"
+        asp-action="SystemIndex"
+        method="get"
+        class="grid gap-y-4"
+    >
+        <div class="flex-1">
+            <label for="searchBy" class="sr-only">Search</label>
+            <div class="flex rounded-md shadow-sm">
+                <div class="flex-grow focus-within:z-10">
+                    <input x-model="searchBy" type="text" name="searchBy" id="searchBy" class="w-full rounded-none rounded-l-md border-0 py-1.5 text-sm leading-6 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-tertiary-700 sm:text-sm" placeholder="Search by user, action, or description">
+                </div>
+                <button type="submit" class="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                    <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                    </svg>
+                    Search
+                </button>
+            </div>
+        </div>
+    </form>
+    <div class="flow-root overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <table class="min-w-full divide-y divide-gray-300">
+                    <thead class="bg-white">
+                        <tr>
+                            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                                <a asp-route-sortBy="createdat"
+                                    asp-route-sortDir="@(Model.SortBy == "createdat" && Model.SortDir == "asc" ? "desc" : "asc")"
+                                    class="group inline-flex">
+                                    When
+                                    <span class="ml-2 flex-none rounded @(Model.SortBy == "createdat" ? "bg-gray-200 text-gray-900 group-hover:bg-gray-300" : "invisible text-gray-400 group-hover:visible group-focus:visible") @(Model.SortBy == "createdat" && Model.SortDir == "desc" ? "transform rotate-180" : "")">
+                                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </span>
+                                </a>
+                            </th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                <a asp-route-sortBy="user"
+                                    asp-route-sortDir="@(Model.SortBy == "user" && Model.SortDir == "asc" ? "desc" : "asc")"
+                                    class="group inline-flex">
+                                    User
+                                    <span class="ml-2 flex-none rounded @(Model.SortBy == "user" ? "bg-gray-200 text-gray-900 group-hover:bg-gray-300" : "invisible text-gray-400 group-hover:visible group-focus:visible") @(Model.SortBy == "user" && Model.SortDir == "desc" ? "transform rotate-180" : "")">
+                                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </span>
+                                </a>
+                            </th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                <a asp-route-sortBy="activitytype"
+                                    asp-route-sortDir="@(Model.SortBy == "activitytype" && Model.SortDir == "asc" ? "desc" : "asc")"
+                                    class="group inline-flex">
+                                    Type
+                                    <span class="ml-2 flex-none rounded @(Model.SortBy == "activitytype" ? "bg-gray-200 text-gray-900 group-hover:bg-gray-300" : "invisible text-gray-400 group-hover:visible group-focus:visible") @(Model.SortBy == "activitytype" && Model.SortDir == "desc" ? "transform rotate-180" : "")">
+                                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                        </svg>
+                                    </span>
+                                </a>
+                            </th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Description</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Request</th>
+                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white">
+                        @{ var even = true; }
+                        @foreach (var log in Model.Items)
+                        {
+                            <tr class="@(even ? "bg-gray-50" : "")">
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@log.CreatedAt</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@log.User</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@log.ActivityType</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@log.Description</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                                    @if (log.RequestId is not null)
+                                    {
+                                        <a asp-controller="Requests" asp-action="View" asp-route-id="@log.RequestId" class="text-tertiary-700 hover:text-tertiary-900">View request</a>
+                                    }
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">@log.IpAddress</td>
+                            </tr>
+                            even = !even;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <nav class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6" aria-label="Pagination">
+            <div class="hidden sm:block">
+                <p class="text-sm text-gray-700">
+                    @if (!Model.Items.Any())
+                    {
+                        <span>No results found.</span>
+                    }
+                    else
+                    {
+                        <span>
+                            Showing
+                            <span class="font-medium">@Model.Showing</span>
+                            to
+                            <span class="font-medium">@Model.ShowingTo</span>
+                            of
+                            <span class="font-medium">@Model.TotalItems</span>
+                            results
+                        </span>
+                    }
+                </p>
+            </div>
+            <div class="flex flex-1 justify-between sm:justify-end">
+                <a
+                    :href="previousHref"
+                    class="@(Model.ShowPrevious ? "" : "pointer-events-none opacity-50") relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0"
+                >
+                    Previous
+                </a>
+                <a
+                    :href="nextHref"
+                    class="@(Model.ShowNext ? "" : "pointer-events-none opacity-50") relative ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0"
+                >
+                    Next
+                </a>
+            </div>
+        </nav>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('activityLogsIndex', () => {
+                const query = new URLSearchParams(window.location.search)
+                return {
+                    searchBy: query.get('searchBy'),
+
+                    get previousHref() {
+                        const url = new URL(window.location.href)
+                        url.searchParams.set('page', @Model.Page - 1)
+                        return url.toString()
+                    },
+                    get nextHref() {
+                        const url = new URL(window.location.href)
+                        url.searchParams.set('page', @Model.Page + 1)
+                        return url.toString()
+                    },
+                }
+            });
+        })
+    </script>
+}

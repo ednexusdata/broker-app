@@ -76,6 +76,25 @@ public class Worker : BackgroundService
                     }
                 }
 
+                // Queue retention reminder scan if due. Runs hourly (rather than daily, like cleanup)
+                // so the 24-hour-out reminder doesn't drift too far past the mark before it's sent.
+                var lastReminderRun = await settingsService.GetValueAsync("LastRequestRetentionReminderRunAt");
+                var shouldQueueReminder = lastReminderRun == null ||
+                    (DateTimeOffset.TryParse(lastReminderRun, out var lastReminderRunAt) && DateTimeOffset.UtcNow - lastReminderRunAt > TimeSpan.FromHours(1));
+
+                if (shouldQueueReminder)
+                {
+                    var jobsRepository = (IRepository<Job>)scoped.ServiceProvider.GetService(typeof(IRepository<Job>))!;
+                    var existingReminderJob = await jobsRepository.FirstOrDefaultAsync(new JobsByTypeAndStatus(typeof(RequestRetentionReminderJob).FullName!));
+
+                    if (existingReminderJob == null)
+                    {
+                        var jobService = (JobService)scoped.ServiceProvider.GetService(typeof(JobService))!;
+                        await jobService.CreateJobAsync(typeof(RequestRetentionReminderJob));
+                        continue;
+                    }
+                }
+
                 var _context = (BrokerDbContext)scoped.ServiceProvider.GetService(typeof(BrokerDbContext))!;
                 Job? job = null;
 

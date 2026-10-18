@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>a41a6d6b-c504-4749-96e2-d8b4a84529c4</UserSecretsId>
-    <Version>0.0.77</Version>
+    <Version>0.0.82</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
@@ -27,8 +27,8 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.*" />
     <PackageReference Include="MediatR" Version="11.1.0" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
-    <PackageReference Include="Autofac" Version="6.5.0" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Autofac" Version="9.*" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.*" />
   </ItemGroup>
 
   <ItemGroup>

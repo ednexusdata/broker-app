@@ -39,7 +39,7 @@ public static class BrokerServiceCollection
         services.AddSingleton<MappingLookupCache>();
         
         // Other Services
-        services.AddSingleton<ILookupClient, LookupClient>();
+        services.AddSingleton<ILookupClient>(_ => new LookupClient());
 
         // Seralizers
         services.AddScoped<ConfigurationSerializer>();
@@ -77,6 +77,7 @@ public static class BrokerServiceCollection
         services.AddScoped<MappingRecordValidatorService>();
         services.AddScoped<SettingsService>();
         services.AddScoped<PayloadContentActionJobService>();
+        services.AddScoped<ActivityLogService>();
 
         // Wrappers
         services.AddSingleton<INowWrapper, NowWrapper>();
@@ -94,7 +95,7 @@ public static class BrokerServiceCollection
         services.AddSingleton<ConnectorLoader>();
 
         // Services
-        services.AddSingleton<ILookupClient, LookupClient>();
+        services.AddSingleton<ILookupClient>(_ => new LookupClient());
         services.AddScoped<DirectoryLookupService>();
         services.AddScoped<MessageService>();
         services.AddScoped<RequestService>();
@@ -104,7 +105,10 @@ public static class BrokerServiceCollection
         services.AddScoped<DbConnectionService>();
         services.AddScoped<SettingsService>();
         services.AddScoped<PayloadContentActionJobService>();
-        
+        services.AddScoped<RetentionReminderService>();
+        services.AddScoped<ProofOfRequestReport>();
+        services.AddScoped<ActivityLogService>();
+
         // Resolvers
         services.AddScoped<IConfigurationResolver, ConfigurationResolver>();
         services.AddScoped<IPayloadResolver, PayloadResolver>();
@@ -116,7 +120,7 @@ public static class BrokerServiceCollection
         services.AddScoped<PayloadContentActionJobResolver>();
         services.AddScoped<BrokerResolver>();
         services.AddSingleton<TypeResolver>();
-        
+
         // Jobs
         services.AddScoped<RequestingJob>();
         services.AddScoped<TransmittingJob>();
@@ -124,6 +128,8 @@ public static class BrokerServiceCollection
         services.AddScoped<PrepareMappingJob>();
         services.AddScoped<ImportMappingJob>();
         services.AddScoped<RequestCleanupJob>();
+        services.AddScoped<RequestRetentionReminderJob>();
+        services.AddScoped<RequestRetentionReminderEmailJob>();
 
         // Worker
         services.AddScoped(typeof(JobStatusService<>));

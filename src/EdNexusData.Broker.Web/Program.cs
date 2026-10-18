@@ -3,7 +3,7 @@
 
 using EdNexusData.Broker.Data;
 using MediatR;
-using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using EdNexusData.Broker.Web;
@@ -26,6 +26,8 @@ using Microsoft.AspNetCore.Http.Features;
 using EdNexusData.Broker.Web.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using EdNexusData.Broker.Web.Middleware;
+using EdNexusData.Broker.Web.Filters;
+using EdNexusData.Broker.Core.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +50,7 @@ if (Directory.Exists(configFolder))
     builder.Configuration.AddEnvironmentVariables();
 }
 
-//builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
 //builder.Services.AddScoped<ScopedHttpContext>();
@@ -69,19 +71,29 @@ switch (builder.Configuration["DatabaseProvider"])
         break;
 }
 
-X509Certificate2 certificate;
-if (builder.Configuration["DataProtection:PfxCertPassword"] == "null")
-{
-    certificate = X509CertificateLoader.LoadPkcs12FromFile(builder.Configuration["DataProtection:PfxCertPath"]!, null);
-}
-else
-{
-    certificate = X509CertificateLoader.LoadPkcs12FromFile(builder.Configuration["DataProtection:PfxCertPath"]!, builder.Configuration["DataProtection:PfxCertPassword"]!);
-}
-builder.Services.AddDataProtection()
+var certificate = PfxCertificateLoader.Load(
+    builder.Configuration["DataProtection:PfxCertPath"],
+    builder.Configuration["DataProtection:PfxCertPassword"]);
+
+// Certificates used to encrypt keys that are still in the DataProtectionKeys table but that are no
+// longer the active signing/encryption certificate (e.g. after rotating DataProtection:PfxCertPath to
+// a new cert). Without these, rotating the certificate permanently strands every key - and every
+// connector credential - protected under the old one.
+var previousCertificates = builder.Configuration
+    .GetSection("DataProtection:PreviousPfxCertificates")
+    .GetChildren()
+    .Select(section => PfxCertificateLoader.Load(section["PfxCertPath"], section["PfxCertPassword"]))
+    .ToArray();
+
+var dataProtectionBuilder = builder.Services.AddDataProtection()
     .PersistKeysToDbContext<BrokerDbContext>()
     .ProtectKeysWithCertificate(certificate)
     .SetApplicationName("EdNexusData.Broker");
+
+if (previousCertificates.Length > 0)
+{
+    dataProtectionBuilder.UnprotectKeysWithAnyCertificate(previousCertificates);
+}
 
 builder.Services.AddScoped(typeof(EfRepository<>));
 builder.Services.AddScoped(typeof(CachedRepository<>));
@@ -229,7 +241,11 @@ builder.Services.AddTransient<IAuthorizationHandler, RecordAuthorizationHandler>
 
 //builder.Services.AddExceptionHandler<ForceLogoutExceptionHandler>();
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<UserActivityLogActionFilter>();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.AddService<UserActivityLogActionFilter>();
+});
 
 if (builder.Environment.EnvironmentName is not null 
     && EdNexusData.Broker.Core.Environment.IsNonProductionToLocalEnvironment(builder.Environment.EnvironmentName))
@@ -272,7 +288,7 @@ builder.Services.Configure<IISServerOptions>(options =>
     options.AutomaticAuthentication = false;
 });
 
-builder.Services.AddHostedService<BrokerDbContextInitializationService>();
+builder.Services.AddScoped<BrokerDbContextInitializationService>();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -319,13 +335,20 @@ var app = builder.Build();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-logger.LogInformation("PfxCertPath: " + builder.Configuration["DataProtection:PfxCertPath"]);
+logger.LogDebug("PfxCertPath: " + builder.Configuration["DataProtection:PfxCertPath"]);
 
 //app.UseHttpLogging();
-using (var service = app.Services.CreateAsyncScope())
+await using (var service = app.Services.CreateAsyncScope())
 {
+    // Migrations, seeding and first user creation run under a database lock so only one instance does them at a time
+    var migrationService = service.ServiceProvider.GetRequiredService<DatabaseMigrationService>();
     var seederService = service.ServiceProvider.GetRequiredService<SeederService>();
-    await seederService!.Invoke();
+    var initializationService = service.ServiceProvider.GetRequiredService<BrokerDbContextInitializationService>();
+    await migrationService.InvokeAsync(async () =>
+    {
+        await seederService.Invoke();
+        await initializationService.InvokeAsync();
+    });
 }
 
 
@@ -399,6 +422,7 @@ app.MapControllerRoutes("outgoing-requests", "Outgoing");
 app.MapControllerRoutes("requests", "Requests");
 app.MapControllerRoutes("system/users", "Users");
 app.MapControllerRoute("systemjobs", "system/jobs", new { controller = "Jobs", action = "SystemIndex" });
+app.MapControllerRoute("systemactivitylogs", "system/activity", new { controller = "ActivityLogs", action = "SystemIndex" });
 app.MapControllerRoute("store-connectors", "store/connectors", new { controller = "Connectors", action = "Index" });
 app.MapControllerRoute("userjobs", "jobs", new { controller = "Jobs", action = "Index"});
 app.MapControllerRoutes("roles", "UserRoles");

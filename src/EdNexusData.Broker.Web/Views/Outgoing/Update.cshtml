@@ -9,6 +9,8 @@
     ViewData["FocusBarReadOnly"] = true;
 }
 
+<partial name="_RetentionCountdown" model="@Model.Retention" />
+
 <form method="post" asp-action="Update" autocomplete="off">
   <input type="hidden" name="_METHOD" value="PUT" />
   <partial name="_form" for="@Model" />

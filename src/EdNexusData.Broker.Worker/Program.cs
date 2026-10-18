@@ -8,8 +8,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using System.Security.Cryptography.X509Certificates;
+using EdNexusData.Broker.Core.Security;
+using Autofac.Extensions.DependencyInjection;
 
 var builder = Host.CreateDefaultBuilder(args);
+
+builder.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
 builder.ConfigureAppConfiguration((hostingContext, config) =>
 {
@@ -72,20 +76,29 @@ builder.ConfigureServices((hostContext, services) =>
         services.AddSingleton<ICurrentUser, CurrentUserService>();
     }
 
-    X509Certificate2 certificate;
-    if (hostContext.Configuration["DataProtection:PfxCertPassword"] == "null")
-    {
-        certificate = X509CertificateLoader.LoadPkcs12FromFile(hostContext.Configuration["DataProtection:PfxCertPath"]!, null);
-    }
-    else
-    {
-        certificate = X509CertificateLoader.LoadPkcs12FromFile(hostContext.Configuration["DataProtection:PfxCertPath"]!, hostContext.Configuration["DataProtection:PfxCertPassword"]!);
-    }
-    
-    services.AddDataProtection()
+    var certificate = PfxCertificateLoader.Load(
+        hostContext.Configuration["DataProtection:PfxCertPath"],
+        hostContext.Configuration["DataProtection:PfxCertPassword"]);
+
+    // Certificates used to encrypt keys that are still in the DataProtectionKeys table but that are
+    // no longer the active signing/encryption certificate (e.g. after rotating DataProtection:PfxCertPath
+    // to a new cert). Without these, rotating the certificate permanently strands every key - and every
+    // connector credential - protected under the old one.
+    var previousCertificates = hostContext.Configuration
+        .GetSection("DataProtection:PreviousPfxCertificates")
+        .GetChildren()
+        .Select(section => PfxCertificateLoader.Load(section["PfxCertPath"], section["PfxCertPassword"]))
+        .ToArray();
+
+    var dataProtectionBuilder = services.AddDataProtection()
         .PersistKeysToDbContext<BrokerDbContext>()
         .ProtectKeysWithCertificate(certificate)
         .SetApplicationName("EdNexusData.Broker");
+
+    if (previousCertificates.Length > 0)
+    {
+        dataProtectionBuilder.UnprotectKeysWithAnyCertificate(previousCertificates);
+    }
     
     services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(options =>
     {
@@ -114,6 +127,7 @@ builder.ConfigureServices((hostContext, services) =>
     }
 
     services.AddBrokerServicesForWorker(hostContext.Configuration);
+    services.AddReportingServices();
     services.AddConnectorServicesToDefaultProvider();
 
     services.AddHostedService<Worker>();

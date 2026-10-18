@@ -1,0 +1,53 @@
+@model EdNexusData.Broker.Core.Emails.ViewModels.RetentionDestroyedViewModel;
+@{
+    Layout = "Shared._Layout";
+    var studentDisplay = $"{Model.Student?.FirstName} {Model.Student?.MiddleName} {Model.Student?.LastName}".Replace("  ", " ").Trim();
+}
+<div>
+    The following records request had no activity for @Model.RetentionDays days and has now been <strong>permanently deleted</strong> from the broker, in accordance with the configured retention policy.
+</div>
+
+<p>
+    <div><strong>Request ID:</strong></div>
+    <div>@Model.RequestId</div>
+</p>
+
+@if (!string.IsNullOrEmpty(studentDisplay))
+{
+<p>
+    <div><strong>Student:</strong></div>
+    <div>@studentDisplay</div>
+    <div>@Model.Student?.StudentNumber</div>
+</p>
+}
+
+<p>
+    <div><strong>From:</strong></div>
+    <div>@Model.From?.District?.Name (@Model.From?.District?.Address?.StateAbbreviation) / @Model.From?.School?.Name</div>
+    <div>@Model.From?.Sender?.Name</div>
+</p>
+
+<p>
+    <div><strong>To:</strong></div>
+    <div>@Model.To?.District?.Name (@Model.To?.District?.Address?.StateAbbreviation) / @Model.To?.School?.Name</div>
+    <div>@Model.To?.Sender?.Name</div>
+</p>
+
+<p>
+    <div><strong>Last Activity:</strong></div>
+    <div>@Model.LastActivityAt.ToString("M/dd/yyyy h:mm tt") UTC</div>
+</p>
+
+<p>
+    <div><strong>Deleted:</strong></div>
+    <div>@Model.DestroyedAt.ToString("M/dd/yyyy h:mm tt") UTC</div>
+</p>
+
+<p>
+    <div>A Proof of Request report for this request is attached for your records. The broker retains no further data about this request; this email and its attachment are the only remaining record.</div>
+</p>
+
+@section PreHeader
+{
+    Records request for @(string.IsNullOrEmpty(studentDisplay) ? Model.RequestId.ToString() : studentDisplay) has been permanently deleted.
+}

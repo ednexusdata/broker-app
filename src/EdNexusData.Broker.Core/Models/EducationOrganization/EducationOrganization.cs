@@ -63,7 +63,7 @@ public class EducationOrganization : BaseEntity, IAggregateRoot
     public string? CeebCode { get; set; }
     public EducationOrganizationType EducationOrganizationType { get; set; } = EducationOrganizationType.District;
     public Address? Address { get; set; }
-    public string? Domain { get; set; }
+    public ICollection<EducationOrganizationDomain>? Domains { get; set; }
     public string? TimeZone { get; set; }
     public List<EducationOrganizationContact>? Contacts { get; set; }
 

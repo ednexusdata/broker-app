@@ -16,9 +16,7 @@ internal class EducationOrganizationSharedConfiguration : IEntityTypeConfigurati
         builder.Property(i => i.Address).HasJsonConversion();
         builder.Property(i => i.Contacts).HasJsonConversion();
 
-        builder.HasIndex(x => new { x.Domain } ).IsUnique();
-
-        builder.HasOne(e => e.ParentOrganization) 
+        builder.HasOne(e => e.ParentOrganization)
             .WithMany()                              
             .HasForeignKey("ParentOrganizationId");
 

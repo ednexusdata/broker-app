@@ -9,6 +9,7 @@
     Layout = "_AuthenticatedLayout";
     ViewData["FocusBar"] = true;
 }
+<partial name="_RetentionCountdown" model="@Model.Retention" />
 <form method="post" asp-action="Update" asp-route-id="@Model.RequestId" autocomplete="off">
     <div class="flow-root overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg" x-data="{ }">
         <div class="flex justify-between bg-white pl-4 py-5 sm:pl-6">

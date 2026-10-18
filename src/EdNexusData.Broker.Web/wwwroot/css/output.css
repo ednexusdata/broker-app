@@ -1660,6 +1660,11 @@ input:where([type='file']):focus {
   border-top-width: 1px;
 }
 
+.border-amber-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(252 211 77 / var(--tw-border-opacity, 1));
+}
+
 .border-gray-100 {
   --tw-border-opacity: 1;
   border-color: rgb(245 247 249 / var(--tw-border-opacity, 1));
@@ -1688,6 +1693,11 @@ input:where([type='file']):focus {
   border-color: rgb(40 41 43 / 0.05);
 }
 
+.border-red-400 {
+  --tw-border-opacity: 1;
+  border-color: rgb(248 113 113 / var(--tw-border-opacity, 1));
+}
+
 .border-tertiary-200 {
   --tw-border-opacity: 1;
   border-color: rgb(139 207 236 / var(--tw-border-opacity, 1));
@@ -1710,6 +1720,11 @@ input:where([type='file']):focus {
 
 .border-transparent {
   border-color: transparent;
+}
+
+.bg-amber-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));
 }
 
 .bg-blue-100 {
@@ -2182,6 +2197,11 @@ input:where([type='file']):focus {
   line-height: 1.75rem;
 }
 
+.text-amber-800 {
+  --tw-text-opacity: 1;
+  color: rgb(146 64 14 / var(--tw-text-opacity, 1));
+}
+
 .text-black {
   --tw-text-opacity: 1;
   color: rgb(0 0 0 / var(--tw-text-opacity, 1));
@@ -2275,6 +2295,11 @@ input:where([type='file']):focus {
 .text-red-600 {
   --tw-text-opacity: 1;
   color: rgb(220 38 38 / var(--tw-text-opacity, 1));
+}
+
+.text-red-700 {
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity, 1));
 }
 
 .text-red-800 {

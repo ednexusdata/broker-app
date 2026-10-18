@@ -7,10 +7,12 @@
     <UserSecretsId>dotnet-EdNexusData.Broker.Worker-c3c9ffe3-a17f-4bec-9db5-68194b6133af</UserSecretsId>
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <Version>0.0.77</Version>
+    <Version>0.0.82</Version>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac" Version="9.*" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="11.*" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.*" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.*" />
