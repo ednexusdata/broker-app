@@ -39,7 +39,7 @@ public static class BrokerServiceCollection
         services.AddSingleton<MappingLookupCache>();
         
         // Other Services
-        services.AddSingleton<ILookupClient, LookupClient>();
+        services.AddSingleton<ILookupClient>(_ => new LookupClient());
 
         // Seralizers
         services.AddScoped<ConfigurationSerializer>();
@@ -95,7 +95,7 @@ public static class BrokerServiceCollection
         services.AddSingleton<ConnectorLoader>();
 
         // Services
-        services.AddSingleton<ILookupClient, LookupClient>();
+        services.AddSingleton<ILookupClient>(_ => new LookupClient());
         services.AddScoped<DirectoryLookupService>();
         services.AddScoped<MessageService>();
         services.AddScoped<RequestService>();
