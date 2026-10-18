@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace EdNexusData.Broker.Web.Services;
 
-public class BrokerDbContextInitializationService : IHostedService
+public class BrokerDbContextInitializationService
 {
     private readonly ILogger<BrokerDbContextInitializationService> _logger;
     private readonly IServiceProvider _serviceProvider;
@@ -20,7 +20,7 @@ public class BrokerDbContextInitializationService : IHostedService
         _serviceProvider = serviceProvider;
     }
     
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task InvokeAsync(CancellationToken cancellationToken = default)
     {
         using (var scoped = _serviceProvider.CreateScope())
         {
@@ -91,10 +91,5 @@ public class BrokerDbContextInitializationService : IHostedService
                 _logger.LogInformation($"First User {firstUserFirstName} {firstUserLastName} {firstUserEmail} {identityUser.Id} created");
             }
         }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
     }
 }

@@ -15,6 +15,7 @@ public static class BrokerDataServiceCollection //: IConnectorServiceCollection
     {
         // Services
         services.AddScoped<SeederService>();
+        services.AddScoped<DatabaseMigrationService>();
 
         return services;
     }
