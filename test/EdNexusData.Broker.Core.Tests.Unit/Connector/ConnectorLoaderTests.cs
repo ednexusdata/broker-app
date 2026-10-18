@@ -3,6 +3,7 @@ using System.Runtime.Loader;
 using Autofac;
 using EdNexusData.Broker.Core.Tests.Unit.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
+using File = System.IO.File;
 
 namespace EdNexusData.Broker.Core.Tests.Unit.Connector;
 
@@ -80,6 +81,33 @@ public class ConnectorLoaderTests
     }
 
     [Fact]
+    public void Starts_with_the_newest_version_that_loads_when_a_newer_one_is_broken()
+    {
+        string? working = null;
+        using var app = TestConnectorApp.Create(root =>
+        {
+            working = TestConnectorApp.CopyConnectorTo(Path.Combine(root, Name, "1.0.0"));
+            var broken = Directory.CreateDirectory(Path.Combine(root, Name, "2.0.0")).FullName;
+            File.WriteAllText(Path.Combine(broken, $"{Name}.dll"), "not a .NET assembly");
+        });
+
+        Assert.Equal(working, app.Runtime.Directory);
+    }
+
+    [Fact]
+    public void Starts_without_a_connector_none_of_whose_versions_load()
+    {
+        using var app = TestConnectorApp.Create(root =>
+        {
+            TestConnectorApp.CopyConnectorTo(Path.Combine(root, Name));
+            var broken = Directory.CreateDirectory(Path.Combine(root, "Broken.Connector", "1.0.0")).FullName;
+            File.WriteAllText(Path.Combine(broken, "Broken.Connector.dll"), "not a .NET assembly");
+        });
+
+        Assert.Equal([Name], app.Loader.Runtimes.Select(r => r.Name));
+    }
+
+    [Fact]
     public void Skips_connector_folders_without_assemblies()
     {
         using var app = TestConnectorApp.Create(root =>
@@ -92,11 +120,21 @@ public class ConnectorLoaderTests
     }
 
     [Fact]
-    public void ResolveActiveDirectory_prefers_assemblies_in_the_connector_folder_itself()
+    public void ResolveActiveDirectory_prefers_version_folders_over_assemblies_in_the_connector_folder()
     {
+        // Updates install into version folders next to an existing unversioned connector; after a restart the
+        // updated version must still be the one loaded.
         var root = TestConnectorApp.CreateConnectorsFolder();
         var connectorDirectory = TestConnectorApp.CopyConnectorTo(Path.Combine(root, Name));
-        TestConnectorApp.CopyConnectorTo(Path.Combine(connectorDirectory, "2.0.0"));
+        var update = TestConnectorApp.CopyConnectorTo(Path.Combine(connectorDirectory, "2.0.0"));
+
+        Assert.Equal(update, ConnectorLoader.ResolveActiveDirectory(connectorDirectory));
+    }
+
+    [Fact]
+    public void ResolveActiveDirectory_uses_the_connector_folder_itself_when_it_has_no_version_folders()
+    {
+        var connectorDirectory = TestConnectorApp.CopyConnectorTo(Path.Combine(TestConnectorApp.CreateConnectorsFolder(), Name));
 
         Assert.Equal(connectorDirectory, ConnectorLoader.ResolveActiveDirectory(connectorDirectory));
     }

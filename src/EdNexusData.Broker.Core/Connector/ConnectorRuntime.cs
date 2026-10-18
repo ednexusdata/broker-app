@@ -111,6 +111,12 @@ public sealed class ConnectorRuntime
 
             return new ConnectorRuntime(name, directory, context, logger);
         }
+        catch (Exception ex) when (ex is TypeLoadException or MissingMethodException or MissingFieldException or MissingMemberException)
+        {
+            // Typically built against a different EdNexusData.Broker.Common than the one this app ships.
+            context.Unload();
+            throw new InvalidOperationException($"Connector {name} in {directory} is not compatible with this version of the broker: {ex.Message}", ex);
+        }
         catch
         {
             context.Unload();

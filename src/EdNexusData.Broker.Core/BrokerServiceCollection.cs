@@ -14,6 +14,8 @@ using Microsoft.Extensions.Configuration;
 using EdNexusData.Broker.Core.Emails;
 using QuestPDF.Infrastructure;
 using EdNexusData.Broker.Core.Reports;
+using EdNexusData.Broker.Core.Updaters;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace EdNexusData.Broker.Core;
 
@@ -152,6 +154,12 @@ public static class BrokerServiceCollection
         connectorLoader.UseAppServices(services);
         services.AddSingleton(connectorLoader);
         services.AddScoped<ConnectorActivator>();
+
+        // Updates from the connector store (off unless ConnectorUpdates:Enabled is true)
+        services.TryAddScoped<ConnectorService>();
+        services.AddScoped<ConnectorUpdater>();
+        services.AddSingleton<ConnectorPackageInstaller>();
+        services.AddHostedService<ConnectorUpdateService>();
 
         return services;
     }

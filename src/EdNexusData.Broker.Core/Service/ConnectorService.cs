@@ -1,25 +1,31 @@
 using System.Net.Http.Json;
+using Microsoft.Extensions.Configuration;
 using EdNexusData.Broker.Core.Models;
 
 namespace EdNexusData.Broker.Core.Services;
 
 public class ConnectorService
 {
+    public const string DefaultStoreUrl = "https://connectors.broker.ednexusdata.org";
+
     private readonly IRepository<ConnectorReference> connectorReferenceRepository;
     private readonly HttpClient httpClient;
+    private readonly string storeUrl;
     
     public ConnectorService(
         IRepository<ConnectorReference> connectorReferenceRepository,
-        IHttpClientFactory httpClientFactory
+        IHttpClientFactory httpClientFactory,
+        IConfiguration? configuration = null
     )
     {
         this.connectorReferenceRepository = connectorReferenceRepository;
         httpClient = httpClientFactory.CreateClient();
+        storeUrl = configuration?["ConnectorUpdates:StoreUrl"] is { Length: > 0 } configured ? configured : DefaultStoreUrl;
     }
 
     public async Task<List<StoreConnector>?> GetStoreConnectors()
     {
-        var response = await httpClient.GetAsync("https://connectors.broker.ednexusdata.org");
+        var response = await httpClient.GetAsync(storeUrl);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<List<StoreConnector>>();

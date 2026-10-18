@@ -72,14 +72,8 @@ public class ConnectorLoader
         var runtimes = new List<ConnectorRuntime>();
         foreach (var connectorDirectory in Directory.GetDirectories(ConnectorsPath))
         {
-            var activeDirectory = ResolveActiveDirectory(connectorDirectory);
-            if (activeDirectory is null)
-            {
-                _logger.LogWarning("No connector assemblies found in {Directory}", connectorDirectory);
-                continue;
-            }
-
-            runtimes.Add(ConnectorRuntime.Load(Path.GetFileName(connectorDirectory), activeDirectory, _logger));
+            var runtime = LoadNewestWorkingVersion(connectorDirectory);
+            if (runtime is not null) runtimes.Add(runtime);
         }
 
         if (runtimes.Count == 0)
@@ -229,20 +223,59 @@ public class ConnectorLoader
     }
 
     /// <summary>
-    /// Picks the folder to load for a connector: the connector folder itself when it contains DLLs (unversioned
-    /// layout), otherwise its highest version subfolder (connectors/&lt;name&gt;/&lt;version&gt;/).
+    /// Loads the newest version of a connector that loads, so one bad version folder (say an incompatible
+    /// update) does not stop the app from starting; older versions and then the unversioned folder are tried.
     /// </summary>
-    public static string? ResolveActiveDirectory(string connectorDirectory)
+    private ConnectorRuntime? LoadNewestWorkingVersion(string connectorDirectory)
     {
-        if (Directory.EnumerateFiles(connectorDirectory, "*.dll").Any()) return connectorDirectory;
+        var name = Path.GetFileName(connectorDirectory);
+        var candidates = CandidateDirectories(connectorDirectory);
+        if (candidates.Count == 0)
+        {
+            _logger.LogWarning("No connector assemblies found in {Directory}", connectorDirectory);
+            return null;
+        }
 
-        return Directory.GetDirectories(connectorDirectory)
+        foreach (var candidate in candidates)
+        {
+            try
+            {
+                return ConnectorRuntime.Load(name, candidate, _logger);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Could not load connector {Name} from {Directory}; trying an older version if there is one.", name, candidate);
+            }
+        }
+
+        _logger.LogError("No version of connector {Name} could be loaded.", name);
+        return null;
+    }
+
+    /// <summary>
+    /// Folders a connector could be loaded from, preferred first: version subfolders from highest to lowest,
+    /// then the connector folder itself when it contains DLLs (the original unversioned layout).
+    /// </summary>
+    public static IReadOnlyList<string> CandidateDirectories(string connectorDirectory)
+    {
+        var candidates = Directory.GetDirectories(connectorDirectory)
             .Select(d => (Path: d, Version: Version.TryParse(Path.GetFileName(d), out var v) ? v : null))
             .Where(d => d.Version is not null && Directory.EnumerateFiles(d.Path, "*.dll").Any())
             .OrderByDescending(d => d.Version)
             .Select(d => d.Path)
-            .FirstOrDefault();
+            .ToList();
+
+        if (Directory.EnumerateFiles(connectorDirectory, "*.dll").Any()) candidates.Add(connectorDirectory);
+        return candidates;
     }
+
+    /// <summary>
+    /// Picks the folder to load for a connector: its highest version subfolder (connectors/&lt;name&gt;/&lt;version&gt;/,
+    /// which is where updates are installed), otherwise the connector folder itself when it contains DLLs
+    /// (the original unversioned layout).
+    /// </summary>
+    public static string? ResolveActiveDirectory(string connectorDirectory) =>
+        CandidateDirectories(connectorDirectory).FirstOrDefault();
 
     /// <summary>Replaces the runtime named <paramref name="name"/> in the catalog and returns the old one.</summary>
     private ConnectorRuntime? Swap(string name, ConnectorRuntime? replacement, bool mustExist)
