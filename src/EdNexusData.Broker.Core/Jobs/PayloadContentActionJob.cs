@@ -100,7 +100,7 @@ public class PayloadContentActionJob : IJob
 
         var listMappingType = typeof(List<>).MakeGenericType(mappingType);
         dynamic? mappingObject = JsonConvert.DeserializeObject(mapping.JsonDestinationMapping.ToJsonString()!, listMappingType)!;
-        dynamic? mappingObjectsToImport = ActivatorUtilities.CreateInstance(_serviceProvider, listMappingType);
+        dynamic? mappingObjectsToImport = ConnectorActivator.CreateInstance(_serviceProvider, listMappingType);
 
         // keep objects that are not to be imported
         foreach(dynamic map in mappingObject)

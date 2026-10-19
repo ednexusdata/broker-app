@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- A minimal connector the unit tests load at runtime to exercise connector loading, DI and unloading.
+       It is never referenced as an assembly: the unit test project copies its build output into a connectors folder. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>1.0.0</Version>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <!-- Shared contracts must come from the app, like real connectors (which use ExcludeAssets=runtime on the package). -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\broker-common\src\EdNexusData.Broker.Common.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

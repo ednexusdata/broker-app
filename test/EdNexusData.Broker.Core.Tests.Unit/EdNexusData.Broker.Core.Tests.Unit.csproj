@@ -24,6 +24,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EdNexusData.Broker.Core\EdNexusData.Broker.Core.csproj" />
+    <!-- Built first, but loaded at runtime like a real connector: see CopyTestConnector below. -->
+    <ProjectReference Include="..\EdNexusData.Broker.Connector.TestConnector\EdNexusData.Broker.Connector.TestConnector.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <Target Name="CopyTestConnector" AfterTargets="Build">
+    <ItemGroup>
+      <TestConnectorFiles Include="..\EdNexusData.Broker.Connector.TestConnector\bin\$(Configuration)\$(TargetFramework)\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(TestConnectorFiles)" DestinationFolder="$(OutDir)TestConnector" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

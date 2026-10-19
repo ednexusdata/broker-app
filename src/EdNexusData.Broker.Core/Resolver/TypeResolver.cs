@@ -35,14 +35,9 @@ public class TypeResolver
 
     public Type ResolveConnectorTypeInContext(string typeName, Assembly assembly)
     {
-        // Find the context
-        var contextName = AssemblyLoadContext.GetLoadContext(assembly)?.Name;
-        _ = contextName
+        // Find the connector version owning the assembly, including one waiting to unload
+        var context = connectorLoader.FindRuntime(assembly)?.LoadContext
             ?? throw new InvalidOperationException($"Assembly '{assembly.FullName}' is not loaded in any connector context.");
-
-        // Get the context
-        var context = connectorLoader.ConnectorLoadContexts
-            .Where(c => c.Key == contextName).FirstOrDefault().Value;
 
         var type = context.Assemblies
                 .Where(inner => inner.GetType(typeName) != null)
@@ -85,9 +80,10 @@ public class TypeResolver
 
     public List<Type>? ResolveConnectorInterface(Assembly assembly, string typeName)
     {
-        var types = connectorLoader.ConnectorLoadContexts
-            .Where(outer => outer.Value.Assemblies.Any(a => a == assembly))
-            .FirstOrDefault().Value.Assemblies
+        var connectorContext = connectorLoader.FindRuntime(assembly)?.LoadContext
+            ?? throw new InvalidOperationException($"Assembly '{assembly.FullName}' is not loaded in any connector context.");
+
+        var types = connectorContext.Assemblies
             .SelectMany(s => s.GetExportedTypes())
             .Where(inner => inner.GetInterface(typeName) is not null)
             .ToList();
@@ -132,10 +128,7 @@ public class TypeResolver
 
     public static DisplayNameAttribute? ResolveDisplayName(string typeName)
     {
-        var type = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetExportedTypes())
-                .Where(p => p.FullName == typeName)
-                .FirstOrDefault();
+        var type = ConnectorLoader.Instance?.ResolveType(typeName);
 
         if (type is null)
         {

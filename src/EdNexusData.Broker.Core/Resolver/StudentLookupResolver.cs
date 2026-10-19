@@ -33,13 +33,11 @@ public class StudentLookupResolver
         //     .FirstOrDefault();
 
         var studentLookupServiceType = typeResolver.ResolveConnectorInterface(TConnector.Assembly, "IStudentLookupService")?.FirstOrDefault();
-        // var brokerServiceProvider = connectorLoader.ConnectorServiceProviders
-        //     .FirstOrDefault(x => x.Key == TConnector.Assembly.GetName().Name).Value;
 
         Guard.Against.Null(studentLookupServiceType, "", "Could not get student lookup type");
 
         var connectorStudentLookupService = 
-            ActivatorUtilities.CreateInstance(_serviceProvider, studentLookupServiceType);
+            ConnectorActivator.CreateInstance(_serviceProvider, studentLookupServiceType);
         
         return (IStudentLookupService)connectorStudentLookupService;
     }

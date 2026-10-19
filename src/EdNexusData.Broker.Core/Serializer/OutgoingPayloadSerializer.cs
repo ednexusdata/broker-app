@@ -20,7 +20,7 @@ public class OutgoingPayloadSerializer
 
     public async Task<Payload> DeseralizeAsync(Type connectorConfigType, Guid focusEducationOrganization)
     {
-        var iPayloadModel = ActivatorUtilities.CreateInstance(_serviceProvider, connectorConfigType) as Payload;
+        var iPayloadModel = ConnectorActivator.CreateInstance(_serviceProvider, connectorConfigType) as Payload;
         var objTypeName = iPayloadModel!.GetType().FullName;
 
         // Get existing object

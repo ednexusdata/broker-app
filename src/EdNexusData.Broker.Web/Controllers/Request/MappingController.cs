@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
+using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Web.Constants.DesignSystems;
 using EdNexusData.Broker.Web.ViewModels.Mappings;
 using EdNexusData.Broker.Core.Lookup;
@@ -100,9 +101,7 @@ public class MappingController : AuthenticatedController<MappingController>
             ViewBag.JobId = jobId;
         }
 
-        Type mappingType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => p.FullName == mapping.MappingType).FirstOrDefault()!;
+        Type mappingType = ConnectorLoader.Instance!.ResolveType(mapping.MappingType!)!;
 
         Type mappingCollectionType = typeof(List<>).MakeGenericType([mappingType]);
 
@@ -141,13 +140,11 @@ public class MappingController : AuthenticatedController<MappingController>
         if (mapping is null) return NotFound();
         
         // Create a generic type of what was sent through
-        Type mappingType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => p.FullName == mapping.MappingType).FirstOrDefault()!;
+        Type mappingType = ConnectorLoader.Instance!.ResolveType(mapping.MappingType!)!;
 
         Type mappingCollectionType = typeof(List<>).MakeGenericType([mappingType]);
 
-        var mappedForm = ActivatorUtilities.CreateInstance(_serviceProvider, mappingCollectionType);
+        var mappedForm = ConnectorActivator.CreateInstance(_serviceProvider, mappingCollectionType);
 
         // Perform the model binding
         await TryUpdateModelAsync(mappedForm, mappingCollectionType, "mapping");
@@ -243,9 +240,7 @@ public class MappingController : AuthenticatedController<MappingController>
 
         configurationResolver.CurrentRecordEducationOrganizationId = mapping.PayloadContentAction!.PayloadContent?.Request?.EducationOrganization?.ParentOrganizationId;
 
-        Type mappingType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => p.FullName == mapping.MappingType).FirstOrDefault()!;
+        Type mappingType = ConnectorLoader.Instance!.ResolveType(mapping.MappingType!)!;
 
         Type mappingCollectionType = typeof(List<>).MakeGenericType([mappingType]);
 
@@ -281,9 +276,7 @@ public class MappingController : AuthenticatedController<MappingController>
 
         configurationResolver.CurrentRecordEducationOrganizationId = mapping.PayloadContentAction!.PayloadContent?.Request?.EducationOrganization?.ParentOrganizationId;
 
-        var mappingType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .FirstOrDefault(p => p.FullName == mapping.MappingType);
+        var mappingType = ConnectorLoader.Instance?.ResolveType(mapping.MappingType!);
 
         if (mappingType is null) return NotFound();
 

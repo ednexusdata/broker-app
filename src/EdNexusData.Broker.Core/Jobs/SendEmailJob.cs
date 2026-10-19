@@ -46,14 +46,25 @@ public class SendEmailJob : IJob
         
         baseViewModel.EnvironmentService = environment;
 
+        if (string.IsNullOrWhiteSpace(jobDetail.To))
+        {
+            throw new InvalidOperationException($"Email '{jobDetail.Subject}' has no recipient: the education organization has no contact with an email address.");
+        }
+
         var logoPath = Path.Combine(AppContext.BaseDirectory, "Resources", "Final-Education-Nexus-ICON-png.png");
 
         var emailToSend = fluentEmail
             .To(jobDetail.To)
-            .ReplyTo(jobDetail.ReplyTo)
             .Subject(jobDetail.Subject)
             .Attach(new FluentEmail.Core.Models.Attachment() { Data = System.IO.File.OpenRead(logoPath), Filename = "brokerlogo.png", ContentId = "brokerlogo", ContentType = "image/png", IsInline = true })
             .UsingTemplateFromEmbedded($"EdNexusData.Broker.Core.Emails.{jobDetail.TemplateName}.cshtml", model, typeof(EmailRoot).Assembly);
+
+        // Not every email has someone to reply to (retention notices, or a sender without an email address);
+        // MailKit throws on an address without an email.
+        if (!string.IsNullOrWhiteSpace(jobDetail.ReplyTo))
+        {
+            emailToSend = emailToSend.ReplyTo(jobDetail.ReplyTo);
+        }
 
         if (jobDetail.Attachments is not null)
         {

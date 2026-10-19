@@ -28,7 +28,7 @@ public class PayloadContentActionJobResolver
         var resolvedPayloadContentType = ResolveType(payloadContentType);
         _ = resolvedPayloadContentType ?? throw new ArgumentNullException($"Unable to locate payload content type / {payloadContentType}");
 
-        var payloadContentJob = ActivatorUtilities.CreateInstance(_serviceProvider, resolvedPayloadContentType);
+        var payloadContentJob = ConnectorActivator.CreateInstance(_serviceProvider, resolvedPayloadContentType);
         
         return (PayloadContentActionJob)payloadContentJob;
     }
@@ -37,12 +37,7 @@ public class PayloadContentActionJobResolver
     {
         _ = payloadContentType ?? throw new ArgumentNullException("Missing payload content type");
 
-        var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetExportedTypes())
-                .Where(p => p.FullName == payloadContentType);
-
-        // Locate the payload content service in connector
-        return types.FirstOrDefault();
+        return ConnectorLoader.Instance?.ResolveType(payloadContentType);
     }
 
     public Type? ResolveInterface(string payloadContentType, string interfaceType)

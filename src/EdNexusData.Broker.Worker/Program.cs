@@ -128,7 +128,7 @@ builder.ConfigureServices((hostContext, services) =>
 
     services.AddBrokerServicesForWorker(hostContext.Configuration);
     services.AddReportingServices();
-    services.AddConnectorServicesToDefaultProvider();
+    services.AddConnectorServices();
 
     services.AddHostedService<Worker>();
 });

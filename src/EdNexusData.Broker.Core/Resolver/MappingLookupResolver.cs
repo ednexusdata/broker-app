@@ -26,7 +26,7 @@ public class MappingLookupResolver
         Guard.Against.Null(studentLookupServiceType, "", "Could not get mapping lookup type");
         
         var connectorStudentLookupService = 
-            ActivatorUtilities.CreateInstance(_serviceProvider, studentLookupServiceType);
+            ConnectorActivator.CreateInstance(_serviceProvider, studentLookupServiceType);
         
         return (IMappingLookup)connectorStudentLookupService;
     }

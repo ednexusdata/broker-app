@@ -17,9 +17,7 @@ public static class DataPayloadContentSerializer
         _ = payloadContentSchema ?? throw new NullReferenceException("Schema missing");
         
         // Create type object
-        var payloadContentSchemaType = AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(s => s.GetExportedTypes())
-                    .Where(p => p.FullName == payloadContentSchema.ObjectType).FirstOrDefault();
+        var payloadContentSchemaType = ConnectorLoader.Instance?.ResolveType(payloadContentSchema.ObjectType!);
         _ = payloadContentSchemaType ?? throw new NullReferenceException($"Unable to create type from schema type {payloadContentSchema.ObjectType}");
         
         // Get the AdditionalContents node

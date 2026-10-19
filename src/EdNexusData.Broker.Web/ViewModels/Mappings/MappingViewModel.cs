@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using EdNexusData.Broker.Common.Lookup;
 using EdNexusData.Broker.Common.Mappings;
+using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Lookup;
 
 namespace EdNexusData.Broker.Web.ViewModels.Mappings;
@@ -32,9 +33,7 @@ public class MappingViewModel
 
     public DisplayNameAttribute? ResolveMappingTypeDisplayName(string mappingTypeName)
     {
-        var mappingType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => p.FullName == mappingTypeName).FirstOrDefault();
+        var mappingType = ConnectorLoader.Instance?.ResolveType(mappingTypeName);
         return (DisplayNameAttribute)mappingType?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault()!;
     }
 
@@ -82,9 +81,7 @@ public class MappingViewModel
 
     public void SetProperties(string mappingType)
     {
-        Properties = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => p.FullName == mappingType).FirstOrDefault()!
+        Properties = ConnectorLoader.Instance!.ResolveType(mappingType)!
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
 
         // Loop through each property and see if datatype on property

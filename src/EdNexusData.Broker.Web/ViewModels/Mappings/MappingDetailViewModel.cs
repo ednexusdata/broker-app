@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using EdNexusData.Broker.Common.Lookup;
+using EdNexusData.Broker.Core;
 using EdNexusData.Broker.Core.Lookup;
 
 namespace EdNexusData.Broker.Web.ViewModels.Mappings;
@@ -26,9 +27,7 @@ public class MappingDetailViewModel
 
     public DisplayNameAttribute? ResolveMappingTypeDisplayName(string mappingTypeName)
     {
-        var mappingType = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => p.FullName == mappingTypeName).FirstOrDefault();
+        var mappingType = ConnectorLoader.Instance?.ResolveType(mappingTypeName);
         return (DisplayNameAttribute)mappingType?.GetCustomAttributes(false).Where(x => x.GetType() == typeof(DisplayNameAttribute)).FirstOrDefault()!;
     }
 
@@ -70,9 +69,7 @@ public class MappingDetailViewModel
 
     public void SetProperties(string mappingType)
     {
-        Properties = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => p.FullName == mappingType).FirstOrDefault()!
+        Properties = ConnectorLoader.Instance!.ResolveType(mappingType)!
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
 
         // Loop through each property and see if datatype on property
@@ -124,9 +121,7 @@ public class MappingDetailViewModel
 
     public static object InputName(string mappingType, int counter, string propertyName)
     {
-        var mappingTyped = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(s => s.GetTypes())
-            .Where(p => p.FullName == mappingType).FirstOrDefault()!;
+        var mappingTyped = ConnectorLoader.Instance!.ResolveType(mappingType)!;
         
         return $"mapping[{counter}].{propertyName}"; // .{mappingTyped!.Name}
     }
